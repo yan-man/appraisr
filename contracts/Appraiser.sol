@@ -32,7 +32,6 @@ contract Appraiser is Ownable {
         string calldata companyName_,
         address businessAddress_
     ) public {
-        orgIds.increment();
         uint orgId = orgIds.current();
         Organization memory newOrg = Organization({
             orgId: orgId,
@@ -40,6 +39,7 @@ contract Appraiser is Ownable {
             businessAddress: businessAddress_
         });
         s_organizations.push(newOrg);
+        orgIds.increment();
 
         emit LogAddOrg(orgId);
     }
@@ -51,13 +51,4 @@ contract Appraiser is Ownable {
     function numberOrganizations() public view returns (uint256) {
         return s_organizations.length;
     }
-
-    // function greet() public view returns (string memory) {
-    //     return greeting;
-    // }
-
-    // function setGreeting(string memory _greeting) public {
-    //     console.log("Changing greeting from '%s' to '%s'", greeting, _greeting);
-    //     greeting = _greeting;
-    // }
 }

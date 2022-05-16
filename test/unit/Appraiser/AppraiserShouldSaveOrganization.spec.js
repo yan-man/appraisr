@@ -15,13 +15,19 @@ const shouldManageOrgs = () => {
       const { orgId, companyName, businessAddress } =
         await this.appraiser.s_organizations(0);
 
-      expect(orgId).to.equal(ethers.BigNumber.from(1));
+      expect(orgId).to.equal(ethers.BigNumber.from(0));
       expect(companyName).to.equal(expectedCompanyName);
       expect(businessAddress).to.equal(expectedBusinessAddress);
 
       const { orgId: eventOrgId } = { ...receipt.events[0].args };
 
-      expect(eventOrgId).to.equal(ethers.BigNumber.from(1));
+      expect(eventOrgId).to.equal(ethers.BigNumber.from(0));
+      expect(await this.appraiser.currentOrgId()).to.equal(
+        ethers.BigNumber.from(1)
+      );
+      expect(await this.appraiser.numberOrganizations()).to.equal(
+        ethers.BigNumber.from(1)
+      );
     });
 
     // should have error if org already exists
