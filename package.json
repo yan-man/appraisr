@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/yan-man/appraisr/issues"
   },
-  "homepage": "https://github.com/yan-man/appraisr#readme"
+  "homepage": "https://github.com/yan-man/appraisr#readme",
+  "devDependencies": {
+    "hardhat": "^2.9.5"
+  }
 }
