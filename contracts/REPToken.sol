@@ -9,6 +9,6 @@ contract REPToken is ERC777 {
     constructor(uint256 initialSupply_, address[] memory defaultOperators_)
         ERC777("Reputation", "REP", defaultOperators_)
     {
-        _mint(msg.sender, initialSupply_, "", "");
+        // _mint(msg.sender, initialSupply_, "", "");
     }
 }
