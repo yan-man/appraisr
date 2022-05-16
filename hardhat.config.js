@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require("./tasks/faucet");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -21,6 +22,8 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 31337,
+      gas: 2100000,
+      gasPrice: 8000000000,
     },
   },
 };
