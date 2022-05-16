@@ -5,6 +5,8 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "./OrganizationReviews.sol";
+
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
     Counters.Counter public orgIds;

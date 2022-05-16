@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 const shouldManageOrgs = () => {
   context(`#CRUD organizations`, async function () {
-    it("Should save new organization", async function () {
+    it(`Should save new organization`, async function () {
       const expectedCompanyName = "McDonalds";
       const expectedBusinessAddress =
         "0x976EA74026E726554dB657fA54763abd0C3a0aa9";
@@ -28,9 +28,9 @@ const shouldManageOrgs = () => {
       expect(await this.appraiser.numberOrganizations()).to.equal(
         ethers.BigNumber.from(1)
       );
-    });
 
-    // should have error if org already exists
+      // expect ERC 721 contract deployed
+    });
 
     // should deploy an ERC 721 contract
     //

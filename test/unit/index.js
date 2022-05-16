@@ -6,21 +6,22 @@ const {
 } = require("./Appraiser/AppraiserShouldSaveOrganization.spec");
 
 describe("Unit tests", async () => {
-  // describe(`REPToken`, async () => {
-  //   beforeEach(async function () {
-  //     const REPTokenFactory = await ethers.getContractFactory("REPToken");
-  //     const REPToken = await REPTokenFactory.deploy(1000, []);
-  //     await REPToken.deployed();
-  //     this.REPToken = REPToken;
-  //     this.addrs = await ethers.getSigners();
-  //   });
+  describe(`REPToken`, async () => {
+    beforeEach(async function () {
+      const REPTokenFactory = await ethers.getContractFactory("REPToken");
+      const REPToken = await REPTokenFactory.deploy(1000, []);
+      await REPToken.deployed();
+      this.REPToken = REPToken;
+      this.addrs = await ethers.getSigners();
+    });
 
-  //   context(`#deploy`, async function () {
-  //     it("*Happy Path: Should set the right owner", async function () {
-  //       expect(await this.REPToken.owner()).to.equal(this.addrs[0].address);
-  //     });
-  //   });
-  // });
+    context(`#deploy`, async function () {
+      it("*Happy Path: Should set the right owner", async function () {
+        console.log(await this.REPToken.name());
+        // expect(await this.REPToken.name()).to.equal(this.addrs[0].address);
+      });
+    });
+  });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
       const Appraiser = await ethers.getContractFactory("Appraiser");
