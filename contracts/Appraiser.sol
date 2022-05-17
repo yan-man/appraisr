@@ -15,7 +15,6 @@ contract Appraiser is Ownable {
     struct Organization {
         uint256 orgId;
         string name;
-        string symbol;
         address addr;
     }
 
@@ -23,7 +22,6 @@ contract Appraiser is Ownable {
     Organization[] public s_organizations;
     mapping(uint256 => address) public aoContracts;
     mapping(string => bool) private orgNames;
-    mapping(string => bool) private orgSymbols;
     mapping(address => bool) private orgAddresses;
 
     // Events
@@ -32,20 +30,12 @@ contract Appraiser is Ownable {
 
     // Errors
     error DuplicateOrgName();
-    error DuplicateOrgSymbol();
     error DuplicateOrgAddr();
 
     // Modifiers
-    modifier uniqueOrg(
-        string memory name_,
-        string memory symbol_,
-        address addr_
-    ) {
+    modifier uniqueOrg(string memory name_, address addr_) {
         if (orgNames[name_]) {
             revert DuplicateOrgName();
-        }
-        if (orgSymbols[symbol_]) {
-            revert DuplicateOrgSymbol();
         }
         if (orgAddresses[addr_]) {
             revert DuplicateOrgAddr();
@@ -55,21 +45,18 @@ contract Appraiser is Ownable {
 
     constructor() {}
 
-    function addOrganization(
-        string memory name_,
-        string memory symbol_,
-        address addr_
-    ) public uniqueOrg(name_, symbol_, addr_) {
+    function addOrganization(string memory name_, address addr_)
+        public
+        uniqueOrg(name_, addr_)
+    {
         uint orgId = orgIds.current();
         Organization memory newOrg = Organization({
             orgId: orgId,
             name: name_,
-            symbol: symbol_,
             addr: addr_
         });
         s_organizations.push(newOrg);
         orgNames[name_] = true;
-        orgSymbols[symbol_] = true;
         orgAddresses[addr_] = true;
         orgIds.increment();
 
