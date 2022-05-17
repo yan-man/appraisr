@@ -4,7 +4,7 @@ const { ethers } = require("hardhat");
 const shouldDeploy = () => {
   context(`#deploy contract`, async function () {
     it("*Happy Path: Should set the right owner", async function () {
-      expect(await this.appraiser.owner()).to.equal(this.addrs[0].address);
+      expect(await this.appraiser.owner()).to.equal(this.signers[0].address);
     });
   });
 };
@@ -155,8 +155,18 @@ const shouldManageReviews = () => {
           )
         ).to.be.revertedWith(`InvalidOrgId`);
       });
-      it(`should save a new review for an existing org`, async function () {
-        const tx = await this.appraiser.mintReview(
+      it.only(`should save a new review for an existing org`, async function () {
+        const tx = await this.appraiser.setAOContractAddress(
+          this.orgId.toNumber(),
+          this.mocks.mockAppraiserOrganization.address
+        );
+
+        const receipt = await tx.wait();
+
+        console.log(await this.appraiser.aoContracts(0));
+        console.log(this.mocks.mockAppraiserOrganization.address);
+
+        const tx2 = await this.appraiser.mintReview(
           this.orgId.toNumber(),
           50,
           "test review"
