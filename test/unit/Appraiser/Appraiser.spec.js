@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 const shouldDeploy = () => {
-  context(`#deploy contract`, async function () {
+  context(`# deploy contract`, async function () {
     it("*Happy Path: Should set the right owner", async function () {
       expect(await this.appraiser.owner()).to.equal(this.signers[0].address);
     });
@@ -10,7 +10,7 @@ const shouldDeploy = () => {
 };
 
 const shouldManageOrgs = () => {
-  context(`#manage organizations`, async function () {
+  context(`# manage organizations`, async function () {
     describe("...save new orgs", async () => {
       it(`Should save new organization`, async function () {
         const company = {
@@ -126,7 +126,7 @@ const shouldManageOrgs = () => {
 };
 
 const shouldManageReviews = () => {
-  context(`#manage reviews`, async function () {
+  context(`# manage reviews`, async function () {
     describe("...After new org exists", async () => {
       beforeEach(async function () {
         this.company = {
@@ -146,31 +146,74 @@ const shouldManageReviews = () => {
         };
         this.orgId = orgId;
       });
-      it(`should not allow a review for non-valid org`, async function () {
+      it(`should revert to mint review for non-valid org`, async function () {
         await expect(
           this.appraiser.mintReview(
-            this.orgId.toNumber() + 1,
+            this.orgId.toNumber() + 100,
             50,
             "test review"
           )
         ).to.be.revertedWith(`InvalidOrgId`);
       });
-      it.only(`should save a new review for an existing org`, async function () {
+
+      it(`should revert to set AppraiserOrganization contract address for non-valid org`, async function () {
+        await expect(
+          this.appraiser.setAOContractAddress(
+            this.orgId.toNumber() + 100,
+            this.mocks.mockAppraiserOrganization.address
+          )
+        ).to.be.revertedWith(`InvalidOrgId`);
+      });
+
+      it(`should set AppraiserOrganization contract address for valid org`, async function () {
         const tx = await this.appraiser.setAOContractAddress(
           this.orgId.toNumber(),
           this.mocks.mockAppraiserOrganization.address
         );
-
-        const receipt = await tx.wait();
-
-        console.log(await this.appraiser.aoContracts(0));
-        console.log(this.mocks.mockAppraiserOrganization.address);
-
-        const tx2 = await this.appraiser.mintReview(
-          this.orgId.toNumber(),
-          50,
-          "test review"
+        await tx.wait();
+        expect(await this.appraiser.aoContracts(0)).to.equal(
+          this.mocks.mockAppraiserOrganization.address
         );
+      });
+
+      context(`# mint review`, async function () {
+        describe("...After mock AO contract set", async () => {
+          beforeEach(async function () {
+            this.mockedResponses = {
+              mintReviewNFT: 100,
+            };
+            await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+              this.mockedResponses.mintReviewNFT
+            );
+
+            const tx = await this.appraiser.setAOContractAddress(
+              this.orgId.toNumber(),
+              this.mocks.mockAppraiserOrganization.address
+            );
+            await tx.wait();
+          });
+
+          it(`should update s_reviews state var`, async function () {
+            const tx = await this.appraiser.mintReview(
+              this.orgId.toNumber(),
+              50,
+              "test review"
+            );
+            await tx.wait();
+            expect(await this.appraiser.s_reviews(0, 0)).to.equal(
+              this.mockedResponses.mintReviewNFT
+            );
+          });
+
+          it(`should emit event`, async function () {
+            const tx = await this.appraiser.mintReview(
+              this.orgId.toNumber(),
+              50,
+              "test review"
+            );
+            await expect(tx).to.emit(this.appraiser, `LogMintReview`);
+          });
+        });
       });
     });
   });

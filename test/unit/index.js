@@ -41,8 +41,8 @@ describe("Unit tests", async () => {
 
       this.signers = await ethers.getSigners();
     });
-    // shouldDeploy();
-    // shouldManageOrgs();
+    shouldDeploy();
+    shouldManageOrgs();
     shouldManageReviews();
   });
 });

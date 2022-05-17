@@ -18,8 +18,6 @@ async function deployMockAppraiserOrganization(deployer) {
     AppraiserOrganization_ABI.abi
   );
 
-  await appraiserOrganization.mock.mintReviewNFT.returns(100);
-
   return appraiserOrganization;
 }
 

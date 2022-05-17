@@ -25,10 +25,12 @@ contract Appraiser is Ownable {
     mapping(uint256 => AppraiserOrganization) public aoContracts;
     mapping(string => bool) private orgNames;
     mapping(address => bool) private orgAddresses;
+    mapping(uint256 => uint256[]) public s_reviews;
 
     // Events
     event LogAddOrganization(uint256 orgId);
     event LogNFTContractDeployed(address aoContractAddress);
+    event LogMintReview(uint256 reviewId);
 
     // Errors
     error DuplicateOrgName();
@@ -86,6 +88,7 @@ contract Appraiser is Ownable {
     function setAOContractAddress(uint256 orgId_, address aoAddress_)
         public
         onlyOwner
+        isValidOrgId(orgId_)
     {
         aoContracts[orgId_] = AppraiserOrganization(aoAddress_);
     }
@@ -97,7 +100,9 @@ contract Appraiser is Ownable {
     ) external isValidOrgId(orgId_) {
         AppraiserOrganization _ao = aoContracts[orgId_];
         uint256 _reviewId = _ao.mintReviewNFT(msg.sender, rating_, review_);
-        console.log(_reviewId);
+        s_reviews[orgId_].push(_reviewId);
+
+        emit LogMintReview(_reviewId);
     }
 
     function currentOrgId() public view returns (uint256) {
