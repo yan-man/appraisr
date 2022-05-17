@@ -30,6 +30,7 @@ describe("Unit tests", async () => {
       this.appraiser = appraiser;
       this.addrs = await ethers.getSigners();
     });
+    shouldDeploy();
     shouldManageOrgs();
     // shouldManageReviews();
   });
