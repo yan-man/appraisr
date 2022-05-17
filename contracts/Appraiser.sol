@@ -73,7 +73,6 @@ contract Appraiser is Ownable {
         orgIds.increment();
 
         deployNFTContract(newOrg);
-
         emit LogAddOrganization(orgId);
     }
 
@@ -84,13 +83,21 @@ contract Appraiser is Ownable {
         emit LogNFTContractDeployed(address(_ao));
     }
 
+    function setAOContractAddress(uint256 orgId_, address aoAddress_)
+        public
+        onlyOwner
+    {
+        aoContracts[orgId_] = AppraiserOrganization(aoAddress_);
+    }
+
     function mintReview(
         uint256 orgId_,
         uint256 rating_,
         string memory review_
     ) external isValidOrgId(orgId_) {
         AppraiserOrganization _ao = aoContracts[orgId_];
-        _ao.mintReviewNFT(msg.sender, rating_, review_);
+        uint256 _reviewId = _ao.mintReviewNFT(msg.sender, rating_, review_);
+        console.log(_reviewId);
     }
 
     function currentOrgId() public view returns (uint256) {

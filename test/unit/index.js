@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { unitAppraiserFixture } = require("../shared/fixtures");
 const { ethers, waffle } = require("hardhat");
 const {
   shouldDeploy,
@@ -24,15 +25,24 @@ describe("Unit tests", async () => {
   //   });
   // });
   describe(`Appraiser`, async () => {
-    beforeEach(async function () {
-      const Appraiser = await ethers.getContractFactory("Appraiser");
-      const appraiser = await Appraiser.deploy();
-      await appraiser.deployed();
-      this.appraiser = appraiser;
-      this.addrs = await ethers.getSigners();
+    before(async function () {
+      const wallets = waffle.provider.getWallets();
+      this.loadFixture = waffle.createFixtureLoader(wallets);
     });
-    shouldDeploy();
-    shouldManageOrgs();
+    beforeEach(async function () {
+      const { appraiser, mockAppraiserOrganization } = await this.loadFixture(
+        unitAppraiserFixture
+      );
+
+      this.appraiser = appraiser;
+
+      this.mocks = {};
+      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+
+      this.signers = await ethers.getSigners();
+    });
+    // shouldDeploy();
+    // shouldManageOrgs();
     shouldManageReviews();
   });
 });

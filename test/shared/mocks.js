@@ -1,7 +1,8 @@
-import { waffle } from "hardhat";
-import ERC_20_ABI from "../../abis/erc20.abi.json";
+const { waffle } = require("hardhat");
+const ERC_20_ABI = require("../../abis/erc20.abi.json");
+const AppraiserOrganization_ABI = require("../../artifacts/contracts/AppraiserOrganization.sol/AppraiserOrganization.json");
 
-export async function deployMockREP(deployer) {
+async function deployMockREPToken(deployer) {
   const erc20 = await waffle.deployMockContract(deployer, ERC_20_ABI);
 
   await erc20.mock.name.returns(`Reputation Coin`);
@@ -10,3 +11,16 @@ export async function deployMockREP(deployer) {
 
   return erc20;
 }
+
+async function deployMockAppraiserOrganization(deployer) {
+  const appraiserOrganization = await waffle.deployMockContract(
+    deployer,
+    AppraiserOrganization_ABI.abi
+  );
+
+  await appraiserOrganization.mock.mintReviewNFT.returns(100);
+
+  return appraiserOrganization;
+}
+
+module.exports = { deployMockREPToken, deployMockAppraiserOrganization };
