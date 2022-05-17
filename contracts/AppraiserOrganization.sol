@@ -20,7 +20,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     Counters.Counter private _reviewIds;
 
     constructor(string memory URI_) ERC1155(URI_) {
-        // _mint(msg.sender, VERIFIER, 10**3, "");
+        _mint(msg.sender, VERIFIER, 10**3, "");
         _reviewIds.increment();
     }
 
@@ -30,6 +30,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
         string memory review_
     ) public {
         uint256 _reviewId = _reviewIds.current();
-        // _mint(player_, _reviewId, 1, "");
+        _mint(player_, _reviewId, 1, "");
     }
 }
