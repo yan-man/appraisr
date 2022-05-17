@@ -9,4 +9,15 @@ contract REPToken is ERC20 {
     constructor(uint256 initialSupply_) ERC20("Reputation", "REP") {
         _mint(msg.sender, initialSupply_);
     }
+
+    // prevent trading your reputation tokens
+    function transfer(address to, uint256 amount)
+        public
+        override
+        returns (bool)
+    {
+        // address owner = _msgSender();
+        // _transfer(owner, to, amount);
+        return false;
+    }
 }
