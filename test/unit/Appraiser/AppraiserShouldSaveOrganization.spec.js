@@ -99,8 +99,8 @@ const shouldManageOrgs = () => {
         );
       });
       it(`should return deployed contract address`, async function () {
-        expect(await this.appraiser.orgReviewsContracts(0)).to.equal(
-          this.eventArgs.orgReviewsContract
+        expect(await this.appraiser.aoContracts(0)).to.equal(
+          this.eventArgs.aoContractAddress
         );
       });
       it(`Should throw DuplicateOrgName error on duplicate org name`, async function () {
