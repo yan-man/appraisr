@@ -14,6 +14,7 @@ const shouldManageOrgs = () => {
         company.symbol,
         company.address
       );
+
       const receipt = await tx.wait();
       const { orgId, name, symbol, addr } =
         await this.appraiser.s_organizations(0);
@@ -23,11 +24,41 @@ const shouldManageOrgs = () => {
       expect(symbol).to.equal(company.symbol);
       expect(addr).to.equal(company.address);
 
-      // event emitted
+      // events emitted
       let eventId = [...receipt.events.keys()].filter(
         (id) => receipt.events[id].event === "LogAddOrganization"
       );
+      const { orgId: eventOrgId } = { ...receipt.events[eventId[0]].args };
+      expect(eventOrgId).to.equal(ethers.BigNumber.from(0));
+
+      eventId = [...receipt.events.keys()].filter(
+        (id) => receipt.events[id].event === "OwnershipTransferred"
+      );
       expect(eventId).to.have.lengthOf(1);
+      const { newOwner } = { ...receipt.events[eventId[0]].args };
+      expect(newOwner).to.equal(this.appraiser.address);
+    });
+
+    it(`Should emit events`, async function () {
+      const company = {
+        name: "McDonalds",
+        symbol: "MCD",
+        address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+      };
+      const tx = await this.appraiser.addOrganization(
+        company.name,
+        company.symbol,
+        company.address
+      );
+      const receipt = await tx.wait();
+
+      // events emitted
+      await expect(tx).to.emit(this.appraiser, `LogAddOrganization`);
+      await expect(tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
+
+      let eventId = [...receipt.events.keys()].filter(
+        (id) => receipt.events[id].event === "LogAddOrganization"
+      );
       const { orgId: eventOrgId } = { ...receipt.events[eventId[0]].args };
       expect(eventOrgId).to.equal(ethers.BigNumber.from(0));
 
@@ -99,10 +130,6 @@ const shouldManageOrgs = () => {
           )
         ).to.be.revertedWith(`DuplicateOrgAddr`);
       });
-
-      // should deploy an ERC 721 contract
-      //
-      // save a new review for a
     });
   });
 };

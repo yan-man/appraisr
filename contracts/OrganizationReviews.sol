@@ -10,13 +10,24 @@ import "hardhat/console.sol";
 
 contract OrganizationReviews is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
+
+    struct Review {
+        uint256 rating;
+        string review;
+    }
+
     Counters.Counter private _reviewIds;
 
     constructor(string memory name_, string memory symbol_)
         ERC721(name_, symbol_)
     {}
 
-    function mintNFT(address player_, string memory tokenURI_) public {
+    function mintNFT(
+        address player_,
+        string memory tokenURI_,
+        uint256 rating,
+        string memory review
+    ) public {
         uint256 newItemId = _reviewIds.current();
         _safeMint(player_, newItemId);
         _setTokenURI(newItemId, tokenURI_);
