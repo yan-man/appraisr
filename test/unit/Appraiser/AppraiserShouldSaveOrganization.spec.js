@@ -72,7 +72,7 @@ const shouldManageOrgs = () => {
           this.eventArgs.orgReviewsContract
         );
       });
-      it(`Should throw error on duplicate org name`, async function () {
+      it(`Should throw DuplicateOrgName error on duplicate org name`, async function () {
         await expect(
           this.appraiser.addOrganization(
             this.company.name,
@@ -81,6 +81,25 @@ const shouldManageOrgs = () => {
           )
         ).to.be.revertedWith(`DuplicateOrgName`);
       });
+      it(`Should throw DuplicateOrgSymbol error on duplicate org symbol`, async function () {
+        await expect(
+          this.appraiser.addOrganization(
+            `${this.company.name}1`,
+            this.company.symbol,
+            this.company.address
+          )
+        ).to.be.revertedWith(`DuplicateOrgSymbol`);
+      });
+      it(`Should throw DuplicateOrgAddr error on duplicate org addr`, async function () {
+        await expect(
+          this.appraiser.addOrganization(
+            `${this.company.name}1`,
+            `${this.company.symbol}1`,
+            this.company.address
+          )
+        ).to.be.revertedWith(`DuplicateOrgAddr`);
+      });
+
       // should deploy an ERC 721 contract
       //
       // save a new review for a
