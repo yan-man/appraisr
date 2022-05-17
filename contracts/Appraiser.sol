@@ -5,7 +5,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-import "./OrganizationReviews.sol";
+import "./AppraiserOrganization.sol";
 
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
@@ -21,14 +21,14 @@ contract Appraiser is Ownable {
 
     // State Vars
     Organization[] public s_organizations;
-    mapping(uint256 => address) public orgReviewsContracts;
+    mapping(uint256 => address) public aoContracts;
     mapping(string => bool) private orgNames;
     mapping(string => bool) private orgSymbols;
     mapping(address => bool) private orgAddresses;
 
     // Events
     event LogAddOrganization(uint256 orgId);
-    event LogNFTContractDeployed(address orgReviewsContract);
+    event LogNFTContractDeployed(address aoContractAddress);
 
     // Errors
     error DuplicateOrgName();
@@ -73,20 +73,17 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployOrgReviewsNFTContract(newOrg);
+        deployNFTContract(newOrg);
 
         emit LogAddOrganization(orgId);
     }
 
-    function deployOrgReviewsNFTContract(Organization memory org) internal {
-        OrganizationReviews orgReview = new OrganizationReviews(
-            string(abi.encodePacked("appraiser-", org.name)),
-            string(abi.encodePacked("APRSR-", org.symbol))
-        );
-        address orgReviewAddress = address(orgReview);
-        orgReviewsContracts[org.orgId] = orgReviewAddress;
+    function deployNFTContract(Organization memory org) internal {
+        AppraiserOrganization ao = new AppraiserOrganization("URI");
+        address aoAddress = address(ao);
+        aoContracts[org.orgId] = aoAddress;
 
-        emit LogNFTContractDeployed(orgReviewAddress);
+        emit LogNFTContractDeployed(aoAddress);
     }
 
     function currentOrgId() public view returns (uint256) {
