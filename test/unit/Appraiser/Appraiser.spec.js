@@ -1,12 +1,20 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
+const shouldDeploy = () => {
+  context(`#deploy contract`, async function () {
+    it("*Happy Path: Should set the right owner", async function () {
+      expect(await this.appraiser.owner()).to.equal(this.addrs[0].address);
+    });
+  });
+};
+
 const shouldManageOrgs = () => {
-  context(`#save new organization`, async function () {
-    describe("...After new org saved", async () => {
+  context(`#manage organizations`, async function () {
+    describe("...save new orgs", async () => {
       it(`Should save new organization`, async function () {
         const company = {
-          name: "McDonalds",
+          name: "WacArnolds",
           address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
         };
         const tx = await this.appraiser.addOrganization(
@@ -38,7 +46,7 @@ const shouldManageOrgs = () => {
 
       it(`Should emit events`, async function () {
         const company = {
-          name: "McDonalds",
+          name: "WacArnolds",
           address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
         };
         const tx = await this.appraiser.addOrganization(
@@ -68,7 +76,7 @@ const shouldManageOrgs = () => {
       describe("...After new org saved", async () => {
         beforeEach(async function () {
           this.company = {
-            name: "McDonalds",
+            name: "WacArnolds",
             address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
           };
           this.tx = await this.appraiser.addOrganization(
@@ -117,4 +125,45 @@ const shouldManageOrgs = () => {
   });
 };
 
-module.exports = { shouldManageOrgs };
+const shouldManageReviews = () => {
+  context(`#manage reviews`, async function () {
+    describe("...After new org exists", async () => {
+      beforeEach(async function () {
+        this.company = {
+          name: "WacArnolds",
+          address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+        };
+        this.tx = await this.appraiser.addOrganization(
+          this.company.name,
+          this.company.address
+        );
+        this.receipt = await this.tx.wait();
+        const eventId = [...this.receipt.events.keys()].filter(
+          (id) => this.receipt.events[id].event === "LogAddOrganization"
+        );
+        const { orgId } = {
+          ...this.receipt.events[eventId[0]].args,
+        };
+        this.orgId = orgId;
+      });
+      it(`should not allow a review for non-valid org`, async function () {
+        await expect(
+          this.appraiser.mintReview(
+            this.orgId.toNumber() + 1,
+            50,
+            "test review"
+          )
+        ).to.be.revertedWith(`InvalidOrgId`);
+      });
+      it(`should save a new review for an existing org`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+      });
+    });
+  });
+};
+
+module.exports = { shouldDeploy, shouldManageOrgs, shouldManageReviews };

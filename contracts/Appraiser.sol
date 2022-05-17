@@ -16,11 +16,13 @@ contract Appraiser is Ownable {
         uint256 orgId;
         string name;
         address addr;
+        bool isActive;
+        bool isCreated;
     }
 
     // State Vars
     Organization[] public s_organizations;
-    mapping(uint256 => address) public aoContracts;
+    mapping(uint256 => AppraiserOrganization) public aoContracts;
     mapping(string => bool) private orgNames;
     mapping(address => bool) private orgAddresses;
 
@@ -31,9 +33,10 @@ contract Appraiser is Ownable {
     // Errors
     error DuplicateOrgName();
     error DuplicateOrgAddr();
+    error InvalidOrgId();
 
     // Modifiers
-    modifier uniqueOrg(string memory name_, address addr_) {
+    modifier isUniqueOrg(string memory name_, address addr_) {
         if (orgNames[name_]) {
             revert DuplicateOrgName();
         }
@@ -43,17 +46,26 @@ contract Appraiser is Ownable {
         _;
     }
 
+    modifier isValidOrgId(uint256 orgId_) {
+        if (address(aoContracts[orgId_]) == address(0)) {
+            revert InvalidOrgId();
+        }
+        _;
+    }
+
     constructor() {}
 
     function addOrganization(string memory name_, address addr_)
         public
-        uniqueOrg(name_, addr_)
+        isUniqueOrg(name_, addr_)
     {
         uint orgId = orgIds.current();
         Organization memory newOrg = Organization({
             orgId: orgId,
             name: name_,
-            addr: addr_
+            addr: addr_,
+            isActive: true,
+            isCreated: true
         });
         s_organizations.push(newOrg);
         orgNames[name_] = true;
@@ -66,11 +78,19 @@ contract Appraiser is Ownable {
     }
 
     function deployNFTContract(Organization memory org) internal {
-        AppraiserOrganization ao = new AppraiserOrganization("URI");
-        address aoAddress = address(ao);
-        aoContracts[org.orgId] = aoAddress;
+        AppraiserOrganization _ao = new AppraiserOrganization("URI");
+        aoContracts[org.orgId] = _ao;
 
-        emit LogNFTContractDeployed(aoAddress);
+        emit LogNFTContractDeployed(address(_ao));
+    }
+
+    function mintReview(
+        uint256 orgId_,
+        uint256 rating_,
+        string memory review_
+    ) external isValidOrgId(orgId_) {
+        AppraiserOrganization _ao = aoContracts[orgId_];
+        _ao.mintReviewNFT(msg.sender, rating_, review_);
     }
 
     function currentOrgId() public view returns (uint256) {

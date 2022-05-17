@@ -1,9 +1,10 @@
 const { expect } = require("chai");
 const { ethers, waffle } = require("hardhat");
-const { shouldDeploy } = require("./Appraiser/AppraiserShouldDeploy.spec");
 const {
+  shouldDeploy,
   shouldManageOrgs,
-} = require("./Appraiser/AppraiserShouldSaveOrganization.spec");
+  shouldManageReviews,
+} = require("./Appraiser/Appraiser.spec");
 
 describe("Unit tests", async () => {
   // describe(`REPToken`, async () => {
@@ -32,6 +33,6 @@ describe("Unit tests", async () => {
     });
     shouldDeploy();
     shouldManageOrgs();
-    // shouldManageReviews();
+    shouldManageReviews();
   });
 });
