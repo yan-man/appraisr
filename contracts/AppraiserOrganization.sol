@@ -16,16 +16,20 @@ contract AppraiserOrganization is ERC1155, Ownable {
         string review;
     }
 
+    uint256 public constant VERIFIER = 0;
     Counters.Counter private _reviewIds;
 
-    constructor(string memory URI_) ERC1155(URI_) {}
+    constructor(string memory URI_) ERC1155(URI_) {
+        // _mint(msg.sender, VERIFIER, 10**3, "");
+        _reviewIds.increment();
+    }
 
-    // address player_,
-    // string memory tokenURI_,
-    // uint256 rating,
-    // string memory review
-    function mintNFT() public {
-        // uint256 newItemId = _reviewIds.current();
-        _mint(msg.sender, 1, 10**18, "");
+    function mintReview(
+        address player_,
+        uint256 rating_,
+        string memory review_
+    ) public {
+        uint256 _reviewId = _reviewIds.current();
+        // _mint(player_, _reviewId, 1, "");
     }
 }
