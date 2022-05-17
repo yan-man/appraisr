@@ -16,14 +16,10 @@ contract OrganizationReviews is ERC721URIStorage, Ownable {
         ERC721(name_, symbol_)
     {}
 
-    function mintNFT(address player_, string memory tokenURI_)
-        public
-        returns (uint256)
-    {
-        // uint256 newItemId = _reviewIds.current();
-        // _safeMint(player_, newItemId);
-        // _setTokenURI(newItemId, tokenURI_);
-        // _tokenIds.increment();
-        // return newItemId;
+    function mintNFT(address player_, string memory tokenURI_) public {
+        uint256 newItemId = _reviewIds.current();
+        _safeMint(player_, newItemId);
+        _setTokenURI(newItemId, tokenURI_);
+        _reviewIds.increment();
     }
 }

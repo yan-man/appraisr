@@ -14,36 +14,79 @@ contract Appraiser is Ownable {
     // Structs
     struct Organization {
         uint256 orgId;
-        string companyName;
-        address businessAddress;
+        string name;
+        string symbol;
+        address addr;
     }
 
     // State Vars
-
     Organization[] public s_organizations;
+    mapping(uint256 => address) public orgReviewsContracts;
+    mapping(string => bool) private orgNames;
+    mapping(string => bool) private orgSymbols;
+    mapping(address => bool) private orgAddresses;
 
     // Events
-    event LogAddOrg(uint256 orgId);
+    event LogAddOrganization(uint256 orgId);
+    event LogNFTContractDeployed(address orgReviewsContract);
 
     // Errors
+    error DuplicateOrgName();
+    error DuplicateOrgSymbol();
+    error DuplicateOrgAddr();
 
     // Modifiers
+    modifier uniqueOrg(
+        string memory name_,
+        string memory symbol_,
+        address addr_
+    ) {
+        if (orgNames[name_]) {
+            revert DuplicateOrgName();
+        }
+        if (orgSymbols[symbol_]) {
+            revert DuplicateOrgSymbol();
+        }
+        if (orgAddresses[addr_]) {
+            revert DuplicateOrgAddr();
+        }
+        _;
+    }
+
     constructor() {}
 
     function addOrganization(
-        string calldata companyName_,
-        address businessAddress_
-    ) public {
+        string memory name_,
+        string memory symbol_,
+        address addr_
+    ) public uniqueOrg(name_, symbol_, addr_) {
         uint orgId = orgIds.current();
         Organization memory newOrg = Organization({
             orgId: orgId,
-            companyName: companyName_,
-            businessAddress: businessAddress_
+            name: name_,
+            symbol: symbol_,
+            addr: addr_
         });
         s_organizations.push(newOrg);
+        orgNames[name_] = true;
+        orgSymbols[symbol_] = true;
+        orgAddresses[addr_] = true;
         orgIds.increment();
 
-        emit LogAddOrg(orgId);
+        deployOrgReviewsNFTContract(newOrg);
+
+        emit LogAddOrganization(orgId);
+    }
+
+    function deployOrgReviewsNFTContract(Organization memory org) internal {
+        OrganizationReviews orgReview = new OrganizationReviews(
+            string(abi.encodePacked("appraiser-", org.name)),
+            string(abi.encodePacked("APRSR-", org.symbol))
+        );
+        address orgReviewAddress = address(orgReview);
+        orgReviewsContracts[org.orgId] = orgReviewAddress;
+
+        emit LogNFTContractDeployed(orgReviewAddress);
     }
 
     function currentOrgId() public view returns (uint256) {
