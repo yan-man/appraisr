@@ -30,7 +30,7 @@ contract Verifier is ERC1155, Ownable {
         orgId = orgId_;
         _mint(msg.sender, VERIFIER, 10**3, "");
         _reviewIds.increment();
-        setApprovalForAll(address(this), true);
+        // setApprovalForAll(address(this), true);
     }
 
     function safeTransferFrom(

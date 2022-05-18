@@ -13,15 +13,6 @@ const shouldDeploy = () => {
         this.constructorParams[1]
       );
     });
-    // it("Should mint default VERIFIER NFTs and send them to owner", async function () {
-    //   const verifier = await this.appraiserOrganization.VERIFIER();
-    //   expect(
-    //     await this.appraiserOrganization.balanceOf(
-    //       this.signers[0].address,
-    //       verifier
-    //     )
-    //   ).to.equal(Math.pow(10, 3));
-    // });
   });
 };
 

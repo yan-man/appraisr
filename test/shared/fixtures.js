@@ -16,8 +16,9 @@ const unitAppraiserFixture = async (signers) => {
   const mockAppraiserOrganization = await deployMockAppraiserOrganization(
     deployer
   );
+  const mockVerifier = await deployMockVerifier(deployer);
 
-  return { appraiser, mockAppraiserOrganization };
+  return { appraiser, mockAppraiserOrganization, mockVerifier };
 };
 
 const unitAppraiserOrganizationFixture = async (signers) => {
@@ -32,7 +33,9 @@ const unitAppraiserOrganizationFixture = async (signers) => {
     .deploy(constructorParams[0], constructorParams[1]);
   await appraiserOrganization.deployed();
 
-  return { appraiserOrganization, constructorParams };
+  const mockVerifier = await deployMockVerifier(deployer);
+
+  return { appraiserOrganization, constructorParams, mockVerifier };
 };
 
 module.exports = { unitAppraiserFixture, unitAppraiserOrganizationFixture };

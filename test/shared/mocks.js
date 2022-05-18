@@ -13,6 +13,7 @@ async function deployMockAppraiserOrganization(deployer) {
 
 async function deployMockVerifier(deployer) {
   const verifier = await waffle.deployMockContract(deployer, Verifier_ABI.abi);
+  await verifier.mock.balanceOf.returns(24);
 
   return verifier;
 }

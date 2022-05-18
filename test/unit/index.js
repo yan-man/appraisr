@@ -13,29 +13,29 @@ describe("Unit tests", async () => {
     this.loadFixture = waffle.createFixtureLoader(wallets);
 
     this.signers = await ethers.getSigners();
+    this.mocks = {};
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
-      const { appraiser, mockAppraiserOrganization } = await this.loadFixture(
-        unitAppraiserFixture
-      );
+      const { appraiser, mockAppraiserOrganization, mockVerifier } =
+        await this.loadFixture(unitAppraiserFixture);
 
       this.appraiser = appraiser;
-
-      this.mocks = {};
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+      this.mocks.mockVerifier = mockVerifier;
     });
-    // Appraiser.shouldDeploy();
-    // Appraiser.shouldManageOrgs();
-    // Appraiser.shouldManageReviews();
-    // Appraiser.shouldManageReviewsRatings();
+    Appraiser.shouldDeploy();
+    Appraiser.shouldManageOrgs();
+    Appraiser.shouldManageReviews();
+    Appraiser.shouldManageReviewsRatings();
   });
   describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
-      const { appraiserOrganization, constructorParams } =
+      const { appraiserOrganization, constructorParams, mockVerifier } =
         await this.loadFixture(unitAppraiserOrganizationFixture);
       this.appraiserOrganization = appraiserOrganization;
       this.constructorParams = constructorParams;
+      this.mocks.mockVerifier = mockVerifier;
     });
     AppraiserOrganization.shouldDeploy();
     AppraiserOrganization.shouldMintReviewNFT();

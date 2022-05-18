@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "./Verifier.sol";
+
 contract AppraiserOrganization is ERC1155, Ownable {
     using Counters for Counters.Counter;
 
@@ -20,6 +22,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // state vars
     uint256 orgId;
+    mapping(uint256 => Verifier) public s_vContracts; // orgId -> deployed AO contract
     mapping(uint256 => Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => address[]) s_upvotes; // reviewId -> [voting addresses]
     mapping(uint256 => address[]) s_downvotes; // reviewId -> [voting addresses]
@@ -28,6 +31,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
+    event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // errors
     error InvalidRating();
@@ -43,7 +47,16 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     constructor(uint256 orgId_, string memory URI_) ERC1155(URI_) {
         orgId = orgId_;
-        _reviewIds.increment();
+        deployVerifierNFTContract(orgId, URI_);
+    }
+
+    function deployVerifierNFTContract(uint256 _orgId, string memory URI_)
+        internal
+    {
+        Verifier _verifier = new Verifier(_orgId, URI_);
+        s_vContracts[_orgId] = _verifier;
+
+        emit LogVerifierNFTContractDeployed(address(_verifier));
     }
 
     function mintReviewNFT(
