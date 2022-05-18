@@ -104,17 +104,13 @@ const shouldManageOrgs = () => {
             this.eventArgs.aoContractAddress
           );
         });
-        it.only(`Should throw DuplicateOrgName error on duplicate org name`, async function () {
-          await this.appraiser.addOrganization(
-            this.company.name,
-            this.company.address
-          );
-          // await expect(
-          //   this.appraiser.addOrganization(
-          //     this.company.name,
-          //     this.company.address
-          //   )
-          // ).to.be.revertedWith(`DuplicateOrgName`);
+        it(`Should throw DuplicateOrgName error on duplicate org name`, async function () {
+          await expect(
+            this.appraiser.addOrganization(
+              this.company.name,
+              this.company.address
+            )
+          ).to.be.revertedWith(`DuplicateOrgName`);
         });
         it(`Should throw DuplicateOrgAddr error on duplicate org addr`, async function () {
           await expect(
