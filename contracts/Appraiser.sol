@@ -77,7 +77,7 @@ contract Appraiser is Ownable {
         string calldata name_,
         address addr_,
         string calldata URI_
-    ) public isUniqueOrg(name_, addr_) {
+    ) public isUniqueOrg(name_, addr_) onlyOwner {
         uint orgId = orgIds.current();
         Organizations.Organization memory newOrg = Organizations.Organization({
             orgId: orgId,
@@ -95,7 +95,7 @@ contract Appraiser is Ownable {
         emit LogAddOrganization(orgId);
     }
 
-    function deployNFTContract(uint256 _orgId, URI_) internal {
+    function deployNFTContract(uint256 _orgId, string calldata URI_) internal {
         AppraiserOrganization _ao = new AppraiserOrganization(URI_);
         aoContracts[_orgId] = _ao;
 

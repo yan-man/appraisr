@@ -12,78 +12,52 @@ const shouldDeploy = () => {
 const shouldManageOrgs = () => {
   context(`# manage organizations`, async function () {
     describe("...save new orgs", async () => {
-      it(`Should save new organization`, async function () {
-        const company = {
+      beforeEach(`save new org`, async function () {
+        this.company = {
           name: "WacArnolds",
           address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+          URI: "testURI",
         };
-        const tx = await this.appraiser.addOrganization(
-          company.name,
-          company.address
+        this.tx = await this.appraiser.addOrganization(
+          this.company.name,
+          this.company.address,
+          this.company.URI
         );
 
-        const receipt = await tx.wait();
+        this.receipt = await this.tx.wait();
+      });
+
+      it(`Should update state vars after saving new organization`, async function () {
         const { orgId, name, addr } = await this.appraiser.s_organizations(0);
 
         expect(orgId).to.equal(ethers.BigNumber.from(0));
-        expect(name).to.equal(company.name);
-        expect(addr).to.equal(company.address);
-
-        // events emitted
-        let eventId = [...receipt.events.keys()].filter(
-          (id) => receipt.events[id].event === "LogAddOrganization"
-        );
-        const { orgId: eventOrgId } = { ...receipt.events[eventId[0]].args };
-        expect(eventOrgId).to.equal(ethers.BigNumber.from(0));
-
-        eventId = [...receipt.events.keys()].filter(
-          (id) => receipt.events[id].event === "OwnershipTransferred"
-        );
-        expect(eventId).to.have.lengthOf(1);
-        const { newOwner } = { ...receipt.events[eventId[0]].args };
-        expect(newOwner).to.equal(this.appraiser.address);
+        expect(name).to.equal(this.company.name);
+        expect(addr).to.equal(this.company.address);
       });
 
-      it(`Should emit events`, async function () {
-        const company = {
-          name: "WacArnolds",
-          address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-        };
-        const tx = await this.appraiser.addOrganization(
-          company.name,
-          company.address
-        );
-        const receipt = await tx.wait();
-
+      it(`Should emit events when new organization saved`, async function () {
         // events emitted
-        await expect(tx).to.emit(this.appraiser, `LogAddOrganization`);
-        await expect(tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
+        await expect(this.tx).to.emit(this.appraiser, `LogAddOrganization`);
+        await expect(this.tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
 
-        let eventId = [...receipt.events.keys()].filter(
-          (id) => receipt.events[id].event === "LogAddOrganization"
+        let eventId = [...this.receipt.events.keys()].filter(
+          (id) => this.receipt.events[id].event === "LogAddOrganization"
         );
-        const { orgId: eventOrgId } = { ...receipt.events[eventId[0]].args };
+        const { orgId: eventOrgId } = {
+          ...this.receipt.events[eventId[0]].args,
+        };
         expect(eventOrgId).to.equal(ethers.BigNumber.from(0));
 
-        eventId = [...receipt.events.keys()].filter(
-          (id) => receipt.events[id].event === "OwnershipTransferred"
+        eventId = [...this.receipt.events.keys()].filter(
+          (id) => this.receipt.events[id].event === "OwnershipTransferred"
         );
         expect(eventId).to.have.lengthOf(1);
-        const { newOwner } = { ...receipt.events[eventId[0]].args };
+        const { newOwner } = { ...this.receipt.events[eventId[0]].args };
         expect(newOwner).to.equal(this.appraiser.address);
       });
 
       describe("...After new org saved", async () => {
         beforeEach(async function () {
-          this.company = {
-            name: "WacArnolds",
-            address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-          };
-          this.tx = await this.appraiser.addOrganization(
-            this.company.name,
-            this.company.address
-          );
-          this.receipt = await this.tx.wait();
           eventId = [...this.receipt.events.keys()].filter(
             (id) => this.receipt.events[id].event === "LogNFTContractDeployed"
           )[0];
@@ -108,7 +82,8 @@ const shouldManageOrgs = () => {
           await expect(
             this.appraiser.addOrganization(
               this.company.name,
-              this.company.address
+              this.company.address,
+              this.company.URI
             )
           ).to.be.revertedWith(`DuplicateOrgName`);
         });
@@ -116,7 +91,8 @@ const shouldManageOrgs = () => {
           await expect(
             this.appraiser.addOrganization(
               `${this.company.name}1`,
-              this.company.address
+              this.company.address,
+              this.company.URI
             )
           ).to.be.revertedWith(`DuplicateOrgAddr`);
         });
@@ -124,7 +100,8 @@ const shouldManageOrgs = () => {
         it(`should save second org`, async function () {
           const tx = await this.appraiser.addOrganization(
             "KFC",
-            "0xBcd4042DE499D14e55001CcbB24a551F3b954096"
+            "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
+            "KFCURI"
           );
           const receipt = await tx.wait();
           const eventId = [...receipt.events.keys()].filter(
@@ -140,7 +117,8 @@ const shouldManageOrgs = () => {
         it(`should emit events after second org saved`, async function () {
           const tx = await this.appraiser.addOrganization(
             "KFC",
-            "0xBcd4042DE499D14e55001CcbB24a551F3b954096"
+            "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
+            "KFCURI"
           );
           const receipt = await tx.wait();
 
@@ -161,10 +139,12 @@ const shouldManageReviews = () => {
         this.company = {
           name: "WacArnolds",
           address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+          URI: "testURI",
         };
         this.tx = await this.appraiser.addOrganization(
           this.company.name,
-          this.company.address
+          this.company.address,
+          this.company.URI
         );
         this.receipt = await this.tx.wait();
         const eventId = [...this.receipt.events.keys()].filter(
@@ -273,7 +253,8 @@ const shouldManageReviews = () => {
             beforeEach(async function () {
               const tx = await this.appraiser.addOrganization(
                 "KFC",
-                "0xBcd4042DE499D14e55001CcbB24a551F3b954096"
+                "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
+                "KFCURI"
               );
               const receipt = await tx.wait();
               const eventId = [...receipt.events.keys()].filter(
@@ -328,10 +309,12 @@ const shouldManageReviewsRatings = () => {
         this.company = {
           name: "WacArnolds",
           address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+          URI: "testURI",
         };
         this.tx = await this.appraiser.addOrganization(
           this.company.name,
-          this.company.address
+          this.company.address,
+          this.company.URI
         );
         this.receipt = await this.tx.wait();
         const eventId = [...this.receipt.events.keys()].filter(
