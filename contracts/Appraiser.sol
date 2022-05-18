@@ -6,39 +6,26 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./AppraiserOrganization.sol";
+import "./Organizations.sol";
+import "./Users.sol";
+import "./Reviews.sol";
 
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
+    using Organizations for Organizations.Organization;
+    using Users for Users.User;
+    using Reviews for Reviews.Review;
     Counters.Counter public orgIds;
 
     // Structs
-    struct Organization {
-        uint256 orgId;
-        string name;
-        address addr;
-        bool isActive;
-        bool isCreated;
-    }
-
-    struct User {
-        uint256 reputation;
-        bool isRegistered;
-    }
-
-    struct Review {
-        uint256 rating;
-        string review;
-        uint256 upvotes;
-        uint256 downvotes;
-    }
 
     // State Vars
-    Organization[] public s_organizations;
+    Organizations.Organization[] public s_organizations;
     mapping(uint256 => AppraiserOrganization) public aoContracts;
     mapping(string => bool) private orgNames;
     mapping(address => bool) private orgAddresses;
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
-    mapping(address => User) public users;
+    mapping(address => Users.User) public users;
 
     // Events
     event LogAddOrganization(uint256 orgId);
@@ -53,7 +40,7 @@ contract Appraiser is Ownable {
     error UserExists();
 
     // Modifiers
-    modifier isUniqueOrg(string memory name_, address addr_) {
+    modifier isUniqueOrg(string calldata name_, address addr_) {
         if (orgNames[name_]) {
             revert DuplicateOrgName();
         }
@@ -79,12 +66,12 @@ contract Appraiser is Ownable {
 
     constructor() {}
 
-    function addOrganization(string memory name_, address addr_)
+    function addOrganization(string calldata name_, address addr_)
         public
         isUniqueOrg(name_, addr_)
     {
         uint orgId = orgIds.current();
-        Organization memory newOrg = Organization({
+        Organizations.Organization memory newOrg = Organizations.Organization({
             orgId: orgId,
             name: name_,
             addr: addr_,
@@ -96,13 +83,13 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployNFTContract(newOrg);
+        deployNFTContract(orgId);
         emit LogAddOrganization(orgId);
     }
 
-    function deployNFTContract(Organization memory org) internal {
+    function deployNFTContract(uint256 _orgId) internal {
         AppraiserOrganization _ao = new AppraiserOrganization("URI");
-        aoContracts[org.orgId] = _ao;
+        aoContracts[_orgId] = _ao;
 
         emit LogNFTContractDeployed(address(_ao));
     }
@@ -118,7 +105,7 @@ contract Appraiser is Ownable {
     function mintReview(
         uint256 orgId_,
         uint256 rating_,
-        string memory review_
+        string calldata review_
     ) external isValidOrgId(orgId_) {
         uint256 _reviewId = aoContracts[orgId_].mintReviewNFT(
             msg.sender,
@@ -131,8 +118,7 @@ contract Appraiser is Ownable {
     }
 
     function addUser(address addr_) private isNewUser(addr_) {
-        User memory newUser = User({reputation: 0, isRegistered: true});
-        users[addr_] = newUser;
+        users[addr_] = Users.User({reputation: 0, isRegistered: true});
         emit LogNewUser(addr_);
     }
 
@@ -143,7 +129,7 @@ contract Appraiser is Ownable {
     ) external {
         // update AO: update review rating
         // update user's reputation
-        User memory _reviewUser = users[s_reviews[orgId_][reviewId_]];
+        Users.User storage _reviewUser = users[s_reviews[orgId_][reviewId_]];
         if (isUpvote_ == true) {
             _reviewUser.reputation += 1;
         } else {
