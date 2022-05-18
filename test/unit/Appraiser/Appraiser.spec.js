@@ -238,7 +238,7 @@ const shouldManageReviews = () => {
             ).to.equal(this.signers[0].address);
           });
 
-          it(`should create new user`, async function () {
+          it(`should create new user when user1's first review is minted`, async function () {
             const { upvotes, downvotes, isRegistered } =
               await this.appraiser.users(this.signers[0].address);
             expect(upvotes).to.equal(ethers.BigNumber.from(0));
@@ -285,7 +285,7 @@ const shouldManageReviews = () => {
 
               this.orgId2 = orgId;
             });
-            it(`should save new review if existing user adds review to org2`, async function () {
+            it(`should save new review if existing user1 adds review to org2`, async function () {
               const tx = await this.appraiser.mintReview(
                 this.orgId.toNumber(),
                 50,
@@ -299,7 +299,7 @@ const shouldManageReviews = () => {
               );
               await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
             });
-            it(`should not emit LogNewUser event if existing user adds review to org2`, async function () {
+            it(`should not emit LogNewUser event if existing user1 adds review to org2`, async function () {
               const tx = await this.appraiser.mintReview(
                 this.orgId.toNumber(),
                 50,

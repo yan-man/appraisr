@@ -42,7 +42,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     constructor(string memory URI_) ERC1155(URI_) {
         _mint(msg.sender, VERIFIER, 10**3, "");
-        _reviewIds.increment();
     }
 
     function mintReviewNFT(
