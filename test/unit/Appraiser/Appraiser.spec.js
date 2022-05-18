@@ -253,47 +253,135 @@ const shouldManageReviews = () => {
 };
 
 const shouldManageReviewsRatings = () => {
-  // context(`# manage reviews`, async function () {
-  //   describe("...After new org exists", async () => {
-  //     beforeEach(async function () {
-  //       this.company = {
-  //         name: "WacArnolds",
-  //         address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-  //       };
-  //       this.tx = await this.appraiser.addOrganization(
-  //         this.company.name,
-  //         this.company.address
-  //       );
-  //       this.receipt = await this.tx.wait();
-  //       const eventId = [...this.receipt.events.keys()].filter(
-  //         (id) => this.receipt.events[id].event === "LogAddOrganization"
-  //       );
-  //       const { orgId } = {
-  //         ...this.receipt.events[eventId[0]].args,
-  //       };
-  //       this.orgId = orgId;
-  //       this.mockedResponses = {
-  //         mintReviewNFT: 100,
-  //       };
-  //       await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
-  //         this.mockedResponses.mintReviewNFT
-  //       );
-  //       const tx = await this.appraiser.setAOContractAddress(
-  //         this.orgId.toNumber(),
-  //         this.mocks.mockAppraiserOrganization.address
-  //       );
-  //       await tx.wait();
-  //     });
-  //     it.only(`user2 should be able to upvote review from user1`, async function () {
-  //       // expect(1).to.equal(1);
-  //       console.log(
-  //         await this.appraiser
-  //           .connect(this.signers[1])
-  //           .rateReview(this.orgId, this.mockedResponses.mintReviewNFT, true)
-  //       );
-  //     });
-  //   });
-  // });
+  context(`# manage reviews`, async function () {
+    describe("...After new org exists", async () => {
+      beforeEach(async function () {
+        this.company = {
+          name: "WacArnolds",
+          address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+        };
+        this.tx = await this.appraiser.addOrganization(
+          this.company.name,
+          this.company.address
+        );
+        this.receipt = await this.tx.wait();
+        const eventId = [...this.receipt.events.keys()].filter(
+          (id) => this.receipt.events[id].event === "LogAddOrganization"
+        );
+        const { orgId } = {
+          ...this.receipt.events[eventId[0]].args,
+        };
+        this.orgId = orgId;
+        this.mockedResponses = {
+          mintReviewNFT: 100,
+          voteOnReview: 2,
+        };
+        await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+          this.mockedResponses.mintReviewNFT
+        );
+        await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns(
+          this.mockedResponses.voteOnReview
+        );
+        const tx = await this.appraiser.setAOContractAddress(
+          this.orgId.toNumber(),
+          this.mocks.mockAppraiserOrganization.address
+        );
+        await tx.wait();
+      });
+
+      it(`should revert if org doesn't exist`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+        await tx.wait();
+        await expect(
+          this.appraiser.connect(this.signers[1]).voteOnReview(5, 5, true)
+        ).to.be.revertedWith(`InvalidOrgId`);
+      });
+
+      it(`should revert if review doesn't exist`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+        await tx.wait();
+        await expect(
+          this.appraiser
+            .connect(this.signers[1])
+            .voteOnReview(this.orgId, 5, true)
+        ).to.be.revertedWith(`InvalidReview`);
+      });
+
+      it(`should revert if user tries to upvote own review`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+        await tx.wait();
+
+        await expect(
+          this.appraiser.voteOnReview(
+            this.orgId,
+            this.mockedResponses.mintReviewNFT,
+            true
+          )
+        ).to.be.revertedWith(`ReviewerMatchesAuthor`);
+      });
+
+      it(`should revert if user tries to downvote own review`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+        await tx.wait();
+        await expect(
+          this.appraiser.voteOnReview(
+            this.orgId,
+            this.mockedResponses.mintReviewNFT,
+            true
+          )
+        ).to.be.revertedWith(`ReviewerMatchesAuthor`);
+      });
+
+      it(`should update user1 rep when user2 upvotes user1's review`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+        await tx.wait();
+        const tx2 = await this.appraiser
+          .connect(this.signers[1])
+          .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, true);
+        await tx2.wait();
+
+        const { reputation } = await this.appraiser.users(
+          this.signers[0].address
+        );
+
+        expect(reputation).to.equal(ethers.BigNumber.from(1));
+      });
+
+      it(`should emit event when user2 upvotes user1's review`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+        await tx.wait();
+        const tx2 = await this.appraiser
+          .connect(this.signers[1])
+          .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, true);
+
+        await expect(tx2).to.emit(this.appraiser, `LogVoteOnReview`);
+      });
+    });
+  });
 };
 
 module.exports = {

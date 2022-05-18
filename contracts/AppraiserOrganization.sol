@@ -65,7 +65,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         return _reviewId;
     }
 
-    function rateReview(
+    function voteOnReview(
         address reviewer_,
         uint256 reviewId_,
         bool isUpvote_

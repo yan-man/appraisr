@@ -32,12 +32,15 @@ contract Appraiser is Ownable {
     event LogNFTContractDeployed(address aoContractAddress);
     event LogMintReview(uint256 reviewId);
     event LogNewUser(address addr);
+    event LogVoteOnReview(address voter, uint256 orgId, uint256 reviewId);
 
     // Errors
     error DuplicateOrgName();
     error DuplicateOrgAddr();
     error InvalidOrgId();
     error UserExists();
+    error ReviewerMatchesAuthor();
+    error InvalidReview();
 
     // Modifiers
     modifier isUniqueOrg(string calldata name_, address addr_) {
@@ -60,6 +63,17 @@ contract Appraiser is Ownable {
     modifier isNewUser(address addr_) {
         if (users[addr_].isRegistered == true) {
             revert UserExists();
+        }
+        _;
+    }
+
+    modifier isReviewerValid(uint256 orgId_, uint256 reviewId_) {
+        address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
+        if (_reviewAuthorAddr == address(0)) {
+            revert InvalidReview();
+        }
+        if (msg.sender == _reviewAuthorAddr) {
+            revert ReviewerMatchesAuthor();
         }
         _;
     }
@@ -122,11 +136,11 @@ contract Appraiser is Ownable {
         emit LogNewUser(addr_);
     }
 
-    function rateReview(
+    function voteOnReview(
         uint256 orgId_,
         uint256 reviewId_,
         bool isUpvote_
-    ) external {
+    ) external isValidOrgId(orgId_) isReviewerValid(orgId_, reviewId_) {
         // update AO: update review rating
         // update user's reputation
         Users.User storage _reviewUser = users[s_reviews[orgId_][reviewId_]];
@@ -136,7 +150,9 @@ contract Appraiser is Ownable {
             _reviewUser.reputation -= 1;
         }
         users[s_reviews[orgId_][reviewId_]].reputation = _reviewUser.reputation;
-        aoContracts[orgId_].rateReview(msg.sender, reviewId_, isUpvote_);
+        aoContracts[orgId_].voteOnReview(msg.sender, reviewId_, isUpvote_);
+
+        emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
     }
 
     function currentOrgId() public view returns (uint256) {
