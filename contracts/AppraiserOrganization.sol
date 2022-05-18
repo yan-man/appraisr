@@ -28,6 +28,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     Counters.Counter private _reviewIds;
 
     // events
+    event LogNFTReviewMinted(uint256 reviewId);
 
     // errors
     error InvalidRating();
@@ -42,6 +43,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     constructor(string memory URI_) ERC1155(URI_) {
         _mint(msg.sender, VERIFIER, 10**3, "");
+        _reviewIds.increment();
     }
 
     function mintReviewNFT(
@@ -49,8 +51,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
         uint256 rating_,
         string memory review_
     ) public isValidRating(rating_) returns (uint256) {
-        // save into review state var too
-        // emit NFT
         uint256 _reviewId = _reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
         Review memory review = Review({
@@ -61,6 +61,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
         });
         s_reviews[_reviewId] = review;
         _reviewIds.increment();
+
+        emit LogNFTReviewMinted(_reviewId);
+
         return _reviewId;
     }
 
@@ -78,5 +81,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
             _length = s_downvotes[reviewId_].length;
         }
         return _length;
+    }
+
+    function currentReviewId() external view returns (uint256) {
+        return _reviewIds.current();
     }
 }

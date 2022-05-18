@@ -17,4 +17,19 @@ const unitAppraiserFixture = async (signers) => {
   return { appraiser, mockAppraiserOrganization };
 };
 
-module.exports = { unitAppraiserFixture };
+const unitAppraiserOrganizationFixture = async (signers) => {
+  const deployer = signers[0];
+
+  const appraiserOrganizationFactory = await ethers.getContractFactory(
+    `AppraiserOrganization`
+  );
+  const constructorParams = "URI";
+  const appraiserOrganization = await appraiserOrganizationFactory
+    .connect(deployer)
+    .deploy(constructorParams);
+  await appraiserOrganization.deployed();
+
+  return { appraiserOrganization, constructorParams };
+};
+
+module.exports = { unitAppraiserFixture, unitAppraiserOrganizationFixture };

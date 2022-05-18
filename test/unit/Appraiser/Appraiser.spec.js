@@ -429,6 +429,8 @@ const shouldManageReviewsRatings = () => {
   });
 };
 
+// user can mint verified review NFTs
+
 module.exports = {
   shouldDeploy,
   shouldManageOrgs,

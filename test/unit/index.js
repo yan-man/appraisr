@@ -1,50 +1,45 @@
 const { expect } = require("chai");
-const { unitAppraiserFixture } = require("../shared/fixtures");
-const { ethers, waffle } = require("hardhat");
 const {
-  shouldDeploy,
-  shouldManageOrgs,
-  shouldManageReviews,
-  shouldManageReviewsRatings,
-} = require("./Appraiser/Appraiser.spec");
+  unitAppraiserFixture,
+  unitAppraiserOrganizationFixture,
+} = require("../shared/fixtures");
+const { ethers, waffle } = require("hardhat");
+const Appraiser = require("./Appraiser/Appraiser.spec");
+const AppraiserOrganization = require("./AppraiserOrganization/AppraiserOrganization.spec");
 
 describe("Unit tests", async () => {
-  // describe(`REPToken`, async () => {
+  before(async function () {
+    const wallets = waffle.provider.getWallets();
+    this.loadFixture = waffle.createFixtureLoader(wallets);
+
+    this.signers = await ethers.getSigners();
+  });
+  // describe(`Appraiser`, async () => {
   //   beforeEach(async function () {
-  //     const REPTokenFactory = await ethers.getContractFactory("REPToken");
-  //     const REPToken = await REPTokenFactory.deploy(1000, []);
-  //     await REPToken.deployed();
-  //     this.REPToken = REPToken;
-  //     this.addrs = await ethers.getSigners();
-  //   });
+  //     const { appraiser, mockAppraiserOrganization } = await this.loadFixture(
+  //       unitAppraiserFixture
+  //     );
 
-  //   context(`#deploy`, async function () {
-  //     it("*Happy Path: Should set the right owner", async function () {
-  //       console.log(await this.REPToken.name());
-  //       // expect(await this.REPToken.name()).to.equal(this.addrs[0].address);
-  //     });
+  //     this.appraiser = appraiser;
+
+  //     this.mocks = {};
+  //     this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
   //   });
+  //   Appraiser.shouldDeploy();
+  //   Appraiser.shouldManageOrgs();
+  //   Appraiser.shouldManageReviews();
+  //   Appraiser.shouldManageReviewsRatings();
   // });
-  describe(`Appraiser`, async () => {
-    before(async function () {
-      const wallets = waffle.provider.getWallets();
-      this.loadFixture = waffle.createFixtureLoader(wallets);
-    });
+  describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
-      const { appraiser, mockAppraiserOrganization } = await this.loadFixture(
-        unitAppraiserFixture
-      );
-
-      this.appraiser = appraiser;
-
-      this.mocks = {};
-      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
-
-      this.signers = await ethers.getSigners();
+      const { appraiserOrganization, constructorParams } =
+        await this.loadFixture(unitAppraiserOrganizationFixture);
+      this.appraiserOrganization = appraiserOrganization;
+      this.constructorParams = constructorParams;
     });
-    shouldDeploy();
-    shouldManageOrgs();
-    shouldManageReviews();
-    shouldManageReviewsRatings();
+    AppraiserOrganization.shouldDeploy();
+    AppraiserOrganization.shouldMintReviewNFT();
+    // shouldManageReviews();
+    // shouldManageReviewsRatings();
   });
 });
