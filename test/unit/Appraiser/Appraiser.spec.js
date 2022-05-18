@@ -249,4 +249,42 @@ const shouldManageReviews = () => {
   });
 };
 
+// const shouldManageReviewsRatings = () => {
+//   context(`# manage reviews`, async function () {
+//     describe("...After new org exists", async () => {
+//       beforeEach(async function () {
+//         this.company = {
+//           name: "WacArnolds",
+//           address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+//         };
+//         this.tx = await this.appraiser.addOrganization(
+//           this.company.name,
+//           this.company.address
+//         );
+//         this.receipt = await this.tx.wait();
+//         const eventId = [...this.receipt.events.keys()].filter(
+//           (id) => this.receipt.events[id].event === "LogAddOrganization"
+//         );
+//         const { orgId } = {
+//           ...this.receipt.events[eventId[0]].args,
+//         };
+//         this.orgId = orgId;
+
+//         this.mockedResponses = {
+//           mintReviewNFT: 100,
+//         };
+//         await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+//           this.mockedResponses.mintReviewNFT
+//         );
+
+//         const tx = await this.appraiser.setAOContractAddress(
+//           this.orgId.toNumber(),
+//           this.mocks.mockAppraiserOrganization.address
+//         );
+//         await tx.wait();
+//       });
+//     });
+//   });
+// };
+
 module.exports = { shouldDeploy, shouldManageOrgs, shouldManageReviews };
