@@ -200,12 +200,30 @@ const shouldManageReviews = () => {
               "test review"
             );
             await tx.wait();
-            expect(await this.appraiser.s_reviews(0, 0)).to.equal(
-              this.mockedResponses.mintReviewNFT
-            );
+            expect(
+              await this.appraiser.s_reviews(
+                0,
+                this.mockedResponses.mintReviewNFT
+              )
+            ).to.equal(this.signers[0].address);
           });
 
-          it(`should emit event`, async function () {
+          it(`should create new user`, async function () {
+            const tx = await this.appraiser.mintReview(
+              this.orgId.toNumber(),
+              50,
+              "test review"
+            );
+            await tx.wait();
+
+            const { reputation, isRegistered } = await this.appraiser.users(
+              this.signers[0].address
+            );
+            expect(reputation).to.equal(ethers.BigNumber.from(0));
+            expect(isRegistered).to.equal(true);
+          });
+
+          it(`should emit LogMintReview event`, async function () {
             const tx = await this.appraiser.mintReview(
               this.orgId.toNumber(),
               50,
@@ -213,6 +231,18 @@ const shouldManageReviews = () => {
             );
             await expect(tx).to.emit(this.appraiser, `LogMintReview`);
           });
+
+          it(`should emit LogNewUser event`, async function () {
+            const tx = await this.appraiser.mintReview(
+              this.orgId.toNumber(),
+              50,
+              "test review"
+            );
+            await expect(tx).to.emit(this.appraiser, `LogNewUser`);
+          });
+
+          // scenario: user creates second review
+          // test: if user already exists, don't create new user
         });
       });
     });

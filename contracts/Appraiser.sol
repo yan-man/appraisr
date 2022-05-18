@@ -20,22 +20,37 @@ contract Appraiser is Ownable {
         bool isCreated;
     }
 
+    struct User {
+        uint256 reputation;
+        bool isRegistered;
+    }
+
+    struct Review {
+        uint256 rating;
+        string review;
+        uint256 upvotes;
+        uint256 downvotes;
+    }
+
     // State Vars
     Organization[] public s_organizations;
     mapping(uint256 => AppraiserOrganization) public aoContracts;
     mapping(string => bool) private orgNames;
     mapping(address => bool) private orgAddresses;
-    mapping(uint256 => uint256[]) public s_reviews;
+    mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
+    mapping(address => User) public users;
 
     // Events
     event LogAddOrganization(uint256 orgId);
     event LogNFTContractDeployed(address aoContractAddress);
     event LogMintReview(uint256 reviewId);
+    event LogNewUser(address addr);
 
     // Errors
     error DuplicateOrgName();
     error DuplicateOrgAddr();
     error InvalidOrgId();
+    error UserExists();
 
     // Modifiers
     modifier isUniqueOrg(string memory name_, address addr_) {
@@ -51,6 +66,13 @@ contract Appraiser is Ownable {
     modifier isValidOrgId(uint256 orgId_) {
         if (address(aoContracts[orgId_]) == address(0)) {
             revert InvalidOrgId();
+        }
+        _;
+    }
+
+    modifier isNewUser(address addr_) {
+        if (users[addr_].isRegistered == true) {
+            revert UserExists();
         }
         _;
     }
@@ -98,11 +120,37 @@ contract Appraiser is Ownable {
         uint256 rating_,
         string memory review_
     ) external isValidOrgId(orgId_) {
-        AppraiserOrganization _ao = aoContracts[orgId_];
-        uint256 _reviewId = _ao.mintReviewNFT(msg.sender, rating_, review_);
-        s_reviews[orgId_].push(_reviewId);
-
+        uint256 _reviewId = aoContracts[orgId_].mintReviewNFT(
+            msg.sender,
+            rating_,
+            review_
+        );
+        s_reviews[orgId_][_reviewId] = msg.sender;
+        addUser(msg.sender);
         emit LogMintReview(_reviewId);
+    }
+
+    function addUser(address addr_) private isNewUser(addr_) {
+        User memory newUser = User({reputation: 0, isRegistered: true});
+        users[addr_] = newUser;
+        emit LogNewUser(addr_);
+    }
+
+    function rateReview(
+        uint256 orgId_,
+        uint256 reviewId_,
+        bool isUpvote_
+    ) external {
+        // update AO: update review rating
+        // update user's reputation
+        User memory _reviewUser = users[s_reviews[orgId_][reviewId_]];
+        if (isUpvote_ == true) {
+            _reviewUser.reputation += 1;
+        } else {
+            _reviewUser.reputation -= 1;
+        }
+        users[s_reviews[orgId_][reviewId_]].reputation = _reviewUser.reputation;
+        aoContracts[orgId_].rateReview(msg.sender, reviewId_, isUpvote_);
     }
 
     function currentOrgId() public view returns (uint256) {

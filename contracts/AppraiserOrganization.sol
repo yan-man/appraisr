@@ -13,14 +13,17 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // structs
     struct Review {
+        address author;
         uint256 rating;
         string review;
+        uint256 unixtime;
     }
 
     // state vars
     uint256 public constant VERIFIER = 0;
-    mapping(uint256 => Review) reviews;
-
+    mapping(uint256 => Review) public s_reviews; // reviewId -> Review
+    mapping(uint256 => address[]) s_upvotes; // reviewId -> [voting addresses]
+    mapping(uint256 => address[]) s_downvotes; // reviewId -> [voting addresses]
     Counters.Counter private _reviewIds;
 
     // events
@@ -42,19 +45,38 @@ contract AppraiserOrganization is ERC1155, Ownable {
     }
 
     function mintReviewNFT(
-        address player_,
+        address reviewerAddr_,
         uint256 rating_,
         string memory review_
     ) public isValidRating(rating_) returns (uint256) {
         // save into review state var too
         // emit NFT
         uint256 _reviewId = _reviewIds.current();
-        _mint(player_, _reviewId, 1, "");
-
-        Review memory review = Review({rating: rating_, review: review_});
-        reviews[_reviewId] = review;
-
+        _mint(reviewerAddr_, _reviewId, 1, "");
+        Review memory review = Review({
+            author: reviewerAddr_,
+            rating: rating_,
+            review: review_,
+            unixtime: block.timestamp
+        });
+        s_reviews[_reviewId] = review;
         _reviewIds.increment();
         return _reviewId;
+    }
+
+    function rateReview(
+        address reviewer_,
+        uint256 reviewId_,
+        bool isUpvote_
+    ) external returns (uint256) {
+        uint256 _length;
+        if (isUpvote_ == true) {
+            s_upvotes[reviewId_].push(reviewer_);
+            _length = s_upvotes[reviewId_].length;
+        } else {
+            s_downvotes[reviewId_].push(reviewer_);
+            _length = s_downvotes[reviewId_].length;
+        }
+        return _length;
     }
 }
