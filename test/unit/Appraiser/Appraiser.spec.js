@@ -120,6 +120,19 @@ const shouldManageOrgs = () => {
             )
           ).to.be.revertedWith(`DuplicateOrgAddr`);
         });
+
+        it(`should save second org`, async function () {
+          const tx = await this.appraiser.addOrganization(
+            "KFC",
+            "0xBcd4042DE499D14e55001CcbB24a551F3b954096"
+          );
+          await tx.wait();
+          const { orgId, name, addr } = await this.appraiser.s_organizations(1);
+
+          expect(orgId).to.equal(ethers.BigNumber.from(1));
+          expect(name).to.equal("KFC");
+          expect(addr).to.equal("0xBcd4042DE499D14e55001CcbB24a551F3b954096");
+        });
       });
     });
   });
@@ -241,11 +254,53 @@ const shouldManageReviews = () => {
             await expect(tx).to.emit(this.appraiser, `LogNewUser`);
           });
 
-          // scenario: user creates second review at new org
-          // test: if user already exists, don't create new user
+          it(`should not create a new user if user leaves 2nd review at org1`, async function () {
+            const tx = await this.appraiser.mintReview(
+              this.orgId.toNumber(),
+              50,
+              "test review"
+            );
+            await tx.wait();
 
-          // scenario: user tries to create second review at first org
-          // throw error
+            const tx2 = await this.appraiser.mintReview(
+              this.orgId.toNumber(),
+              51,
+              "test review2"
+            );
+            await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
+          });
+
+          describe(`...After 2nd org added`, async function () {
+            beforeEach(async function () {
+              const tx = await this.appraiser.addOrganization(
+                "KFC",
+                "0xBcd4042DE499D14e55001CcbB24a551F3b954096"
+              );
+              const receipt = await tx.wait();
+              const eventId = [...receipt.events.keys()].filter(
+                (id) => receipt.events[id].event === "LogAddOrganization"
+              );
+              const { orgId } = {
+                ...receipt.events[eventId[0]].args,
+              };
+
+              this.orgId2 = orgId;
+            });
+            it(`should not create a new user if existing user adds review to org2`, async function () {
+              const tx = await this.appraiser.mintReview(
+                this.orgId.toNumber(),
+                50,
+                "test review"
+              );
+              await tx.wait();
+              const tx2 = await this.appraiser.mintReview(
+                this.orgId2.toNumber(),
+                54,
+                "test review2"
+              );
+              await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
+            });
+          });
         });
       });
     });

@@ -60,13 +60,6 @@ contract Appraiser is Ownable {
         _;
     }
 
-    modifier isNewUser(address addr_) {
-        if (users[addr_].isRegistered == true) {
-            revert UserExists();
-        }
-        _;
-    }
-
     modifier isReviewerValid(uint256 orgId_, uint256 reviewId_) {
         address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
         if (_reviewAuthorAddr == address(0)) {
@@ -131,13 +124,16 @@ contract Appraiser is Ownable {
         emit LogMintReview(_reviewId);
     }
 
-    function addUser(address addr_) private isNewUser(addr_) {
-        users[addr_] = Users.User({
-            upvotes: 0,
-            downvotes: 0,
-            isRegistered: true
-        });
-        emit LogNewUser(addr_);
+    function addUser(address addr_) private {
+        if (users[addr_].isRegistered == false) {
+            users[addr_] = Users.User({
+                upvotes: 0,
+                downvotes: 0,
+                isRegistered: true
+            });
+
+            emit LogNewUser(addr_);
+        }
     }
 
     function voteOnReview(
