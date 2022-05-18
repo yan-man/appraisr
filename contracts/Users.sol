@@ -6,7 +6,8 @@ import "hardhat/console.sol";
 
 library Users {
     struct User {
-        uint256 reputation;
+        uint256 upvotes;
+        uint256 downvotes;
         bool isRegistered;
     }
 }

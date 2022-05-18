@@ -216,10 +216,10 @@ const shouldManageReviews = () => {
             );
             await tx.wait();
 
-            const { reputation, isRegistered } = await this.appraiser.users(
-              this.signers[0].address
-            );
-            expect(reputation).to.equal(ethers.BigNumber.from(0));
+            const { upvotes, downvotes, isRegistered } =
+              await this.appraiser.users(this.signers[0].address);
+            expect(upvotes).to.equal(ethers.BigNumber.from(0));
+            expect(downvotes).to.equal(ethers.BigNumber.from(0));
             expect(isRegistered).to.equal(true);
           });
 
@@ -348,7 +348,7 @@ const shouldManageReviewsRatings = () => {
         ).to.be.revertedWith(`ReviewerMatchesAuthor`);
       });
 
-      it(`should update user1 rep when user2 upvotes user1's review`, async function () {
+      it(`should update user1 upvotes when user2 upvotes user1's review`, async function () {
         const tx = await this.appraiser.mintReview(
           this.orgId.toNumber(),
           50,
@@ -360,11 +360,12 @@ const shouldManageReviewsRatings = () => {
           .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, true);
         await tx2.wait();
 
-        const { reputation } = await this.appraiser.users(
+        const { upvotes, downvotes } = await this.appraiser.users(
           this.signers[0].address
         );
 
-        expect(reputation).to.equal(ethers.BigNumber.from(1));
+        expect(upvotes).to.equal(ethers.BigNumber.from(1));
+        expect(downvotes).to.equal(ethers.BigNumber.from(0));
       });
 
       it(`should emit event when user2 upvotes user1's review`, async function () {
@@ -379,6 +380,26 @@ const shouldManageReviewsRatings = () => {
           .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, true);
 
         await expect(tx2).to.emit(this.appraiser, `LogVoteOnReview`);
+      });
+
+      it(`should update user1 downvotes when user2 downvotes user1's review`, async function () {
+        const tx = await this.appraiser.mintReview(
+          this.orgId.toNumber(),
+          50,
+          "test review"
+        );
+        await tx.wait();
+        const tx2 = await this.appraiser
+          .connect(this.signers[1])
+          .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, false);
+        await tx2.wait();
+
+        const { upvotes, downvotes } = await this.appraiser.users(
+          this.signers[0].address
+        );
+
+        expect(upvotes).to.equal(ethers.BigNumber.from(0));
+        expect(downvotes).to.equal(ethers.BigNumber.from(1));
       });
     });
   });

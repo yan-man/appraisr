@@ -21,11 +21,11 @@ contract Appraiser is Ownable {
 
     // State Vars
     Organizations.Organization[] public s_organizations;
-    mapping(uint256 => AppraiserOrganization) public aoContracts;
-    mapping(string => bool) private orgNames;
-    mapping(address => bool) private orgAddresses;
+    mapping(uint256 => AppraiserOrganization) public aoContracts; // orgId -> deployed AO contract
+    mapping(string => bool) private orgNames; // org name -> is active flag
+    mapping(address => bool) private orgAddresses; // org address -> is active flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
-    mapping(address => Users.User) public users;
+    mapping(address => Users.User) public users; // user/reviewer address -> User struct
 
     // Events
     event LogAddOrganization(uint256 orgId);
@@ -132,7 +132,11 @@ contract Appraiser is Ownable {
     }
 
     function addUser(address addr_) private isNewUser(addr_) {
-        users[addr_] = Users.User({reputation: 0, isRegistered: true});
+        users[addr_] = Users.User({
+            upvotes: 0,
+            downvotes: 0,
+            isRegistered: true
+        });
         emit LogNewUser(addr_);
     }
 
@@ -141,15 +145,12 @@ contract Appraiser is Ownable {
         uint256 reviewId_,
         bool isUpvote_
     ) external isValidOrgId(orgId_) isReviewerValid(orgId_, reviewId_) {
-        // update AO: update review rating
-        // update user's reputation
         Users.User storage _reviewUser = users[s_reviews[orgId_][reviewId_]];
         if (isUpvote_ == true) {
-            _reviewUser.reputation += 1;
+            _reviewUser.upvotes += 1;
         } else {
-            _reviewUser.reputation -= 1;
+            _reviewUser.downvotes += 1;
         }
-        users[s_reviews[orgId_][reviewId_]].reputation = _reviewUser.reputation;
         aoContracts[orgId_].voteOnReview(msg.sender, reviewId_, isUpvote_);
 
         emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
