@@ -126,13 +126,29 @@ const shouldManageOrgs = () => {
             "KFC",
             "0xBcd4042DE499D14e55001CcbB24a551F3b954096"
           );
-          await tx.wait();
+          const receipt = await tx.wait();
+          const eventId = [...receipt.events.keys()].filter(
+            (id) => receipt.events[id].event === "LogAddOrganization"
+          );
           const { orgId, name, addr } = await this.appraiser.s_organizations(1);
 
           expect(orgId).to.equal(ethers.BigNumber.from(1));
           expect(name).to.equal("KFC");
           expect(addr).to.equal("0xBcd4042DE499D14e55001CcbB24a551F3b954096");
         });
+
+        it(`should emit events after second org saved`, async function () {
+          const tx = await this.appraiser.addOrganization(
+            "KFC",
+            "0xBcd4042DE499D14e55001CcbB24a551F3b954096"
+          );
+          const receipt = await tx.wait();
+
+          await expect(tx).to.emit(this.appraiser, `LogAddOrganization`);
+          await expect(tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
+        });
+
+        // make sure new values are updated - number of orgs, etc
       });
     });
   });
