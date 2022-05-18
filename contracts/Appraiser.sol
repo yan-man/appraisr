@@ -5,16 +5,16 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "./Verifier.sol";
 import "./AppraiserOrganization.sol";
 import "./Organizations.sol";
 import "./Users.sol";
-import "./Reviews.sol";
 
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
     using Organizations for Organizations.Organization;
     using Users for Users.User;
-    using Reviews for Reviews.Review;
+
     Counters.Counter public orgIds;
 
     // Structs
@@ -22,6 +22,7 @@ contract Appraiser is Ownable {
     // State Vars
     Organizations.Organization[] public s_organizations;
     mapping(uint256 => AppraiserOrganization) public aoContracts; // orgId -> deployed AO contract
+    mapping(uint256 => Verifier) public s_vContracts; // orgId -> deployed AO contract
     mapping(string => bool) private orgNames; // org name -> is active flag
     mapping(address => bool) private orgAddresses; // org address -> is active flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
@@ -30,6 +31,7 @@ contract Appraiser is Ownable {
     // Events
     event LogAddOrganization(uint256 orgId);
     event LogNFTContractDeployed(address aoContractAddress);
+    event LogVerifierNFTContractDeployed(address verifierContractAddress);
     event LogMintReview(uint256 reviewId);
     event LogNewUser(address addr);
     event LogVoteOnReview(address voter, uint256 orgId, uint256 reviewId);
@@ -91,15 +93,27 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployNFTContract(orgId, URI_);
+        deployReviewNFTContract(orgId, URI_);
+        deployVerifierNFTContract(orgId, URI_);
         emit LogAddOrganization(orgId);
     }
 
-    function deployNFTContract(uint256 _orgId, string calldata URI_) internal {
-        AppraiserOrganization _ao = new AppraiserOrganization(URI_);
+    function deployReviewNFTContract(uint256 _orgId, string calldata URI_)
+        internal
+    {
+        AppraiserOrganization _ao = new AppraiserOrganization(_orgId, URI_);
         aoContracts[_orgId] = _ao;
 
         emit LogNFTContractDeployed(address(_ao));
+    }
+
+    function deployVerifierNFTContract(uint256 _orgId, string calldata URI_)
+        internal
+    {
+        Verifier _verifier = new Verifier(_orgId, URI_);
+        s_vContracts[_orgId] = _verifier;
+
+        emit LogVerifierNFTContractDeployed(address(_verifier));
     }
 
     function setAOContractAddress(uint256 orgId_, address aoAddress_)

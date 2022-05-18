@@ -1,6 +1,9 @@
 const { ContractFactory } = require("ethers");
 const { ethers } = require("hardhat");
-const { deployMockAppraiserOrganization } = require("./mocks");
+const {
+  deployMockAppraiserOrganization,
+  deployMockVerifier,
+} = require("./mocks");
 
 const unitAppraiserFixture = async (signers) => {
   const deployer = signers[0];
@@ -23,10 +26,10 @@ const unitAppraiserOrganizationFixture = async (signers) => {
   const appraiserOrganizationFactory = await ethers.getContractFactory(
     `AppraiserOrganization`
   );
-  const constructorParams = "URI";
+  const constructorParams = [1, "URI"];
   const appraiserOrganization = await appraiserOrganizationFactory
     .connect(deployer)
-    .deploy(constructorParams);
+    .deploy(constructorParams[0], constructorParams[1]);
   await appraiserOrganization.deployed();
 
   return { appraiserOrganization, constructorParams };
