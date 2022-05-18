@@ -73,10 +73,11 @@ contract Appraiser is Ownable {
 
     constructor() {}
 
-    function addOrganization(string calldata name_, address addr_)
-        public
-        isUniqueOrg(name_, addr_)
-    {
+    function addOrganization(
+        string calldata name_,
+        address addr_,
+        string calldata URI_
+    ) public isUniqueOrg(name_, addr_) {
         uint orgId = orgIds.current();
         Organizations.Organization memory newOrg = Organizations.Organization({
             orgId: orgId,
@@ -90,12 +91,12 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployNFTContract(orgId);
+        deployNFTContract(orgId, URI_);
         emit LogAddOrganization(orgId);
     }
 
-    function deployNFTContract(uint256 _orgId) internal {
-        AppraiserOrganization _ao = new AppraiserOrganization("URI");
+    function deployNFTContract(uint256 _orgId, URI_) internal {
+        AppraiserOrganization _ao = new AppraiserOrganization(URI_);
         aoContracts[_orgId] = _ao;
 
         emit LogNFTContractDeployed(address(_ao));
