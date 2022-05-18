@@ -148,7 +148,7 @@ const shouldManageOrgs = () => {
           await expect(tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
         });
 
-        // make sure new values are updated - number of orgs, etc
+        // make sure new values are updated after 2nd org saved - number of orgs, etc
       });
     });
   });
@@ -206,7 +206,7 @@ const shouldManageReviews = () => {
       });
 
       context(`# mint review`, async function () {
-        describe("...After mock AO contract set", async () => {
+        describe(`...After mock AO contract set & first review minted`, async () => {
           beforeEach(async function () {
             this.mockedResponses = {
               mintReviewNFT: 100,
@@ -220,15 +220,16 @@ const shouldManageReviews = () => {
               this.mocks.mockAppraiserOrganization.address
             );
             await tx.wait();
-          });
 
-          it(`should update s_reviews state var`, async function () {
-            const tx = await this.appraiser.mintReview(
+            this.mintReviewTx = await this.appraiser.mintReview(
               this.orgId.toNumber(),
               50,
               "test review"
             );
-            await tx.wait();
+            await this.mintReviewTx.wait();
+          });
+
+          it(`should update s_reviews state var`, async function () {
             expect(
               await this.appraiser.s_reviews(
                 0,
@@ -238,13 +239,6 @@ const shouldManageReviews = () => {
           });
 
           it(`should create new user`, async function () {
-            const tx = await this.appraiser.mintReview(
-              this.orgId.toNumber(),
-              50,
-              "test review"
-            );
-            await tx.wait();
-
             const { upvotes, downvotes, isRegistered } =
               await this.appraiser.users(this.signers[0].address);
             expect(upvotes).to.equal(ethers.BigNumber.from(0));
@@ -253,31 +247,20 @@ const shouldManageReviews = () => {
           });
 
           it(`should emit LogMintReview event`, async function () {
-            const tx = await this.appraiser.mintReview(
-              this.orgId.toNumber(),
-              50,
-              "test review"
+            await expect(this.mintReviewTx).to.emit(
+              this.appraiser,
+              `LogMintReview`
             );
-            await expect(tx).to.emit(this.appraiser, `LogMintReview`);
           });
 
           it(`should emit LogNewUser event`, async function () {
-            const tx = await this.appraiser.mintReview(
-              this.orgId.toNumber(),
-              50,
-              "test review"
+            await expect(this.mintReviewTx).to.emit(
+              this.appraiser,
+              `LogNewUser`
             );
-            await expect(tx).to.emit(this.appraiser, `LogNewUser`);
           });
 
           it(`should not create a new user if user leaves 2nd review at org1`, async function () {
-            const tx = await this.appraiser.mintReview(
-              this.orgId.toNumber(),
-              50,
-              "test review"
-            );
-            await tx.wait();
-
             const tx2 = await this.appraiser.mintReview(
               this.orgId.toNumber(),
               51,
@@ -302,7 +285,7 @@ const shouldManageReviews = () => {
 
               this.orgId2 = orgId;
             });
-            it(`should not create a new user if existing user adds review to org2`, async function () {
+            it(`should save new review if existing user adds review to org2`, async function () {
               const tx = await this.appraiser.mintReview(
                 this.orgId.toNumber(),
                 50,
@@ -316,6 +299,21 @@ const shouldManageReviews = () => {
               );
               await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
             });
+            it(`should not emit LogNewUser event if existing user adds review to org2`, async function () {
+              const tx = await this.appraiser.mintReview(
+                this.orgId.toNumber(),
+                50,
+                "test review"
+              );
+              await tx.wait();
+              const tx2 = await this.appraiser.mintReview(
+                this.orgId2.toNumber(),
+                54,
+                "test review2"
+              );
+              await tx2.wait();
+              await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
+            });
           });
         });
       });
@@ -325,7 +323,7 @@ const shouldManageReviews = () => {
 
 const shouldManageReviewsRatings = () => {
   context(`# manage reviews`, async function () {
-    describe("...After new org exists", async () => {
+    describe("...After 1st org saved & review1 is minted", async () => {
       beforeEach(async function () {
         this.company = {
           name: "WacArnolds",
@@ -358,27 +356,22 @@ const shouldManageReviewsRatings = () => {
           this.mocks.mockAppraiserOrganization.address
         );
         await tx.wait();
-      });
 
-      it(`should revert if org doesn't exist`, async function () {
-        const tx = await this.appraiser.mintReview(
+        const mintReviewtx = await this.appraiser.mintReview(
           this.orgId.toNumber(),
           50,
           "test review"
         );
-        await tx.wait();
+        await mintReviewtx.wait();
+      });
+
+      it(`should revert if org doesn't exist`, async function () {
         await expect(
           this.appraiser.connect(this.signers[1]).voteOnReview(5, 5, true)
         ).to.be.revertedWith(`InvalidOrgId`);
       });
 
       it(`should revert if review doesn't exist`, async function () {
-        const tx = await this.appraiser.mintReview(
-          this.orgId.toNumber(),
-          50,
-          "test review"
-        );
-        await tx.wait();
         await expect(
           this.appraiser
             .connect(this.signers[1])
@@ -387,13 +380,6 @@ const shouldManageReviewsRatings = () => {
       });
 
       it(`should revert if user tries to upvote own review`, async function () {
-        const tx = await this.appraiser.mintReview(
-          this.orgId.toNumber(),
-          50,
-          "test review"
-        );
-        await tx.wait();
-
         await expect(
           this.appraiser.voteOnReview(
             this.orgId,
@@ -404,12 +390,6 @@ const shouldManageReviewsRatings = () => {
       });
 
       it(`should revert if user tries to downvote own review`, async function () {
-        const tx = await this.appraiser.mintReview(
-          this.orgId.toNumber(),
-          50,
-          "test review"
-        );
-        await tx.wait();
         await expect(
           this.appraiser.voteOnReview(
             this.orgId,
@@ -420,12 +400,6 @@ const shouldManageReviewsRatings = () => {
       });
 
       it(`should update user1 upvotes when user2 upvotes user1's review`, async function () {
-        const tx = await this.appraiser.mintReview(
-          this.orgId.toNumber(),
-          50,
-          "test review"
-        );
-        await tx.wait();
         const tx2 = await this.appraiser
           .connect(this.signers[1])
           .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, true);
@@ -440,26 +414,14 @@ const shouldManageReviewsRatings = () => {
       });
 
       it(`should emit event when user2 upvotes user1's review`, async function () {
-        const tx = await this.appraiser.mintReview(
-          this.orgId.toNumber(),
-          50,
-          "test review"
-        );
-        await tx.wait();
-        const tx2 = await this.appraiser
+        const tx = await this.appraiser
           .connect(this.signers[1])
           .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, true);
 
-        await expect(tx2).to.emit(this.appraiser, `LogVoteOnReview`);
+        await expect(tx).to.emit(this.appraiser, `LogVoteOnReview`);
       });
 
       it(`should update user1 downvotes when user2 downvotes user1's review`, async function () {
-        const tx = await this.appraiser.mintReview(
-          this.orgId.toNumber(),
-          50,
-          "test review"
-        );
-        await tx.wait();
         const tx2 = await this.appraiser
           .connect(this.signers[1])
           .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, false);
@@ -471,6 +433,14 @@ const shouldManageReviewsRatings = () => {
 
         expect(upvotes).to.equal(ethers.BigNumber.from(0));
         expect(downvotes).to.equal(ethers.BigNumber.from(1));
+      });
+
+      it(`should emit event when user2 downvotes user1's review`, async function () {
+        const tx = await this.appraiser
+          .connect(this.signers[1])
+          .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, false);
+
+        await expect(tx).to.emit(this.appraiser, `LogVoteOnReview`);
       });
     });
   });
