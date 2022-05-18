@@ -46,7 +46,7 @@ const shouldMintReviewNFT = () => {
       ).to.be.revertedWith(`InvalidRating`);
     });
 
-    describe("...After review1 NFT minted", async () => {
+    describe("...After review1 NFT minted by user1", async () => {
       beforeEach(async function () {
         this.reviewId = await this.appraiserOrganization.currentReviewId();
         this.review = {
@@ -78,10 +78,54 @@ const shouldMintReviewNFT = () => {
         expect(review).to.equal(this.review.review);
         expect(unixtime.toNumber()).to.be.a("number");
       });
-      it("should update state vars", async function () {
+      it("should emit LogNFTReviewMinted event", async function () {
         await expect(this.tx)
           .to.emit(this.appraiserOrganization, `LogNFTReviewMinted`)
           .withArgs(this.reviewId);
+      });
+      it("should allow transfers of VERIFIER token only from owner", async function () {
+        const tx = await this.appraiserOrganization.safeTransferFrom(
+          this.signers[0].address,
+          this.signers[1].address,
+          0, // review Id: VERIFIER
+          1, // amount of tokens
+          []
+        );
+        await tx.wait();
+        expect(
+          await this.appraiserOrganization.balanceOf(this.signers[1].address, 0)
+        ).to.equal(1);
+      });
+      it("should not allow transfers of VERIFIER token from non-owner", async function () {
+        await expect(
+          this.appraiserOrganization.safeTransferFrom(
+            this.signers[1].address,
+            this.signers[2].address,
+            0, // review Id: VERIFIER
+            1, // amount of tokens
+            []
+          )
+        ).to.be.reverted;
+      });
+      describe("...After review1 NFT minted by user1", async () => {
+        beforeEach(async function () {
+          this.tx = await this.appraiserOrganization.safeTransferFrom(
+            this.signers[0].address,
+            this.signers[1].address,
+            0, // review Id: VERIFIER
+            1, // amount of tokens
+            []
+          );
+          await this.tx.wait();
+        });
+        it("should mint NFT to user", async function () {
+          expect(
+            await this.appraiserOrganization.balanceOf(
+              this.signers[1].address,
+              0
+            )
+          ).to.equal(1);
+        });
       });
     });
   });

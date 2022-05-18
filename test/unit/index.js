@@ -25,10 +25,10 @@ describe("Unit tests", async () => {
       this.mocks = {};
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
     });
-    Appraiser.shouldDeploy();
-    Appraiser.shouldManageOrgs();
-    Appraiser.shouldManageReviews();
-    Appraiser.shouldManageReviewsRatings();
+    // Appraiser.shouldDeploy();
+    // Appraiser.shouldManageOrgs();
+    // Appraiser.shouldManageReviews();
+    // Appraiser.shouldManageReviewsRatings();
   });
   describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
@@ -37,8 +37,8 @@ describe("Unit tests", async () => {
       this.appraiserOrganization = appraiserOrganization;
       this.constructorParams = constructorParams;
     });
-    // AppraiserOrganization.shouldDeploy();
-    // AppraiserOrganization.shouldMintReviewNFT();
+    AppraiserOrganization.shouldDeploy();
+    AppraiserOrganization.shouldMintReviewNFT();
     // shouldManageReviews();
     // shouldManageReviewsRatings();
   });

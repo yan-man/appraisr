@@ -32,6 +32,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // errors
     error InvalidRating();
+    error OnlyOwnerCanTransferVerifierNFT();
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
@@ -44,6 +45,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     constructor(string memory URI_) ERC1155(URI_) {
         _mint(msg.sender, VERIFIER, 10**3, "");
         _reviewIds.increment();
+        setApprovalForAll(address(this), true);
     }
 
     function mintReviewNFT(
@@ -53,6 +55,11 @@ contract AppraiserOrganization is ERC1155, Ownable {
     ) public isValidRating(rating_) returns (uint256) {
         uint256 _reviewId = _reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
+
+        if (balanceOf(reviewerAddr_, VERIFIER) > 0) {
+            console.log("verified");
+        }
+
         Review memory review = Review({
             author: reviewerAddr_,
             rating: rating_,
@@ -63,7 +70,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
         _reviewIds.increment();
 
         emit LogNFTReviewMinted(_reviewId);
-
         return _reviewId;
     }
 
@@ -85,5 +91,22 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     function currentReviewId() external view returns (uint256) {
         return _reviewIds.current();
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public override {
+        require(
+            from == _msgSender() || isApprovedForAll(from, _msgSender()),
+            "ERC1155: caller is not owner nor approved"
+        );
+        if (owner() != from && id == VERIFIER) {
+            revert OnlyOwnerCanTransferVerifierNFT();
+        }
+        _safeTransferFrom(from, to, id, amount, data);
     }
 }
