@@ -5,6 +5,7 @@ const {
   shouldDeploy,
   shouldManageOrgs,
   shouldManageReviews,
+  shouldManageReviewsRatings,
 } = require("./Appraiser/Appraiser.spec");
 
 describe("Unit tests", async () => {
@@ -44,5 +45,6 @@ describe("Unit tests", async () => {
     shouldDeploy();
     shouldManageOrgs();
     shouldManageReviews();
+    shouldManageReviewsRatings();
   });
 });

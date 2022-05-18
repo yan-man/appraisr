@@ -241,50 +241,64 @@ const shouldManageReviews = () => {
             await expect(tx).to.emit(this.appraiser, `LogNewUser`);
           });
 
-          // scenario: user creates second review
+          // scenario: user creates second review at new org
           // test: if user already exists, don't create new user
+
+          // scenario: user tries to create second review at first org
+          // throw error
         });
       });
     });
   });
 };
 
-// const shouldManageReviewsRatings = () => {
-//   context(`# manage reviews`, async function () {
-//     describe("...After new org exists", async () => {
-//       beforeEach(async function () {
-//         this.company = {
-//           name: "WacArnolds",
-//           address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-//         };
-//         this.tx = await this.appraiser.addOrganization(
-//           this.company.name,
-//           this.company.address
-//         );
-//         this.receipt = await this.tx.wait();
-//         const eventId = [...this.receipt.events.keys()].filter(
-//           (id) => this.receipt.events[id].event === "LogAddOrganization"
-//         );
-//         const { orgId } = {
-//           ...this.receipt.events[eventId[0]].args,
-//         };
-//         this.orgId = orgId;
+const shouldManageReviewsRatings = () => {
+  // context(`# manage reviews`, async function () {
+  //   describe("...After new org exists", async () => {
+  //     beforeEach(async function () {
+  //       this.company = {
+  //         name: "WacArnolds",
+  //         address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+  //       };
+  //       this.tx = await this.appraiser.addOrganization(
+  //         this.company.name,
+  //         this.company.address
+  //       );
+  //       this.receipt = await this.tx.wait();
+  //       const eventId = [...this.receipt.events.keys()].filter(
+  //         (id) => this.receipt.events[id].event === "LogAddOrganization"
+  //       );
+  //       const { orgId } = {
+  //         ...this.receipt.events[eventId[0]].args,
+  //       };
+  //       this.orgId = orgId;
+  //       this.mockedResponses = {
+  //         mintReviewNFT: 100,
+  //       };
+  //       await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+  //         this.mockedResponses.mintReviewNFT
+  //       );
+  //       const tx = await this.appraiser.setAOContractAddress(
+  //         this.orgId.toNumber(),
+  //         this.mocks.mockAppraiserOrganization.address
+  //       );
+  //       await tx.wait();
+  //     });
+  //     it.only(`user2 should be able to upvote review from user1`, async function () {
+  //       // expect(1).to.equal(1);
+  //       console.log(
+  //         await this.appraiser
+  //           .connect(this.signers[1])
+  //           .rateReview(this.orgId, this.mockedResponses.mintReviewNFT, true)
+  //       );
+  //     });
+  //   });
+  // });
+};
 
-//         this.mockedResponses = {
-//           mintReviewNFT: 100,
-//         };
-//         await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
-//           this.mockedResponses.mintReviewNFT
-//         );
-
-//         const tx = await this.appraiser.setAOContractAddress(
-//           this.orgId.toNumber(),
-//           this.mocks.mockAppraiserOrganization.address
-//         );
-//         await tx.wait();
-//       });
-//     });
-//   });
-// };
-
-module.exports = { shouldDeploy, shouldManageOrgs, shouldManageReviews };
+module.exports = {
+  shouldDeploy,
+  shouldManageOrgs,
+  shouldManageReviews,
+  shouldManageReviewsRatings,
+};

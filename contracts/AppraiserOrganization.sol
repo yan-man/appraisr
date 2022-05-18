@@ -24,6 +24,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     mapping(uint256 => Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => address[]) s_upvotes; // reviewId -> [voting addresses]
     mapping(uint256 => address[]) s_downvotes; // reviewId -> [voting addresses]
+
     Counters.Counter private _reviewIds;
 
     // events
