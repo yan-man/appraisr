@@ -92,8 +92,19 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployNFTContract(orgId, name_, addr_, URI_);
-        deployVerifierNFTContract(orgId, name_, addr_, URI_);
+        address _verifierAddr = deployVerifierNFTContract(
+            orgId,
+            name_,
+            addr_,
+            URI_
+        );
+        deployAppraiserOrganizationNFTContract(
+            orgId,
+            name_,
+            addr_,
+            URI_,
+            _verifierAddr
+        );
         emit LogAddOrganization(orgId);
     }
 
@@ -102,24 +113,27 @@ contract Appraiser is Ownable {
         string memory name_,
         address addr_,
         string memory URI_
-    ) internal {
+    ) internal returns (address) {
         Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_);
         s_vContracts[orgId_] = _verifier;
 
         emit LogVerifierNFTContractDeployed(address(_verifier));
+        return address(_verifier);
     }
 
-    function deployNFTContract(
+    function deployAppraiserOrganizationNFTContract(
         uint256 orgId_,
         string calldata name_,
         address addr_,
-        string calldata URI_
+        string calldata URI_,
+        address verifierAddr_
     ) internal {
         AppraiserOrganization _ao = new AppraiserOrganization(
             orgId_,
             name_,
             addr_,
-            URI_
+            URI_,
+            verifierAddr_
         );
         aoContracts[orgId_] = _ao;
 

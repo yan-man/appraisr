@@ -30,6 +30,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     Counters.Counter private _reviewIds;
     Organizations.Organization private s_organization;
+    Verifier private immutable s_verifier;
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
@@ -50,7 +51,8 @@ contract AppraiserOrganization is ERC1155, Ownable {
         uint256 orgId_,
         string memory name_,
         address addr_,
-        string memory URI_
+        string memory URI_,
+        address verifierAddr_
     ) ERC1155(URI_) {
         Organizations.Organization memory _org = Organizations.Organization({
             orgId: orgId_,
@@ -60,9 +62,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
             isCreated: true
         });
         s_organization = _org;
+        s_verifier = Verifier(verifierAddr_);
 
         _reviewIds.increment();
-        // setApprovalForAll(addr_, true);
     }
 
     function mintReviewNFT(

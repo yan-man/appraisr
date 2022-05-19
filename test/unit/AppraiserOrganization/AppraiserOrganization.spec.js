@@ -54,19 +54,13 @@ const shouldMintReviewNFT = () => {
           await this.tx.wait();
           this.VERIFIER = (await this.verifier.VERIFIER()).toNumber();
         });
-        it("should mint NFT to user", async function () {
-          // console.log(
-          //   await this.verifier.balanceOf(
-          //     this.users.ashylarry.address,
-          //     this.VERIFIER
-          //   )
-          // );
-          // expect(
-          //   await this.verifier.balanceOf(
-          //     this.users.ashylarry.address,
-          //     this.VERIFIER
-          //   )
-          // ).to.equal(1);
+        it.only("should mint review NFT to user", async function () {
+          expect(
+            await this.appraiserOrganization.balanceOf(
+              this.users.ashylarry.address,
+              this.reviewId
+            )
+          ).to.equal(1);
         });
         // it("should update state vars", async function () {
         //   const { author, rating, review, unixtime } =
