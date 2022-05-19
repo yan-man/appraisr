@@ -13,8 +13,8 @@ describe("Unit tests", async () => {
     this.loadFixture = waffle.createFixtureLoader(wallets);
 
     this.signers = await ethers.getSigners();
-this.mocks = {};
-    
+    this.mocks = {};
+
     this.users = {};
     this.orgs = {};
 

@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Verifier.sol";
+import "./Organizations.sol";
 
 contract AppraiserOrganization is ERC1155, Ownable {
     using Counters for Counters.Counter;
@@ -47,13 +48,16 @@ contract AppraiserOrganization is ERC1155, Ownable {
         _;
     }
 
-    function deployVerifierNFTContract(uint256 _orgId, string memory URI_)
-        internal
-    {
-        Verifier _verifier = new Verifier(_orgId, URI_);
-        s_vContracts[_orgId] = _verifier;
+    function deployVerifierNFTContract(
+        address addr_,
+        uint256 orgId_,
+        string memory URI_
+    ) internal {
+        Verifier _verifier = new Verifier(addr_, orgId_, URI_);
+        s_vContracts[orgId_] = _verifier;
 
         emit LogVerifierNFTContractDeployed(address(_verifier));
+    }
 
     constructor(
         uint256 orgId_,
@@ -70,9 +74,10 @@ contract AppraiserOrganization is ERC1155, Ownable {
         });
         s_organization = _org;
 
-        _mint(addr_, VERIFIER, 10**3, "");
         _reviewIds.increment();
         // setApprovalForAll(addr_, true);
+
+        deployVerifierNFTContract(addr_, orgId_, URI_);
     }
 
     function mintReviewNFT(
@@ -119,5 +124,4 @@ contract AppraiserOrganization is ERC1155, Ownable {
     function currentReviewId() external view returns (uint256) {
         return _reviewIds.current();
     }
-
 }

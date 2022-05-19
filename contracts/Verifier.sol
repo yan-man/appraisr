@@ -26,9 +26,13 @@ contract Verifier is ERC1155, Ownable {
     error OnlyOwnerCanTransferVerifierNFT();
 
     // modifiers
-    constructor(uint256 orgId_, string memory URI_) ERC1155(URI_) {
+    constructor(
+        address addr_,
+        uint256 orgId_,
+        string memory URI_
+    ) ERC1155(URI_) {
         orgId = orgId_;
-        _mint(msg.sender, VERIFIER, 10**3, "");
+        _mint(addr_, VERIFIER, 10**3, "");
         _reviewIds.increment();
         // setApprovalForAll(address(this), true);
     }
