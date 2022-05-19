@@ -114,16 +114,29 @@ contract AppraiserOrganization is ERC1155, Ownable {
         emit LogNFTReviewVote(reviewId_);
     }
 
-    // function getNumVotes(uint256 reviewId_, bool isUpvote_)
-    //     external
-    //     returns (uint256)
-    // {
-    //     if (isUpvote_ == true) {
-    //         return s_upvotes[reviewId_].length;
-    //     } else {
-    //         return s_downvotes[reviewId_].length;
-    //     }
-    // }
+    function getVoters(uint256 reviewId_, bool isUpvote_)
+        external
+        view
+        returns (address[] memory)
+    {
+        if (isUpvote_ == true) {
+            return s_upvotes[reviewId_];
+        } else {
+            return s_downvotes[reviewId_];
+        }
+    }
+
+    function getNumVotes(uint256 reviewId_, bool isUpvote_)
+        external
+        view
+        returns (uint256)
+    {
+        if (isUpvote_ == true) {
+            return s_upvotes[reviewId_].length;
+        } else {
+            return s_downvotes[reviewId_].length;
+        }
+    }
 
     function currentReviewId() external view returns (uint256) {
         return _reviewIds.current();
