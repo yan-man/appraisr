@@ -31,20 +31,20 @@ describe("Unit tests", async () => {
     this.orgs.wacarnolds = this.signers[10];
     this.orgs.studio54 = this.signers[11];
   });
-  // describe(`Appraiser`, async () => {
-  //   beforeEach(async function () {
-  //     const { appraiser, mockAppraiserOrganization, mockVerifier } =
-  //       await this.loadFixture(unitAppraiserFixture);
+  describe(`Appraiser`, async () => {
+    beforeEach(async function () {
+      const { appraiser, mockAppraiserOrganization, mockVerifier } =
+        await this.loadFixture(unitAppraiserFixture);
 
-  //     this.appraiser = appraiser;
-  //     this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
-  //     this.mocks.mockVerifier = mockVerifier;
-  //   });
-  //   Appraiser.shouldDeploy();
-  //   Appraiser.shouldManageOrgs();
-  //   Appraiser.shouldManageReviews();
-  //   Appraiser.shouldManageReviewsRatings();
-  // });
+      this.appraiser = appraiser;
+      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+      this.mocks.mockVerifier = mockVerifier;
+    });
+    Appraiser.shouldDeploy();
+    Appraiser.shouldManageOrgs();
+    Appraiser.shouldManageReviews();
+    Appraiser.shouldManageReviewsRatings();
+  });
   describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
       const {
@@ -60,6 +60,7 @@ describe("Unit tests", async () => {
     });
     AppraiserOrganization.shouldDeploy();
     AppraiserOrganization.shouldMintReviewNFT();
+    AppraiserOrganization.shouldVoteOnReviewNFT();
   });
   describe(`Verifier`, async () => {
     beforeEach(async function () {
