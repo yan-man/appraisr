@@ -61,9 +61,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
         });
         s_organization = _org;
 
-        _mint(msg.sender, VERIFIER, 10**3, "");
+        _mint(addr_, VERIFIER, 10**3, "");
         _reviewIds.increment();
-        setApprovalForAll(address(this), true);
+        // setApprovalForAll(addr_, true);
     }
 
     function mintReviewNFT(
@@ -122,9 +122,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not owner nor approved"
         );
-        if (owner() != from && id == VERIFIER) {
-            revert OnlyOwnerCanTransferVerifierNFT();
-        }
+        // if (owner() != from && id == VERIFIER) {
+        //     revert OnlyOwnerCanTransferVerifierNFT();
+        // }
         _safeTransferFrom(from, to, id, amount, data);
     }
 }

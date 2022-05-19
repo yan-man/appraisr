@@ -24,8 +24,8 @@ describe("Unit tests", async () => {
     this.users.dave = this.signers[4];
     this.users.prince = this.signers[5];
 
-    this.orgs.wacArnolds = this.signers[8];
-    this.orgs.studio54 = this.signers[9];
+    this.orgs.wacarnolds = this.signers[10];
+    this.orgs.studio54 = this.signers[11];
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {

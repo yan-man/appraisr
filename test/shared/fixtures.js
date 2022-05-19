@@ -26,7 +26,7 @@ const unitAppraiserOrganizationFixture = async (signers) => {
   const constructorParams = {
     orgId: 1,
     name: "WacArnolds",
-    addr: signers[9].address,
+    addr: signers[10].address,
     URI: "ipfs://WacArnolds/",
   };
   const appraiserOrganization = await appraiserOrganizationFactory
