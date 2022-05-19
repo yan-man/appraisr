@@ -1,15 +1,18 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "hardhat/console.sol";
+import "./Organizations.sol";
 
 // rename OrganizationReviews to AppraiserOrganization
 contract AppraiserOrganization is ERC1155, Ownable {
     using Counters for Counters.Counter;
+    using Organizations for Organizations.Organization;
 
     // structs
     struct Review {
@@ -26,6 +29,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     mapping(uint256 => address[]) s_downvotes; // reviewId -> [voting addresses]
 
     Counters.Counter private _reviewIds;
+    Organizations.Organization private s_organization;
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
@@ -42,7 +46,21 @@ contract AppraiserOrganization is ERC1155, Ownable {
         _;
     }
 
-    constructor(string memory URI_) ERC1155(URI_) {
+    constructor(
+        uint256 orgId_,
+        string memory name_,
+        address addr_,
+        string memory URI_
+    ) ERC1155(URI_) {
+        Organizations.Organization memory _org = Organizations.Organization({
+            orgId: orgId_,
+            name: name_,
+            addr: addr_,
+            isActive: true,
+            isCreated: true
+        });
+        s_organization = _org;
+
         _mint(msg.sender, VERIFIER, 10**3, "");
         _reviewIds.increment();
         setApprovalForAll(address(this), true);

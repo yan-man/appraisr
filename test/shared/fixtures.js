@@ -31,7 +31,12 @@ const unitAppraiserOrganizationFixture = async (signers) => {
   };
   const appraiserOrganization = await appraiserOrganizationFactory
     .connect(deployer)
-    .deploy("uri");
+    .deploy(
+      constructorParams.orgId,
+      constructorParams.name,
+      constructorParams.addr,
+      constructorParams.URI
+    );
   await appraiserOrganization.deployed();
 
   return { appraiserOrganization, constructorParams };

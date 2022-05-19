@@ -91,13 +91,23 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployNFTContract(orgId, URI_);
+        deployNFTContract(orgId, name_, addr_, URI_);
         emit LogAddOrganization(orgId);
     }
 
-    function deployNFTContract(uint256 _orgId, string calldata URI_) internal {
-        AppraiserOrganization _ao = new AppraiserOrganization(URI_);
-        aoContracts[_orgId] = _ao;
+    function deployNFTContract(
+        uint256 orgId_,
+        string calldata name_,
+        address addr_,
+        string calldata URI_
+    ) internal {
+        AppraiserOrganization _ao = new AppraiserOrganization(
+            orgId_,
+            name_,
+            addr_,
+            URI_
+        );
+        aoContracts[orgId_] = _ao;
 
         emit LogNFTContractDeployed(address(_ao));
     }
