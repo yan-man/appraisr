@@ -79,6 +79,71 @@ const shouldMintReviewNFT = () => {
             .to.emit(this.appraiserOrganization, `LogNFTReviewMinted`)
             .withArgs(this.reviewId);
         });
+        context(`# Vote on reviews`, async function () {
+          describe(`...After review is upvoted by dave`, async () => {
+            beforeEach(async function () {
+              this.voteOnReviewTx =
+                await this.appraiserOrganization.voteOnReview(
+                  this.users.dave.address,
+                  this.reviewId,
+                  true
+                );
+              await this.voteOnReviewTx.wait();
+            });
+            // it(`should update state vars - review votes`, async function () {
+            //   const voter = await this.appraiserOrganization.s_upvotes(
+            //     this.reviewId,
+            //     0
+            //   );
+            //   expect(voter).to.equal(this.users.dave.address);
+            // });
+            // it(`should return num of upvotes`, async function () {
+            //   expect(
+            //     await this.appraiserOrganization.getNumVotes(
+            //       this.reviewId,
+            //       true
+            //     )
+            //   ).to.equal(1);
+            // });
+            it(`should emit LogNFTReviewVote event`, async function () {
+              await expect(this.voteOnReviewTx)
+                .to.emit(this.appraiserOrganization, `LogNFTReviewVote`)
+                .withArgs(this.reviewId);
+            });
+          });
+
+          describe(`...After review is downvoted by dave`, async () => {
+            beforeEach(async function () {
+              this.voteOnReviewTx =
+                await this.appraiserOrganization.voteOnReview(
+                  this.users.dave.address,
+                  this.reviewId,
+                  true
+                );
+              await this.voteOnReviewTx.wait();
+            });
+            // it(`should update state vars - review votes`, async function () {
+            //   const voter = await this.appraiserOrganization.s_downvotes(
+            //     this.reviewId,
+            //     0
+            //   );
+            //   expect(voter).to.equal(this.users.dave.address);
+            // });
+            // it(`should return num of downvotes`, async function () {
+            //   expect(
+            //     await this.appraiserOrganization.getNumVotes(
+            //       this.reviewId,
+            //       false
+            //     )
+            //   ).to.equal(1);
+            // });
+            it(`should emit LogNFTReviewVote event`, async function () {
+              await expect(this.voteOnReviewTx)
+                .to.emit(this.appraiserOrganization, `LogNFTReviewVote`)
+                .withArgs(this.reviewId);
+            });
+          });
+        });
 
         describe(`...After ty biggums leaves a verified review2 for WacArnolds`, async () => {
           beforeEach(async function () {

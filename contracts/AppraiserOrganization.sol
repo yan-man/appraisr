@@ -31,11 +31,12 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     Counters.Counter private _reviewIds;
     Organizations.Organization private s_organization;
-    Verifier private immutable s_verifier;
+    address private s_verifierContractAddress;
     uint256 private VERIFIER_ID;
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
+    event LogNFTReviewVote(uint256 reviewId);
 
     // errors
     error InvalidRating();
@@ -43,7 +44,8 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
-        if (rating_ <= 0 || rating_ > 100) {
+        // console.log(rating_);
+        if (rating_ == 0 || rating_ > 100) {
             revert InvalidRating();
         }
         _;
@@ -64,11 +66,8 @@ contract AppraiserOrganization is ERC1155, Ownable {
             isCreated: true
         });
         s_organization = _org;
-        Verifier _verifier = Verifier(verifierAddr_);
-        VERIFIER_ID = _verifier.VERIFIER();
-
-        s_verifier = _verifier;
-
+        s_verifierContractAddress = verifierAddr_;
+        VERIFIER_ID = Verifier(s_verifierContractAddress).VERIFIER();
         _reviewIds.increment();
     }
 
@@ -81,8 +80,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
         _mint(reviewerAddr_, _reviewId, 1, "");
 
         bool _isVerified = false;
-        if (s_verifier.balanceOf(reviewerAddr_, VERIFIER_ID) > 0) {
-            s_verifier.burnVerifierForAddress(reviewerAddr_);
+        Verifier _verifier = Verifier(s_verifierContractAddress);
+        if (_verifier.balanceOf(reviewerAddr_, VERIFIER_ID) > 0) {
+            _verifier.burnVerifierForAddress(reviewerAddr_);
             _isVerified = true;
         }
 
@@ -108,13 +108,22 @@ contract AppraiserOrganization is ERC1155, Ownable {
         uint256 _length;
         if (isUpvote_ == true) {
             s_upvotes[reviewId_].push(reviewer_);
-            _length = s_upvotes[reviewId_].length;
         } else {
             s_downvotes[reviewId_].push(reviewer_);
-            _length = s_downvotes[reviewId_].length;
         }
-        return _length;
+        emit LogNFTReviewVote(reviewId_);
     }
+
+    // function getNumVotes(uint256 reviewId_, bool isUpvote_)
+    //     external
+    //     returns (uint256)
+    // {
+    //     if (isUpvote_ == true) {
+    //         return s_upvotes[reviewId_].length;
+    //     } else {
+    //         return s_downvotes[reviewId_].length;
+    //     }
+    // }
 
     function currentReviewId() external view returns (uint256) {
         return _reviewIds.current();

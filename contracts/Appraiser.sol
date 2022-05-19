@@ -20,7 +20,7 @@ contract Appraiser is Ownable {
 
     // State Vars
     Organizations.Organization[] public s_organizations;
-    mapping(uint256 => address) public s_vContracts; // orgId -> deployed AO contract
+    mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
     mapping(uint256 => address) public aoContracts; // orgId -> deployed AO contract
     mapping(string => bool) private orgNames; // org name -> is active flag
     mapping(address => bool) private orgAddresses; // org address -> is active flag
