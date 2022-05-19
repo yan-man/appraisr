@@ -145,7 +145,7 @@ const shouldVoteOnReviewNFT = () => {
               .to.emit(this.appraiserOrganization, `LogNFTReviewVote`)
               .withArgs(this.reviewId);
           });
-          it(`should revert if multiple ratings given by dave for same review`, async function () {
+          it(`should revert if multiple upvotes given by dave for same review`, async function () {
             await expect(
               this.appraiserOrganization.voteOnReview(
                 this.users.dave.address,
@@ -187,6 +187,15 @@ const shouldVoteOnReviewNFT = () => {
               await expect(this.voteOnReviewTx)
                 .to.emit(this.appraiserOrganization, `LogNFTReviewVote`)
                 .withArgs(this.reviewId);
+            });
+            it(`should revert if multiple downvotes given by rickjames for same review`, async function () {
+              await expect(
+                this.appraiserOrganization.voteOnReview(
+                  this.users.rickjames.address,
+                  this.reviewId,
+                  this.isUpvote
+                )
+              ).to.be.revertedWith(`OneVoteAllowedPerReview`);
             });
 
             describe(`...After prince leaves a verified review2 for WacArnolds`, async () => {
