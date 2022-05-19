@@ -72,8 +72,6 @@ contract Appraiser is Ownable {
         _;
     }
 
-    constructor() {}
-
     function addOrganization(
         string calldata name_,
         address addr_,
@@ -201,23 +199,23 @@ contract Appraiser is Ownable {
     }
 
     // implement these functions to allow this contract to accept 1155 tokens
-    function onERC1155Received(
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes memory
-    ) public virtual returns (bytes4) {
-        return this.onERC1155Received.selector;
-    }
+    // function onERC1155Received(
+    //     address,
+    //     address,
+    //     uint256,
+    //     uint256,
+    //     bytes memory
+    // ) public virtual returns (bytes4) {
+    //     return this.onERC1155Received.selector;
+    // }
 
-    function onERC1155BatchReceived(
-        address,
-        address,
-        uint256[] memory,
-        uint256[] memory,
-        bytes memory
-    ) public virtual returns (bytes4) {
-        return this.onERC1155BatchReceived.selector;
-    }
+    // function onERC1155BatchReceived(
+    //     address,
+    //     address,
+    //     uint256[] memory,
+    //     uint256[] memory,
+    //     bytes memory
+    // ) public virtual returns (bytes4) {
+    //     return this.onERC1155BatchReceived.selector;
+    // }
 }

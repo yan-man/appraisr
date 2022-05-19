@@ -59,12 +59,12 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         _safeTransferFrom(from, to, id, amount, data);
     }
 
-    // function setAppraiserContractAddress(address appraiserContractAddress_)
-    //     external
-    //     onlyOwner
-    // {
-    //     s_appraiserContract = appraiserContractAddress_;
-    // }
+    function setAppraiserContractAddress(address appraiserContractAddress_)
+        external
+        onlyOwner
+    {
+        s_appraiserContract = appraiserContractAddress_;
+    }
 
     function burnVerifierForAddress(address burnTokenAddress) external {
         require(_msgSender() == s_appraiserContract, "Invalid burner address");
@@ -75,7 +75,6 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        virtual
         override(ERC1155, AccessControl)
         returns (bool)
     {

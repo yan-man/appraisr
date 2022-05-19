@@ -43,6 +43,10 @@ const shouldManageOrgs = () => {
           .to.emit(this.appraiser, `LogAddOrganization`)
           .withArgs(orgId);
         await expect(this.tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
+        await expect(this.tx).to.emit(
+          this.appraiser,
+          `LogVerifierNFTContractDeployed`
+        );
 
         eventId = [...this.receipt.events.keys()].filter(
           (id) => this.receipt.events[id].event === "LogAddOrganization"
