@@ -87,7 +87,7 @@ const shouldMintReviewNFT = () => {
                 this.reviewId,
                 this.isUpvote
               )
-            ).to.be.revertedWith(`VoterCannotRateOwnReview`);
+            ).to.be.revertedWith(`CannotVoteOnOwnReview`);
           });
 
           describe(`...After review is upvoted by dave`, async () => {
@@ -112,16 +112,10 @@ const shouldMintReviewNFT = () => {
             });
             it(`should return correct number of votes`, async function () {
               expect(
-                await this.appraiserOrganization.getNumVotes(
-                  this.reviewId,
-                  this.isUpvote
-                )
+                await this.appraiserOrganization.s_upvoteCount(this.reviewId)
               ).to.equal(1);
               expect(
-                await this.appraiserOrganization.getNumVotes(
-                  this.reviewId,
-                  !this.isUpvote
-                )
+                await this.appraiserOrganization.s_downvoteCount(this.reviewId)
               ).to.equal(0);
             });
             it(`should emit LogNFTReviewVote event`, async function () {
@@ -138,46 +132,42 @@ const shouldMintReviewNFT = () => {
                 )
               ).to.be.revertedWith(`OneVoteAllowedPerReview`);
             });
-          });
 
-          describe(`...After review is downvoted by rick`, async () => {
-            beforeEach(async function () {
-              this.isUpvote = false;
-              this.voteOnReviewTx =
-                await this.appraiserOrganization.voteOnReview(
-                  this.users.rickjames.address,
-                  this.reviewId,
-                  this.isUpvote
-                );
-              await this.voteOnReviewTx.wait();
-            });
-            it(`should update state vars - review votes`, async function () {
-              expect(
-                await this.appraiserOrganization.hasVoted(
-                  this.users.rickjames.address,
-                  this.reviewId,
-                  this.isUpvote
-                )
-              ).to.equal(true);
-            });
-            it(`should return correct number of votes`, async function () {
-              expect(
-                await this.appraiserOrganization.getNumVotes(
-                  this.reviewId,
-                  !this.isUpvote
-                )
-              ).to.equal(0);
-              expect(
-                await this.appraiserOrganization.getNumVotes(
-                  this.reviewId,
-                  this.isUpvote
-                )
-              ).to.equal(1);
-            });
-            it(`should emit LogNFTReviewVote event`, async function () {
-              await expect(this.voteOnReviewTx)
-                .to.emit(this.appraiserOrganization, `LogNFTReviewVote`)
-                .withArgs(this.reviewId);
+            describe(`...After review is downvoted by rick`, async () => {
+              beforeEach(async function () {
+                this.isUpvote = false;
+                this.voteOnReviewTx =
+                  await this.appraiserOrganization.voteOnReview(
+                    this.users.rickjames.address,
+                    this.reviewId,
+                    this.isUpvote
+                  );
+                await this.voteOnReviewTx.wait();
+              });
+              it(`should update state vars - review votes`, async function () {
+                expect(
+                  await this.appraiserOrganization.hasVoted(
+                    this.users.rickjames.address,
+                    this.reviewId,
+                    this.isUpvote
+                  )
+                ).to.equal(true);
+              });
+              it(`should return correct number of votes`, async function () {
+                expect(
+                  await this.appraiserOrganization.s_upvoteCount(this.reviewId)
+                ).to.equal(1);
+                expect(
+                  await this.appraiserOrganization.s_downvoteCount(
+                    this.reviewId
+                  )
+                ).to.equal(1);
+              });
+              it(`should emit LogNFTReviewVote event`, async function () {
+                await expect(this.voteOnReviewTx)
+                  .to.emit(this.appraiserOrganization, `LogNFTReviewVote`)
+                  .withArgs(this.reviewId);
+              });
             });
           });
         });

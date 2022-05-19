@@ -27,9 +27,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
     uint256 orgId;
     mapping(uint256 => Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => mapping(address => bool)) s_upvotes; // reviewId -> (voting address -> isVoted)
-    mapping(uint256 => uint256) s_upvoteCount; // reviewId -> # upvotes
+    mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
     mapping(uint256 => mapping(address => bool)) s_downvotes; // reviewId -> (voting address -> isVoted)
-    mapping(uint256 => uint256) s_downvoteCount; // reviewId -> # downvotes
+    mapping(uint256 => uint256) public s_downvoteCount; // reviewId -> # downvotes
 
     Counters.Counter private _reviewIds;
     Organizations.Organization private s_organization;
@@ -44,7 +44,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     error InvalidRating();
     error OnlyOwnerCanTransferVerifierNFT();
     error OneVoteAllowedPerReview();
-    error VoterCannotRateOwnReview();
+    error CannotVoteOnOwnReview();
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
@@ -59,7 +59,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         bool isUpvote_
     ) {
         if (s_reviews[reviewId_].author == reviewer_) {
-            revert VoterCannotRateOwnReview();
+            revert CannotVoteOnOwnReview();
         }
         if (isUpvote_ == true) {
             if (s_upvotes[reviewId_][reviewer_] == true) {
@@ -153,18 +153,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
             return s_upvotes[reviewId_][reviewer_];
         } else {
             return s_downvotes[reviewId_][reviewer_];
-        }
-    }
-
-    function getNumVotes(uint256 reviewId_, bool isUpvote_)
-        external
-        view
-        returns (uint256)
-    {
-        if (isUpvote_ == true) {
-            return s_upvoteCount[reviewId_];
-        } else {
-            return s_downvoteCount[reviewId_];
         }
     }
 
