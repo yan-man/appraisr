@@ -39,6 +39,21 @@ describe("Unit tests", async () => {
       this.appraiser = appraiser;
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
       this.mocks.mockVerifier = mockVerifier;
+
+      this.companies = [
+        {
+          orgId: 0,
+          name: "WacArnolds",
+          addr: this.orgs.wacarnolds.address,
+          URI: "ipfs://WacArnolds/",
+        },
+        {
+          orgId: 1,
+          name: "studio54",
+          addr: this.orgs.studio54.address,
+          URI: "ipfs://studio54/",
+        },
+      ];
     });
     Appraiser.shouldDeploy();
     Appraiser.shouldManageOrgs();
