@@ -10,10 +10,10 @@ const shouldDeploy = () => {
     });
     it("Should set default URI", async function () {
       expect(await this.appraiserOrganization.uri(0)).to.equal(
-        this.constructorParams
+        this.constructorParams[1]
       );
     });
-    it("Should mint default VERIFIER NFTs and send them to owner", async function () {
+  it("Should mint default VERIFIER NFTs and send them to owner", async function () {
       const VERIFIER = (await this.appraiserOrganization.VERIFIER()).toNumber();
       expect(
         await this.appraiserOrganization.balanceOf(
@@ -37,7 +37,7 @@ const shouldMintReviewNFT = () => {
           )
         ).to.be.revertedWith(`InvalidRating`);
       });
-      it("Should throw if rating out of bounds, <= 0", async function () {
+it("Should throw if rating out of bounds, <= 0", async function () {
         await expect(
           this.appraiserOrganization.mintReviewNFT(
             this.users.ashylarry.address,

@@ -8,13 +8,12 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./AppraiserOrganization.sol";
 import "./Organizations.sol";
 import "./Users.sol";
-import "./Reviews.sol";
 
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
     using Organizations for Organizations.Organization;
     using Users for Users.User;
-    using Reviews for Reviews.Review;
+
     Counters.Counter public orgIds;
 
     // Structs
@@ -74,6 +73,24 @@ contract Appraiser is Ownable {
     constructor() {}
 
     function addOrganization(
+        string calldata name_,
+        address addr_,
+        string calldata URI_
+    ) public isUniqueOrg(name_, addr_) onlyOwner {
+        uint orgId = orgIds.current();
+        Organizations.Organization memory newOrg = Organizations.Organization({
+            orgId: orgId,
+            name: name_,
+            addr: addr_,
+            isActive: true,
+            isCreated: true
+        });
+        s_organizations.push(newOrg);
+        orgNames[name_] = true;
+        orgAddresses[addr_] = true;
+        orgIds.increment();
+
+  function addOrganization(
         string calldata name_,
         address addr_,
         string calldata URI_

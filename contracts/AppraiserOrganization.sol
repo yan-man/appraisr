@@ -7,9 +7,8 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./Organizations.sol";
+import "./Verifier.sol";
 
-// rename OrganizationReviews to AppraiserOrganization
 contract AppraiserOrganization is ERC1155, Ownable {
     using Counters for Counters.Counter;
     using Organizations for Organizations.Organization;
@@ -23,7 +22,8 @@ contract AppraiserOrganization is ERC1155, Ownable {
     }
 
     // state vars
-    uint256 public constant VERIFIER = 0;
+    uint256 orgId;
+    mapping(uint256 => Verifier) public s_vContracts; // orgId -> deployed AO contract
     mapping(uint256 => Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => address[]) s_upvotes; // reviewId -> [voting addresses]
     mapping(uint256 => address[]) s_downvotes; // reviewId -> [voting addresses]
@@ -33,6 +33,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
+    event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // errors
     error InvalidRating();
@@ -45,6 +46,14 @@ contract AppraiserOrganization is ERC1155, Ownable {
         }
         _;
     }
+
+    function deployVerifierNFTContract(uint256 _orgId, string memory URI_)
+        internal
+    {
+        Verifier _verifier = new Verifier(_orgId, URI_);
+        s_vContracts[_orgId] = _verifier;
+
+        emit LogVerifierNFTContractDeployed(address(_verifier));
 
     constructor(
         uint256 orgId_,
@@ -74,9 +83,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
         uint256 _reviewId = _reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
 
-        if (balanceOf(reviewerAddr_, VERIFIER) > 0) {
-            console.log("verified");
-        }
+        // if (balanceOf(reviewerAddr_, VERIFIER) > 0) {
+        //     console.log("verified");
+        // }
 
         Review memory review = Review({
             author: reviewerAddr_,
@@ -111,20 +120,4 @@ contract AppraiserOrganization is ERC1155, Ownable {
         return _reviewIds.current();
     }
 
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public override {
-        require(
-            from == _msgSender() || isApprovedForAll(from, _msgSender()),
-            "ERC1155: caller is not owner nor approved"
-        );
-        // if (owner() != from && id == VERIFIER) {
-        //     revert OnlyOwnerCanTransferVerifierNFT();
-        // }
-        _safeTransferFrom(from, to, id, amount, data);
-    }
 }
