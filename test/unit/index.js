@@ -13,6 +13,19 @@ describe("Unit tests", async () => {
     this.loadFixture = waffle.createFixtureLoader(wallets);
 
     this.signers = await ethers.getSigners();
+
+    this.users = {};
+    this.orgs = {};
+
+    this.users.deployer = this.signers[0]; // in practice, this would be the Appraiser contract
+    this.users.ashylarry = this.signers[1];
+    this.users.tybiggums = this.signers[2];
+    this.users.rickjames = this.signers[3];
+    this.users.dave = this.signers[4];
+    this.users.prince = this.signers[5];
+
+    this.orgs.wacArnolds = this.signers[8];
+    this.orgs.studio54 = this.signers[9];
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
@@ -37,7 +50,7 @@ describe("Unit tests", async () => {
       this.appraiserOrganization = appraiserOrganization;
       this.constructorParams = constructorParams;
     });
-    AppraiserOrganization.shouldDeploy();
+    // AppraiserOrganization.shouldDeploy();
     AppraiserOrganization.shouldMintReviewNFT();
     // shouldManageReviews();
     // shouldManageReviewsRatings();
