@@ -20,6 +20,7 @@ contract Appraiser is Ownable {
 
     // State Vars
     Organizations.Organization[] public s_organizations;
+    mapping(uint256 => Verifier) public s_vContracts; // orgId -> deployed AO contract
     mapping(uint256 => AppraiserOrganization) public aoContracts; // orgId -> deployed AO contract
     mapping(string => bool) private orgNames; // org name -> is active flag
     mapping(address => bool) private orgAddresses; // org address -> is active flag
@@ -32,6 +33,7 @@ contract Appraiser is Ownable {
     event LogMintReview(uint256 reviewId);
     event LogNewUser(address addr);
     event LogVoteOnReview(address voter, uint256 orgId, uint256 reviewId);
+    event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // Errors
     error DuplicateOrgName();
@@ -91,7 +93,20 @@ contract Appraiser is Ownable {
         orgIds.increment();
 
         deployNFTContract(orgId, name_, addr_, URI_);
+        deployVerifierNFTContract(orgId, name_, addr_, URI_);
         emit LogAddOrganization(orgId);
+    }
+
+    function deployVerifierNFTContract(
+        uint256 orgId_,
+        string memory name_,
+        address addr_,
+        string memory URI_
+    ) internal {
+        Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_);
+        s_vContracts[orgId_] = _verifier;
+
+        emit LogVerifierNFTContractDeployed(address(_verifier));
     }
 
     function deployNFTContract(

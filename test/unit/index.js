@@ -1,11 +1,14 @@
 const { expect } = require("chai");
+const { ethers, waffle } = require("hardhat");
+
 const {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
+  unitVerifierFixture,
 } = require("../shared/fixtures");
-const { ethers, waffle } = require("hardhat");
 const Appraiser = require("./Appraiser/Appraiser.spec");
 const AppraiserOrganization = require("./AppraiserOrganization/AppraiserOrganization.spec");
+const Verifier = require("./Verifier/Verifier.spec");
 
 describe("Unit tests", async () => {
   before(async function () {
@@ -52,6 +55,17 @@ describe("Unit tests", async () => {
     });
     AppraiserOrganization.shouldDeploy();
     AppraiserOrganization.shouldMintReviewNFT();
+  });
+  describe(`Verifier`, async () => {
+    beforeEach(async function () {
+      const { verifier, constructorParams } = await this.loadFixture(
+        unitVerifierFixture
+      );
+      this.verifier = verifier;
+      this.constructorParams = constructorParams;
+    });
+    Verifier.shouldDeploy();
+    Verifier.shouldMintVerifierNFT();
     // shouldManageReviews();
     // shouldManageReviewsRatings();
   });

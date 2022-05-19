@@ -48,4 +48,31 @@ const unitAppraiserOrganizationFixture = async (signers) => {
   return { appraiserOrganization, constructorParams, mockVerifier };
 };
 
-module.exports = { unitAppraiserFixture, unitAppraiserOrganizationFixture };
+const unitVerifierFixture = async (signers) => {
+  const deployer = signers[0];
+
+  const verifierFactory = await ethers.getContractFactory(`Verifier`);
+  const constructorParams = {
+    orgId: 1,
+    name: "WacArnolds",
+    addr: signers[10].address,
+    URI: "ipfs://WacArnolds/",
+  };
+  const verifier = await verifierFactory
+    .connect(deployer)
+    .deploy(
+      constructorParams.orgId,
+      constructorParams.name,
+      constructorParams.addr,
+      constructorParams.URI
+    );
+  await verifier.deployed();
+
+  return { verifier, constructorParams };
+};
+
+module.exports = {
+  unitAppraiserFixture,
+  unitAppraiserOrganizationFixture,
+  unitVerifierFixture,
+};

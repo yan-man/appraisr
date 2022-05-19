@@ -24,7 +24,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // state vars
     uint256 orgId;
-    mapping(uint256 => Verifier) public s_vContracts; // orgId -> deployed AO contract
     mapping(uint256 => Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => address[]) s_upvotes; // reviewId -> [voting addresses]
     mapping(uint256 => address[]) s_downvotes; // reviewId -> [voting addresses]
@@ -34,7 +33,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
-    event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // errors
     error InvalidRating();
@@ -46,17 +44,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
             revert InvalidRating();
         }
         _;
-    }
-
-    function deployVerifierNFTContract(
-        address addr_,
-        uint256 orgId_,
-        string memory URI_
-    ) internal {
-        Verifier _verifier = new Verifier(addr_, orgId_, URI_);
-        s_vContracts[orgId_] = _verifier;
-
-        emit LogVerifierNFTContractDeployed(address(_verifier));
     }
 
     constructor(
@@ -76,8 +63,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
         _reviewIds.increment();
         // setApprovalForAll(addr_, true);
-
-        deployVerifierNFTContract(addr_, orgId_, URI_);
     }
 
     function mintReviewNFT(
@@ -88,7 +73,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         uint256 _reviewId = _reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
 
-        // if (balanceOf(reviewerAddr_, VERIFIER) > 0) {
+        // if (_verifier.balanceOf(reviewerAddr_, VERIFIER) > 0) {
         //     console.log("verified");
         // }
 

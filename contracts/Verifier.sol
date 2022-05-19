@@ -27,8 +27,9 @@ contract Verifier is ERC1155, Ownable {
 
     // modifiers
     constructor(
-        address addr_,
         uint256 orgId_,
+        string memory name_,
+        address addr_,
         string memory URI_
     ) ERC1155(URI_) {
         orgId = orgId_;

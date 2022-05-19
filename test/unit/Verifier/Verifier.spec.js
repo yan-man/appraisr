@@ -3,40 +3,35 @@ const { ethers } = require("hardhat");
 
 const shouldDeploy = () => {
   context(`# deploy contract`, async function () {
-    // it("*Happy Path: Should set the right owner", async function () {
-    //   expect(await this.appraiserOrganization.owner()).to.equal(
-    //     this.signers[0].address
-    //   );
-    // });
+    it("*Happy Path: Should set the right owner", async function () {
+      expect(await this.verifier.owner()).to.equal(this.users.deployer.address);
+    });
 
     it("Should mint default VERIFIER NFTs and send them to owner", async function () {
-      const verifier = await this.appraiserOrganization.VERIFIER();
+      const verifier = await this.verifier.VERIFIER();
       expect(
-        await this.appraiserOrganization.balanceOf(
-          this.signers[0].address,
-          verifier
-        )
+        await this.verifier.balanceOf(this.orgs.wacarnolds.address, verifier)
       ).to.equal(Math.pow(10, 3));
     });
   });
 };
 
-const shouldMintReviewNFT = () => {
+const shouldMintVerifierNFT = () => {
   context(`# mintReviewNFT`, async function () {
-    describe("...After review1 NFT minted by user1", async () => {
+    describe("...After review1 NFT minted by tybiggums", async () => {
       beforeEach(async function () {
-        this.reviewId = await this.appraiserOrganization.currentReviewId();
-        this.review = {
-          author: this.signers[1].address,
-          rating: 50,
-          review: "this is a review",
-        };
-        this.tx = await this.appraiserOrganization.mintReviewNFT(
-          this.review.author,
-          this.review.rating,
-          this.review.review
-        );
-        await this.tx.wait();
+        // this.reviewId = await this.appraiserOrganization.currentReviewId();
+        // this.review = {
+        //   author: this.users.tybiggums,
+        //   rating: 50,
+        //   review: "this is a review",
+        // };
+        // this.tx = await this.appraiserOrganization.mintReviewNFT(
+        //   this.review.author,
+        //   this.review.rating,
+        //   this.review.review
+        // );
+        // await this.tx.wait();
       });
 
       //   it("should allow transfers of VERIFIER token only from owner", async function () {
@@ -80,4 +75,4 @@ const shouldMintReviewNFT = () => {
   });
 };
 
-module.exports = {};
+module.exports = { shouldDeploy, shouldMintVerifierNFT };
