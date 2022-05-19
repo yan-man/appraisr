@@ -90,15 +90,41 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployReviewNFTContract(orgId, URI_);
+  function addOrganization(
+        string calldata name_,
+        address addr_,
+        string calldata URI_
+    ) public isUniqueOrg(name_, addr_) onlyOwner {
+        uint orgId = orgIds.current();
+        Organizations.Organization memory newOrg = Organizations.Organization({
+            orgId: orgId,
+            name: name_,
+            addr: addr_,
+            isActive: true,
+            isCreated: true
+        });
+        s_organizations.push(newOrg);
+        orgNames[name_] = true;
+        orgAddresses[addr_] = true;
+        orgIds.increment();
+
+        deployNFTContract(orgId, name_, addr_, URI_);
         emit LogAddOrganization(orgId);
     }
 
-    function deployReviewNFTContract(uint256 _orgId, string calldata URI_)
-        internal
-    {
-        AppraiserOrganization _ao = new AppraiserOrganization(_orgId, URI_);
-        aoContracts[_orgId] = _ao;
+    function deployNFTContract(
+        uint256 orgId_,
+        string calldata name_,
+        address addr_,
+        string calldata URI_
+    ) internal {
+        AppraiserOrganization _ao = new AppraiserOrganization(
+            orgId_,
+            name_,
+            addr_,
+            URI_
+        );
+        aoContracts[orgId_] = _ao;
 
         emit LogNFTContractDeployed(address(_ao));
     }

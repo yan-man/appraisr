@@ -11,6 +11,7 @@ import "./Verifier.sol";
 
 contract AppraiserOrganization is ERC1155, Ownable {
     using Counters for Counters.Counter;
+    using Organizations for Organizations.Organization;
 
     // structs
     struct Review {
@@ -28,6 +29,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     mapping(uint256 => address[]) s_downvotes; // reviewId -> [voting addresses]
 
     Counters.Counter private _reviewIds;
+    Organizations.Organization private s_organization;
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
@@ -45,11 +47,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
         _;
     }
 
-    constructor(uint256 orgId_, string memory URI_) ERC1155(URI_) {
-        orgId = orgId_;
-        deployVerifierNFTContract(orgId, URI_);
-    }
-
     function deployVerifierNFTContract(uint256 _orgId, string memory URI_)
         internal
     {
@@ -57,6 +54,25 @@ contract AppraiserOrganization is ERC1155, Ownable {
         s_vContracts[_orgId] = _verifier;
 
         emit LogVerifierNFTContractDeployed(address(_verifier));
+
+    constructor(
+        uint256 orgId_,
+        string memory name_,
+        address addr_,
+        string memory URI_
+    ) ERC1155(URI_) {
+        Organizations.Organization memory _org = Organizations.Organization({
+            orgId: orgId_,
+            name: name_,
+            addr: addr_,
+            isActive: true,
+            isCreated: true
+        });
+        s_organization = _org;
+
+        _mint(addr_, VERIFIER, 10**3, "");
+        _reviewIds.increment();
+        // setApprovalForAll(addr_, true);
     }
 
     function mintReviewNFT(
@@ -103,4 +119,5 @@ contract AppraiserOrganization is ERC1155, Ownable {
     function currentReviewId() external view returns (uint256) {
         return _reviewIds.current();
     }
+
 }

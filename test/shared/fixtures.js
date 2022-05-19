@@ -27,10 +27,20 @@ const unitAppraiserOrganizationFixture = async (signers) => {
   const appraiserOrganizationFactory = await ethers.getContractFactory(
     `AppraiserOrganization`
   );
-  const constructorParams = [1, "URI"];
+  const constructorParams = {
+    orgId: 1,
+    name: "WacArnolds",
+    addr: signers[10].address,
+    URI: "ipfs://WacArnolds/",
+  };
   const appraiserOrganization = await appraiserOrganizationFactory
     .connect(deployer)
-    .deploy(constructorParams[0], constructorParams[1]);
+    .deploy(
+      constructorParams.orgId,
+      constructorParams.name,
+      constructorParams.addr,
+      constructorParams.URI
+    );
   await appraiserOrganization.deployed();
 
   const mockVerifier = await deployMockVerifier(deployer);
