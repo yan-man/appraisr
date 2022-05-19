@@ -8,20 +8,20 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./AppraiserOrganization.sol";
 import "./Organizations.sol";
 import "./Users.sol";
-import "./Reviews.sol";
 
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
     using Organizations for Organizations.Organization;
     using Users for Users.User;
-    using Reviews for Reviews.Review;
+
     Counters.Counter public orgIds;
 
     // Structs
 
     // State Vars
     Organizations.Organization[] public s_organizations;
-    mapping(uint256 => AppraiserOrganization) public aoContracts; // orgId -> deployed AO contract
+    mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
+    mapping(uint256 => address) public aoContracts; // orgId -> deployed AO contract
     mapping(string => bool) private orgNames; // org name -> is active flag
     mapping(address => bool) private orgAddresses; // org address -> is active flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
@@ -33,6 +33,7 @@ contract Appraiser is Ownable {
     event LogMintReview(uint256 reviewId);
     event LogNewUser(address addr);
     event LogVoteOnReview(address voter, uint256 orgId, uint256 reviewId);
+    event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // Errors
     error DuplicateOrgName();
@@ -71,8 +72,6 @@ contract Appraiser is Ownable {
         _;
     }
 
-    constructor() {}
-
     function addOrganization(
         string calldata name_,
         address addr_,
@@ -91,13 +90,50 @@ contract Appraiser is Ownable {
         orgAddresses[addr_] = true;
         orgIds.increment();
 
-        deployNFTContract(orgId, URI_);
+        address _verifierAddr = deployVerifierNFTContract(
+            orgId,
+            name_,
+            addr_,
+            URI_
+        );
+        deployAppraiserOrganizationNFTContract(
+            orgId,
+            name_,
+            addr_,
+            URI_,
+            _verifierAddr
+        );
         emit LogAddOrganization(orgId);
     }
 
-    function deployNFTContract(uint256 _orgId, string calldata URI_) internal {
-        AppraiserOrganization _ao = new AppraiserOrganization(URI_);
-        aoContracts[_orgId] = _ao;
+    function deployVerifierNFTContract(
+        uint256 orgId_,
+        string memory name_,
+        address addr_,
+        string memory URI_
+    ) internal returns (address) {
+        Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_);
+        s_vContracts[orgId_] = address(_verifier);
+
+        emit LogVerifierNFTContractDeployed(address(_verifier));
+        return address(_verifier);
+    }
+
+    function deployAppraiserOrganizationNFTContract(
+        uint256 orgId_,
+        string calldata name_,
+        address addr_,
+        string calldata URI_,
+        address verifierAddr_
+    ) internal {
+        AppraiserOrganization _ao = new AppraiserOrganization(
+            orgId_,
+            name_,
+            addr_,
+            URI_,
+            verifierAddr_
+        );
+        aoContracts[orgId_] = address(_ao);
 
         emit LogNFTContractDeployed(address(_ao));
     }
@@ -107,7 +143,7 @@ contract Appraiser is Ownable {
         onlyOwner
         isValidOrgId(orgId_)
     {
-        aoContracts[orgId_] = AppraiserOrganization(aoAddress_);
+        aoContracts[orgId_] = aoAddress_;
     }
 
     function mintReview(
@@ -115,11 +151,8 @@ contract Appraiser is Ownable {
         uint256 rating_,
         string calldata review_
     ) external isValidOrgId(orgId_) {
-        uint256 _reviewId = aoContracts[orgId_].mintReviewNFT(
-            msg.sender,
-            rating_,
-            review_
-        );
+        uint256 _reviewId = AppraiserOrganization(aoContracts[orgId_])
+            .mintReviewNFT(msg.sender, rating_, review_);
         s_reviews[orgId_][_reviewId] = msg.sender;
         addUser(msg.sender);
         emit LogMintReview(_reviewId);
@@ -148,7 +181,11 @@ contract Appraiser is Ownable {
         } else {
             _reviewUser.downvotes += 1;
         }
-        aoContracts[orgId_].voteOnReview(msg.sender, reviewId_, isUpvote_);
+        AppraiserOrganization(aoContracts[orgId_]).voteOnReview(
+            msg.sender,
+            reviewId_,
+            isUpvote_
+        );
 
         emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
     }
@@ -162,23 +199,23 @@ contract Appraiser is Ownable {
     }
 
     // implement these functions to allow this contract to accept 1155 tokens
-    function onERC1155Received(
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes memory
-    ) public virtual returns (bytes4) {
-        return this.onERC1155Received.selector;
-    }
+    // function onERC1155Received(
+    //     address,
+    //     address,
+    //     uint256,
+    //     uint256,
+    //     bytes memory
+    // ) public virtual returns (bytes4) {
+    //     return this.onERC1155Received.selector;
+    // }
 
-    function onERC1155BatchReceived(
-        address,
-        address,
-        uint256[] memory,
-        uint256[] memory,
-        bytes memory
-    ) public virtual returns (bytes4) {
-        return this.onERC1155BatchReceived.selector;
-    }
+    // function onERC1155BatchReceived(
+    //     address,
+    //     address,
+    //     uint256[] memory,
+    //     uint256[] memory,
+    //     bytes memory
+    // ) public virtual returns (bytes4) {
+    //     return this.onERC1155BatchReceived.selector;
+    // }
 }
