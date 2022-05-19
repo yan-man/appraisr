@@ -13,26 +13,19 @@ const shouldManageOrgs = () => {
   context(`# manage organizations`, async function () {
     describe("...save new orgs", async () => {
       beforeEach(`save new org`, async function () {
-        this.company = {
-          name: "WacArnolds",
-          address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-          URI: "testURI",
-        };
         this.tx = await this.appraiser.addOrganization(
-          this.company.name,
-          this.company.address,
-          this.company.URI
+          this.companies[0].name,
+          this.companies[0].addr,
+          this.companies[0].URI
         );
-
         this.receipt = await this.tx.wait();
       });
 
       it(`Should update state vars after saving new organization`, async function () {
         const { orgId, name, addr } = await this.appraiser.s_organizations(0);
-
         expect(orgId).to.equal(ethers.BigNumber.from(0));
-        expect(name).to.equal(this.company.name);
-        expect(addr).to.equal(this.company.address);
+        expect(name).to.equal(this.companies[0].name);
+        expect(addr).to.equal(this.companies[0].addr);
       });
 
       it(`Should emit events when new organization saved`, async function () {
@@ -64,7 +57,7 @@ const shouldManageOrgs = () => {
         expect(newOwner).to.equal(this.appraiser.address);
       });
 
-      describe("...After new org saved", async () => {
+      describe(`...After new org saved`, async () => {
         beforeEach(async function () {
           eventId = [...this.receipt.events.keys()].filter(
             (id) => this.receipt.events[id].event === "LogNFTContractDeployed"
@@ -89,27 +82,27 @@ const shouldManageOrgs = () => {
         it(`Should throw DuplicateOrgName error on duplicate org name`, async function () {
           await expect(
             this.appraiser.addOrganization(
-              this.company.name,
-              this.company.address,
-              this.company.URI
+              this.companies[0].name,
+              this.companies[0].addr,
+              this.companies[0].URI
             )
           ).to.be.revertedWith(`DuplicateOrgName`);
         });
         it(`Should throw DuplicateOrgAddr error on duplicate org addr`, async function () {
           await expect(
             this.appraiser.addOrganization(
-              `${this.company.name}1`,
-              this.company.address,
-              this.company.URI
+              `${this.companies[0].name}1`,
+              this.companies[0].addr,
+              this.companies[0].URI
             )
           ).to.be.revertedWith(`DuplicateOrgAddr`);
         });
 
         it(`should save second org`, async function () {
           const tx = await this.appraiser.addOrganization(
-            "KFC",
-            "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
-            "KFCURI"
+            this.companies[1].name,
+            this.companies[1].addr,
+            this.companies[1].URI
           );
           const receipt = await tx.wait();
           const eventId = [...receipt.events.keys()].filter(
@@ -117,16 +110,18 @@ const shouldManageOrgs = () => {
           );
           const { orgId, name, addr } = await this.appraiser.s_organizations(1);
 
-          expect(orgId).to.equal(ethers.BigNumber.from(1));
-          expect(name).to.equal("KFC");
-          expect(addr).to.equal("0xBcd4042DE499D14e55001CcbB24a551F3b954096");
+          expect(orgId).to.equal(
+            ethers.BigNumber.from(this.companies[1].orgId)
+          );
+          expect(name).to.equal(this.companies[1].name);
+          expect(addr).to.equal(this.companies[1].addr);
         });
 
         it(`should emit events after second org saved`, async function () {
           const tx = await this.appraiser.addOrganization(
-            "KFC",
-            "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
-            "KFCURI"
+            this.companies[1].name,
+            this.companies[1].addr,
+            this.companies[1].URI
           );
           const receipt = await tx.wait();
 
@@ -135,8 +130,6 @@ const shouldManageOrgs = () => {
             .withArgs(1);
           await expect(tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
         });
-
-        // make sure new values are updated after 2nd org saved - number of orgs, etc
       });
     });
   });
@@ -146,15 +139,10 @@ const shouldManageReviews = () => {
   context(`# manage reviews`, async function () {
     describe("...After new org exists", async () => {
       beforeEach(async function () {
-        this.company = {
-          name: "WacArnolds",
-          address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-          URI: "testURI",
-        };
         this.tx = await this.appraiser.addOrganization(
-          this.company.name,
-          this.company.address,
-          this.company.URI
+          this.companies[0].name,
+          this.companies[0].addr,
+          this.companies[0].URI
         );
         this.receipt = await this.tx.wait();
         const eventId = [...this.receipt.events.keys()].filter(
@@ -260,9 +248,9 @@ const shouldManageReviews = () => {
           describe(`...After 2nd org added`, async function () {
             beforeEach(async function () {
               const tx = await this.appraiser.addOrganization(
-                "KFC",
-                "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
-                "KFCURI"
+                this.companies[1].name,
+                this.companies[1].addr,
+                this.companies[1].URI
               );
               const receipt = await tx.wait();
               const eventId = [...receipt.events.keys()].filter(
@@ -314,15 +302,10 @@ const shouldManageReviewsRatings = () => {
   context(`# manage reviews`, async function () {
     describe("...After 1st org saved & review1 is minted", async () => {
       beforeEach(async function () {
-        this.company = {
-          name: "WacArnolds",
-          address: "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-          URI: "testURI",
-        };
         this.tx = await this.appraiser.addOrganization(
-          this.company.name,
-          this.company.address,
-          this.company.URI
+          this.companies[0].name,
+          this.companies[0].addr,
+          this.companies[0].URI
         );
         this.receipt = await this.tx.wait();
         const eventId = [...this.receipt.events.keys()].filter(
@@ -448,8 +431,6 @@ const shouldManageReviewsRatings = () => {
     });
   });
 };
-
-// user can mint verified review NFTs
 
 module.exports = {
   shouldDeploy,
