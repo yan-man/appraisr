@@ -80,6 +80,16 @@ const shouldMintReviewNFT = () => {
             .withArgs(this.reviewId);
         });
         context(`# Vote on reviews`, async function () {
+          it(`should not allow ashy larry to vote on own review`, async function () {
+            await expect(
+              this.appraiserOrganization.voteOnReview(
+                this.users.ashylarry.address,
+                this.reviewId,
+                this.isUpvote
+              )
+            ).to.be.revertedWith(`VoterCannotRateOwnReview`);
+          });
+
           describe(`...After review is upvoted by dave`, async () => {
             beforeEach(async function () {
               this.isUpvote = true;
@@ -91,14 +101,13 @@ const shouldMintReviewNFT = () => {
                 );
               await this.voteOnReviewTx.wait();
             });
-            it(`should update state vars - review votes`, async function () {
+            it(`should update state vars - votes`, async function () {
               expect(
-                (
-                  await this.appraiserOrganization.getVoters(
-                    this.reviewId,
-                    this.isUpvote
-                  )
-                ).includes(this.users.dave.address)
+                await this.appraiserOrganization.hasVoted(
+                  this.users.dave.address,
+                  this.reviewId,
+                  this.isUpvote
+                )
               ).to.equal(true);
             });
             it(`should return correct number of votes`, async function () {
@@ -120,14 +129,23 @@ const shouldMintReviewNFT = () => {
                 .to.emit(this.appraiserOrganization, `LogNFTReviewVote`)
                 .withArgs(this.reviewId);
             });
+            it(`should revert if multiple ratings given by dave for same review`, async function () {
+              await expect(
+                this.appraiserOrganization.voteOnReview(
+                  this.users.dave.address,
+                  this.reviewId,
+                  this.isUpvote
+                )
+              ).to.be.revertedWith(`OneVoteAllowedPerReview`);
+            });
           });
 
-          describe(`...After review is downvoted by dave`, async () => {
+          describe(`...After review is downvoted by rick`, async () => {
             beforeEach(async function () {
               this.isUpvote = false;
               this.voteOnReviewTx =
                 await this.appraiserOrganization.voteOnReview(
-                  this.users.dave.address,
+                  this.users.rickjames.address,
                   this.reviewId,
                   this.isUpvote
                 );
@@ -135,12 +153,11 @@ const shouldMintReviewNFT = () => {
             });
             it(`should update state vars - review votes`, async function () {
               expect(
-                (
-                  await this.appraiserOrganization.getVoters(
-                    this.reviewId,
-                    this.isUpvote
-                  )
-                ).includes(this.users.dave.address)
+                await this.appraiserOrganization.hasVoted(
+                  this.users.rickjames.address,
+                  this.reviewId,
+                  this.isUpvote
+                )
               ).to.equal(true);
             });
             it(`should return correct number of votes`, async function () {
