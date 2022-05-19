@@ -50,7 +50,7 @@ describe("Unit tests", async () => {
       this.constructorParams = constructorParams;
       this.mocks.mockVerifier = mockVerifier;
     });
-    // AppraiserOrganization.shouldDeploy();
+    AppraiserOrganization.shouldDeploy();
     AppraiserOrganization.shouldMintReviewNFT();
     // shouldManageReviews();
     // shouldManageReviewsRatings();

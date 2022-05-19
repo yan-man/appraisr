@@ -10,7 +10,7 @@ const shouldDeploy = () => {
     });
     it("Should set default URI", async function () {
       expect(await this.appraiserOrganization.uri(0)).to.equal(
-        this.constructorParams[1]
+        this.constructorParams.URI
       );
     });
   });
