@@ -18,7 +18,7 @@ const shouldDeploy = () => {
 
 const shouldMintVerifierNFT = () => {
   context(`# mintReviewNFT`, async function () {
-    describe("...After review1 NFT minted by tybiggums", async () => {
+    describe("...After review1 NFT minted by tybiggums", async function () {
       beforeEach(async function () {
         // this.reviewId = await this.appraiserOrganization.currentReviewId();
         // this.review = {
