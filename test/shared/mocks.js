@@ -13,8 +13,9 @@ async function deployMockAppraiserOrganization(deployer) {
 
 async function deployMockVerifier(deployer) {
   const verifier = await waffle.deployMockContract(deployer, Verifier_ABI.abi);
-  await verifier.mock.balanceOf.returns(24);
+  await verifier.mock.balanceOf.returns(0);
   await verifier.mock.VERIFIER.returns(0);
+  await verifier.mock.burnVerifierForAddress.returns();
 
   return verifier;
 }

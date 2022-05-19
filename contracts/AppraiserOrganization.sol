@@ -20,6 +20,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         uint256 rating;
         string review;
         uint256 unixtime;
+        bool isVerified;
     }
 
     // state vars
@@ -31,6 +32,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     Counters.Counter private _reviewIds;
     Organizations.Organization private s_organization;
     Verifier private immutable s_verifier;
+    uint256 private VERIFIER_ID;
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
@@ -62,7 +64,10 @@ contract AppraiserOrganization is ERC1155, Ownable {
             isCreated: true
         });
         s_organization = _org;
-        s_verifier = Verifier(verifierAddr_);
+        Verifier _verifier = Verifier(verifierAddr_);
+        VERIFIER_ID = _verifier.VERIFIER();
+
+        s_verifier = _verifier;
 
         _reviewIds.increment();
     }
@@ -75,15 +80,18 @@ contract AppraiserOrganization is ERC1155, Ownable {
         uint256 _reviewId = _reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
 
-        // if (_verifier.balanceOf(reviewerAddr_, VERIFIER) > 0) {
-        //     console.log("verified");
-        // }
+        bool _isVerified = false;
+        if (s_verifier.balanceOf(reviewerAddr_, VERIFIER_ID) > 0) {
+            s_verifier.burnVerifierForAddress(reviewerAddr_);
+            _isVerified = true;
+        }
 
         Review memory review = Review({
             author: reviewerAddr_,
             rating: rating_,
             review: review_,
-            unixtime: block.timestamp
+            unixtime: block.timestamp,
+            isVerified: _isVerified
         });
         s_reviews[_reviewId] = review;
         _reviewIds.increment();

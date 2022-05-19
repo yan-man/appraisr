@@ -20,7 +20,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     uint256 public constant VERIFIER = 0;
     mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
 
-    Counters.Counter private _reviewIds;
+    address private s_appraiserContract;
 
     // events
 
@@ -37,7 +37,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         orgId = orgId_;
         _mint(addr_, VERIFIER, 10**3, "");
         _setupRole(ADMIN_ROLE, addr_);
-        _reviewIds.increment();
+        s_appraiserContract = _msgSender();
     }
 
     function safeTransferFrom(
@@ -51,10 +51,24 @@ contract Verifier is ERC1155, Ownable, AccessControl {
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not owner nor approved"
         );
-        if (hasRole(ADMIN_ROLE, msg.sender) && id == VERIFIER) {
+        if (
+            hasRole(ADMIN_ROLE, msg.sender) == false && _msgSender() != owner()
+        ) {
             revert OnlyAdminCanTransferVerifierNFT();
         }
         _safeTransferFrom(from, to, id, amount, data);
+    }
+
+    // function setAppraiserContractAddress(address appraiserContractAddress_)
+    //     external
+    //     onlyOwner
+    // {
+    //     s_appraiserContract = appraiserContractAddress_;
+    // }
+
+    function burnVerifierForAddress(address burnTokenAddress) external {
+        require(_msgSender() == s_appraiserContract, "Invalid burner address");
+        _burn(burnTokenAddress, VERIFIER, 1);
     }
 
     // MUST be implemented to override from ERC1155 / AccessControl

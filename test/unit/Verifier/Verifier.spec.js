@@ -69,7 +69,7 @@ const shouldMintVerifierNFT = () => {
           //   );
           //   await this.tx.wait();
         });
-        it("should mint NFT to user", async function () {});
+        // it("should mint NFT to user", async function () {});
       });
     });
   });

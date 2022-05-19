@@ -20,8 +20,8 @@ contract Appraiser is Ownable {
 
     // State Vars
     Organizations.Organization[] public s_organizations;
-    mapping(uint256 => Verifier) public s_vContracts; // orgId -> deployed AO contract
-    mapping(uint256 => AppraiserOrganization) public aoContracts; // orgId -> deployed AO contract
+    mapping(uint256 => address) public s_vContracts; // orgId -> deployed AO contract
+    mapping(uint256 => address) public aoContracts; // orgId -> deployed AO contract
     mapping(string => bool) private orgNames; // org name -> is active flag
     mapping(address => bool) private orgAddresses; // org address -> is active flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
@@ -115,7 +115,7 @@ contract Appraiser is Ownable {
         string memory URI_
     ) internal returns (address) {
         Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_);
-        s_vContracts[orgId_] = _verifier;
+        s_vContracts[orgId_] = address(_verifier);
 
         emit LogVerifierNFTContractDeployed(address(_verifier));
         return address(_verifier);
@@ -135,7 +135,7 @@ contract Appraiser is Ownable {
             URI_,
             verifierAddr_
         );
-        aoContracts[orgId_] = _ao;
+        aoContracts[orgId_] = address(_ao);
 
         emit LogNFTContractDeployed(address(_ao));
     }
@@ -145,7 +145,7 @@ contract Appraiser is Ownable {
         onlyOwner
         isValidOrgId(orgId_)
     {
-        aoContracts[orgId_] = AppraiserOrganization(aoAddress_);
+        aoContracts[orgId_] = aoAddress_;
     }
 
     function mintReview(
@@ -153,11 +153,8 @@ contract Appraiser is Ownable {
         uint256 rating_,
         string calldata review_
     ) external isValidOrgId(orgId_) {
-        uint256 _reviewId = aoContracts[orgId_].mintReviewNFT(
-            msg.sender,
-            rating_,
-            review_
-        );
+        uint256 _reviewId = AppraiserOrganization(aoContracts[orgId_])
+            .mintReviewNFT(msg.sender, rating_, review_);
         s_reviews[orgId_][_reviewId] = msg.sender;
         addUser(msg.sender);
         emit LogMintReview(_reviewId);
@@ -186,7 +183,11 @@ contract Appraiser is Ownable {
         } else {
             _reviewUser.downvotes += 1;
         }
-        aoContracts[orgId_].voteOnReview(msg.sender, reviewId_, isUpvote_);
+        AppraiserOrganization(aoContracts[orgId_]).voteOnReview(
+            msg.sender,
+            reviewId_,
+            isUpvote_
+        );
 
         emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
     }
