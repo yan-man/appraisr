@@ -15,7 +15,7 @@ contract Appraiser is Ownable {
     using Users for Users.User;
 
     // State Vars
-    Counters.Counter public orgIds;
+    Counters.Counter public s_orgIds;
     Organizations.Organization[] public s_organizations;
     mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
@@ -74,33 +74,33 @@ contract Appraiser is Ownable {
         address addr_,
         string calldata URI_
     ) public isUniqueOrg(name_, addr_) onlyOwner {
-        uint orgId = orgIds.current();
-        Organizations.Organization memory newOrg = Organizations.Organization({
-            orgId: orgId,
+        uint _orgId = s_orgIds.current();
+        Organizations.Organization memory _org = Organizations.Organization({
+            orgId: _orgId,
             name: name_,
             addr: addr_,
             isActive: true,
             isCreated: true
         });
-        s_organizations.push(newOrg);
+        s_organizations.push(_org);
         s_orgNames[name_] = true;
         s_orgAddresses[addr_] = true;
-        orgIds.increment();
+        s_orgIds.increment();
 
         address _verifierAddr = deployVerifierNFTContract(
-            orgId,
+            _orgId,
             name_,
             addr_,
             URI_
         );
         deployAppraiserOrganizationNFTContract(
-            orgId,
+            _orgId,
             name_,
             addr_,
             URI_,
             _verifierAddr
         );
-        emit LogAddOrganization(orgId);
+        emit LogAddOrganization(_orgId);
     }
 
     function deployVerifierNFTContract(
@@ -187,7 +187,7 @@ contract Appraiser is Ownable {
     }
 
     function currentOrgId() public view returns (uint256) {
-        return orgIds.current();
+        return s_orgIds.current();
     }
 
     function numberOrganizations() public view returns (uint256) {
