@@ -23,7 +23,7 @@ const unitAppraiserOrganizationFixture = async (signers) => {
   const deployer = signers[0];
 
   const constructorParams = {
-    orgId: 1,
+    orgId: 0,
     name: "WacArnolds",
     addr: signers[10].address,
     URI: "ipfs://WacArnolds/",

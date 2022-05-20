@@ -9,16 +9,24 @@ const shouldDeploy = () => {
       );
     });
     it(`Should set default URI`, async function () {
-      expect(await this.appraiserOrganization.uri(0)).to.equal(
-        this.constructorParams.URI
-      );
+      expect(
+        await this.appraiserOrganization.uri(this.constructorParams.orgId)
+      ).to.equal(this.constructorParams.URI);
     });
     // it(`Should update state vars after saving new organization WacArnolds`, async function () {
-    //   const { orgId, name, addr } =
-    //     await this.appraiserOrganization.s_organizations(0);
-    //   expect(orgId).to.equal(ethers.BigNumber.from(0));
-    //   expect(name).to.equal(this.companies.wacarnolds.name);
-    //   expect(addr).to.equal(this.companies.wacarnolds.addr);
+    //   const org = await this.appraiserOrganization._s_organization();
+    //   expect(org.orgId).to.equal(
+    //     ethers.BigNumber.from(this.constructorParams.orgId)
+    //   );
+    // });
+    // it(`Should update state vars after saving new organization WacArnolds`, async function () {
+    //   const org = await this.appraiserOrganization._s_organization(
+    //     this.constructorParams.orgId
+    //   );
+    //   console.log(org);
+    //   // expect(orgId).to.equal(
+    //   //   ethers.BigNumber.from(this.constructorParams.orgId)
+    //   // );
     // });
   });
 };
