@@ -85,7 +85,9 @@ describe("Unit tests", async () => {
       this.verifier = verifier;
       this.constructorParams = constructorParams;
     });
-    // Verifier.shouldDeploy();
-    // Verifier.shouldMintVerifierNFT();
+    Verifier.shouldDeploy();
+    Verifier.shouldSetContractAddress();
+    Verifier.shouldMintAndTransferAndBurnNFT();
+    Verifier.shouldSupportInterface();
   });
 });

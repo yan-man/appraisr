@@ -16,16 +16,18 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     // state vars
-    uint256 orgId;
+    uint256 public orgId;
     uint256 public constant VERIFIER = 0;
     mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
 
-    address private s_appraiserContract;
+    address public s_appraiserContract;
 
     // events
 
     // errors
     error OnlyAdminCanTransferVerifierNFT();
+    error InvalidBurnerAddress();
+    error ERC1155__NotOwnerNorApproved();
 
     // modifiers
     constructor(
@@ -47,16 +49,26 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         uint256 amount,
         bytes memory data
     ) public override {
-        require(
-            from == _msgSender() || isApprovedForAll(from, _msgSender()),
-            "ERC1155: caller is not owner nor approved"
-        );
+        if (
+            (from == _msgSender() || isApprovedForAll(from, _msgSender())) ==
+            false
+        ) {
+            revert ERC1155__NotOwnerNorApproved();
+        }
         if (
             hasRole(ADMIN_ROLE, msg.sender) == false && _msgSender() != owner()
         ) {
             revert OnlyAdminCanTransferVerifierNFT();
         }
         _safeTransferFrom(from, to, id, amount, data);
+    }
+
+    function mintBatch(
+        uint256[] memory ids_,
+        uint256[] memory amounts_,
+        address to_
+    ) external onlyOwner {
+        _mintBatch(to_, ids_, amounts_, "");
     }
 
     function setAppraiserContractAddress(address appraiserContractAddress_)
@@ -67,8 +79,18 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     }
 
     function burnVerifierForAddress(address burnTokenAddress) external {
-        require(_msgSender() == s_appraiserContract, "Invalid burner address");
+        if (_msgSender() != s_appraiserContract) {
+            revert InvalidBurnerAddress();
+        }
         _burn(burnTokenAddress, VERIFIER, 1);
+    }
+
+    function hasCustomRole(string calldata role, address addr)
+        external
+        view
+        returns (bool)
+    {
+        return hasRole(keccak256("ADMIN_ROLE"), addr);
     }
 
     // MUST be implemented to override from ERC1155 / AccessControl

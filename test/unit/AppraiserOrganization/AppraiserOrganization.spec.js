@@ -247,6 +247,11 @@ const shouldVoteOnReviewNFT = () => {
   });
 };
 
+// transfer an unverified review
+// transfer a verified review
+
+// test certain functions called
+
 module.exports = {
   shouldDeploy,
   shouldMintReviewNFT,
