@@ -218,7 +218,7 @@ const shouldManageReviews = () => {
 
           it(`should create new user when user1's first review is minted`, async function () {
             const { upvotes, downvotes, isRegistered } =
-              await this.appraiser.users(this.signers[0].address);
+              await this.appraiser.s_users(this.signers[0].address);
             expect(upvotes).to.equal(ethers.BigNumber.from(0));
             expect(downvotes).to.equal(ethers.BigNumber.from(0));
             expect(isRegistered).to.equal(true);
@@ -379,7 +379,7 @@ const shouldManageReviewsRatings = () => {
           .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, true);
         await tx2.wait();
 
-        const { upvotes, downvotes } = await this.appraiser.users(
+        const { upvotes, downvotes } = await this.appraiser.s_users(
           this.signers[0].address
         );
 
@@ -407,7 +407,7 @@ const shouldManageReviewsRatings = () => {
           .voteOnReview(this.orgId, this.mockedResponses.mintReviewNFT, false);
         await tx2.wait();
 
-        const { upvotes, downvotes } = await this.appraiser.users(
+        const { upvotes, downvotes } = await this.appraiser.s_users(
           this.signers[0].address
         );
 

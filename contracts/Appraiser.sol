@@ -14,18 +14,15 @@ contract Appraiser is Ownable {
     using Organizations for Organizations.Organization;
     using Users for Users.User;
 
-    Counters.Counter public orgIds;
-
-    // Structs
-
     // State Vars
+    Counters.Counter public orgIds;
     Organizations.Organization[] public s_organizations;
     mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
-    mapping(string => bool) private orgNames; // org name -> is active flag
-    mapping(address => bool) private orgAddresses; // org address -> is active flag
+    mapping(string => bool) private s_orgNames; // org name -> is active flag
+    mapping(address => bool) private s_orgAddresses; // org address -> is active flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
-    mapping(address => Users.User) public users; // user/reviewer address -> User struct
+    mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
 
     // Events
     event LogAddOrganization(uint256 orgId);
@@ -45,10 +42,10 @@ contract Appraiser is Ownable {
 
     // Modifiers
     modifier isUniqueOrg(string calldata name_, address addr_) {
-        if (orgNames[name_]) {
+        if (s_orgNames[name_]) {
             revert DuplicateOrgName();
         }
-        if (orgAddresses[addr_]) {
+        if (s_orgAddresses[addr_]) {
             revert DuplicateOrgAddr();
         }
         _;
@@ -86,8 +83,8 @@ contract Appraiser is Ownable {
             isCreated: true
         });
         s_organizations.push(newOrg);
-        orgNames[name_] = true;
-        orgAddresses[addr_] = true;
+        s_orgNames[name_] = true;
+        s_orgAddresses[addr_] = true;
         orgIds.increment();
 
         address _verifierAddr = deployVerifierNFTContract(
@@ -159,8 +156,8 @@ contract Appraiser is Ownable {
     }
 
     function addUser(address addr_) private {
-        if (users[addr_].isRegistered == false) {
-            users[addr_] = Users.User({
+        if (s_users[addr_].isRegistered == false) {
+            s_users[addr_] = Users.User({
                 upvotes: 0,
                 downvotes: 0,
                 isRegistered: true
@@ -175,7 +172,7 @@ contract Appraiser is Ownable {
         uint256 reviewId_,
         bool isUpvote_
     ) external isValidOrgId(orgId_) isReviewerValid(orgId_, reviewId_) {
-        Users.User storage _reviewUser = users[s_reviews[orgId_][reviewId_]];
+        Users.User storage _reviewUser = s_users[s_reviews[orgId_][reviewId_]];
         if (isUpvote_ == true) {
             _reviewUser.upvotes += 1;
         } else {
