@@ -98,7 +98,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
                 1,
                 []
               )
-          ).to.be.revertedWith(`OnlyAdminCanTransferVerifierNFT`);
+          ).to.be.revertedWith(`Verifier__OnlyAdminCanTransferVerifierNFT`);
         });
         it(`Should not allow transfers of VERIFIER token from non-approved`, async function () {
           await expect(
@@ -166,7 +166,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
                 1,
                 []
               )
-          ).to.be.revertedWith(`OnlyAdminCanTransferVerifierNFT`);
+          ).to.be.revertedWith(`Verifier__OnlyAdminCanTransferVerifierNFT`);
         });
         it(`Should not allow transfers of VERIFIER token from non-approved`, async function () {
           await expect(
@@ -186,7 +186,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
             this.verifier
               .connect(this.orgs.wacarnolds)
               .burnVerifierForAddress(this.users.ashylarry.address)
-          ).to.be.revertedWith(`InvalidBurnerAddress`);
+          ).to.be.revertedWith(`Verifier__InvalidBurnerAddress`);
         });
 
         describe("...After Appraiser contract address has been set", async function () {

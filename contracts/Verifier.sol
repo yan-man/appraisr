@@ -26,8 +26,8 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     // events
 
     // errors
-    error OnlyAdminCanTransferVerifierNFT();
-    error InvalidBurnerAddress();
+    error Verifier__OnlyAdminCanTransferVerifierNFT();
+    error Verifier__InvalidBurnerAddress();
     error ERC1155__NotOwnerNorApproved();
 
     // modifiers
@@ -64,7 +64,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         if (
             hasRole(ADMIN_ROLE, msg.sender) == false && _msgSender() != owner()
         ) {
-            revert OnlyAdminCanTransferVerifierNFT();
+            revert Verifier__OnlyAdminCanTransferVerifierNFT();
         }
         _safeTransferFrom(from, to, id, amount, data);
     }
@@ -86,7 +86,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
 
     function burnVerifierForAddress(address burnTokenAddress) external {
         if (_msgSender() != s_appraiserContract) {
-            revert InvalidBurnerAddress();
+            revert Verifier__InvalidBurnerAddress();
         }
         _burn(burnTokenAddress, VERIFIER, 1);
     }
