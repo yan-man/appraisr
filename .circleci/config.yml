@@ -55,5 +55,3 @@ workflows:
       - install-node-and-test:
           requires:
             - fetch-code
-          post-steps:
-            - codecov/upload
