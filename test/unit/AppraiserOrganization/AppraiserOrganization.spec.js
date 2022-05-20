@@ -13,21 +13,14 @@ const shouldDeploy = () => {
         await this.appraiserOrganization.uri(this.constructorParams.orgId)
       ).to.equal(this.constructorParams.URI);
     });
-    // it(`Should update state vars after saving new organization WacArnolds`, async function () {
-    //   const org = await this.appraiserOrganization._s_organization();
-    //   expect(org.orgId).to.equal(
-    //     ethers.BigNumber.from(this.constructorParams.orgId)
-    //   );
-    // });
-    // it(`Should update state vars after saving new organization WacArnolds`, async function () {
-    //   const org = await this.appraiserOrganization._s_organization(
-    //     this.constructorParams.orgId
-    //   );
-    //   console.log(org);
-    //   // expect(orgId).to.equal(
-    //   //   ethers.BigNumber.from(this.constructorParams.orgId)
-    //   // );
-    // });
+    it(`Should update state vars after saving new organization WacArnolds`, async function () {
+      const org = await this.appraiserOrganization.organization();
+      expect(org.orgId).to.equal(this.constructorParams.orgId);
+      expect(org.name).to.equal(this.constructorParams.name);
+      expect(org.addr).to.equal(this.constructorParams.addr);
+      expect(org.isActive).to.equal(true);
+      expect(org.isCreated).to.equal(true);
+    });
   });
 };
 

@@ -150,4 +150,12 @@ contract AppraiserOrganization is ERC1155, Ownable {
     function currentReviewId() external view returns (uint256) {
         return _s_reviewIds.current();
     }
+
+    function organization()
+        external
+        view
+        returns (Organizations.Organization memory)
+    {
+        return _s_organization;
+    }
 }
