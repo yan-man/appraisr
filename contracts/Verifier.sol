@@ -13,13 +13,13 @@ import "hardhat/console.sol";
 contract Verifier is ERC1155, Ownable, AccessControl {
     using Counters for Counters.Counter;
     using Reviews for Reviews.Review;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     // state vars
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     uint256 public orgId;
+    string public s_name;
     uint256 public constant VERIFIER = 0;
     mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
-
     address public s_appraiserContract;
 
     // events
@@ -37,6 +37,8 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         string memory URI_
     ) ERC1155(URI_) {
         orgId = orgId_;
+        s_name = name_;
+
         _mint(addr_, VERIFIER, 10**3, "");
         _setupRole(ADMIN_ROLE, addr_);
         s_appraiserContract = _msgSender();
@@ -85,11 +87,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         _burn(burnTokenAddress, VERIFIER, 1);
     }
 
-    function hasCustomRole(string calldata role, address addr)
-        external
-        view
-        returns (bool)
-    {
+    function isAdmin(address addr) external view returns (bool) {
         return hasRole(keccak256("ADMIN_ROLE"), addr);
     }
 

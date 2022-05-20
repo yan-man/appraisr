@@ -126,12 +126,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         address reviewer_,
         uint256 reviewId_,
         bool isUpvote_
-    )
-        external
-        validateVoter(reviewer_, reviewId_, isUpvote_)
-        returns (uint256)
-    {
-        uint256 _length;
+    ) external validateVoter(reviewer_, reviewId_, isUpvote_) {
         if (isUpvote_ == true) {
             s_upvotes[reviewId_][reviewer_] = true;
             uint256 count = s_upvoteCount[reviewId_];

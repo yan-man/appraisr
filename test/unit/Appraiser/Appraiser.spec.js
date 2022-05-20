@@ -317,14 +317,11 @@ const shouldManageReviewsRatings = () => {
         this.orgId = orgId;
         this.mockedResponses = {
           mintReviewNFT: 100,
-          voteOnReview: 2,
         };
         await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
           this.mockedResponses.mintReviewNFT
         );
-        await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns(
-          this.mockedResponses.voteOnReview
-        );
+        await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
         const tx = await this.appraiser.setAOContractAddress(
           this.orgId.toNumber(),
           this.mocks.mockAppraiserOrganization.address

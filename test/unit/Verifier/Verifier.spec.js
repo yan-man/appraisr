@@ -21,12 +21,9 @@ const shouldDeploy = () => {
     });
 
     it("Should set ADMIN_ROLE in constructor", async function () {
-      expect(
-        await this.verifier.hasCustomRole(
-          "ADMIN_ROLE",
-          this.constructorParams.addr
-        )
-      ).to.equal(true);
+      expect(await this.verifier.isAdmin(this.constructorParams.addr)).to.equal(
+        true
+      );
     });
     it("Should set Appraiser contract address", async function () {
       expect(await this.verifier.s_appraiserContract()).to.equal(

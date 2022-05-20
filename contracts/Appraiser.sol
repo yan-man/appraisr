@@ -131,7 +131,6 @@ contract Appraiser is Ownable {
             verifierAddr_
         );
         s_aoContracts[orgId_] = address(_ao);
-
         emit LogNFTContractDeployed(address(_ao));
     }
 
