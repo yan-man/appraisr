@@ -38,14 +38,22 @@ const shouldDeploy = () => {
 
 const shouldSetContractAddress = () => {
   context(`# setAppraiserContractAddress`, async function () {
-    it("should allow transfers of VERIFIER token only from owner", async function () {
+    it("should allow owner to set AppraiserContractAddress", async function () {
       const tx = await this.verifier.setAppraiserContractAddress(
-        this.signers[15].address
+        this.users.prince.address
       );
       await tx.wait();
       expect(await this.verifier.s_appraiserContract()).to.equal(
-        this.signers[15].address
+        this.users.prince.address
       );
+    });
+
+    it("should not allow dave to set AppraiserContractAddress", async function () {
+      await expect(
+        this.verifier
+          .connect(this.users.dave)
+          .setAppraiserContractAddress(this.users.prince.address)
+      ).to.be.reverted;
     });
   });
 };
@@ -55,7 +63,8 @@ const shouldMintAndTransferAndBurnNFT = () => {
     describe("...Set up", async function () {
       beforeEach(async function () {
         this.VERIFIER = await this.verifier.VERIFIER();
-        this.appraiserContract = await this.verifier.s_appraiserContract();
+        this.appraiserContractAddress =
+          await this.verifier.s_appraiserContract();
       });
 
       it("should batch mint 5 VERIFIER NFTs to dave", async function () {
@@ -109,6 +118,32 @@ const shouldMintAndTransferAndBurnNFT = () => {
         });
       });
 
+      it(`should allow transfer of tokens from admin to ashylarry`, async function () {
+        const tokenAmount = 2;
+        const tx = await this.verifier
+          .connect(this.orgs.wacarnolds)
+          .safeTransferFrom(
+            this.orgs.wacarnolds.address,
+            this.users.ashylarry.address,
+            this.VERIFIER,
+            tokenAmount,
+            []
+          );
+        await tx.wait();
+        expect(
+          await this.verifier.balanceOf(
+            this.orgs.wacarnolds.address,
+            this.VERIFIER
+          )
+        ).to.equal(ethers.BigNumber.from("1000").sub(tokenAmount));
+        expect(
+          await this.verifier.balanceOf(
+            this.users.ashylarry.address,
+            this.VERIFIER
+          )
+        ).to.equal(tokenAmount);
+      });
+
       describe(`...After 1 VERIFIER NFT is sent to ashylarry`, async function () {
         beforeEach(async function () {
           this.tokenAmount = 1;
@@ -149,20 +184,59 @@ const shouldMintAndTransferAndBurnNFT = () => {
               )
           ).to.be.revertedWith(`ERC1155__NotOwnerNorApproved`);
         });
-        // it.only(`Should not burn token from Appraiser contract address`, async function () {
-        //   await expect(
-        //     this.verifier
-        //       .connect(this.users.)
-        //       .burnVerifierForAddress(this.users.ashylarry.address)
-        //   ).to.be.revertedWith(`InvalidBurnerAddress`);
-        // });
+        it(`Should not burn token from Appraiser contract address if not connected to owner`, async function () {
+          await expect(
+            this.verifier
+              .connect(this.orgs.wacarnolds)
+              .burnVerifierForAddress(this.users.ashylarry.address)
+          ).to.be.revertedWith(`InvalidBurnerAddress`);
+        });
+
+        describe("...After Appraiser contract address has been set", async function () {
+          beforeEach(async function () {
+            await this.verifier.setAppraiserContractAddress(
+              this.users.prince.address
+            );
+          });
+
+          it(`Should burn token from Appraiser contract address if connected to s_appraiserContract`, async function () {
+            await expect(
+              this.verifier
+                .connect(this.users.prince)
+                .burnVerifierForAddress(this.users.ashylarry.address)
+            ).to.not.be.reverted;
+          });
+
+          it(`Should burn token from Appraiser contract address if connected to s_appraiserContract`, async function () {
+            await this.verifier
+              .connect(this.users.prince)
+              .burnVerifierForAddress(this.users.ashylarry.address);
+
+            expect(
+              await this.verifier.balanceOf(
+                this.users.ashylarry.address,
+                this.VERIFIER
+              )
+            ).to.equal(0);
+          });
+        });
       });
     });
   });
 };
 
+const shouldSupportInterface = () => {
+  context(`# transfer NFTs`, async function () {
+    it(`...should supportsInterface`, async function () {
+      expect(await this.verifier.supportsInterface(`0x12340000`)).to.equal(
+        false
+      );
+    });
+  });
+};
 module.exports = {
   shouldDeploy,
   shouldSetContractAddress,
   shouldMintAndTransferAndBurnNFT,
+  shouldSupportInterface,
 };
