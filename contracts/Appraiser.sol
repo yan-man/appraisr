@@ -37,27 +37,9 @@ contract Appraiser is Ownable {
     error Appraiser__InvalidReview();
 
     // Modifiers
-    modifier isUniqueOrg(string calldata name_) {
-        if (s_orgNames[name_] == 1) {
-            revert Appraiser__DuplicateOrgName();
-        }
-        _;
-    }
-
     modifier isValidOrgId(uint256 orgId_) {
         if (address(s_aoContracts[orgId_]) == address(0)) {
             revert Appraiser__InvalidOrgId();
-        }
-        _;
-    }
-
-    modifier isVoterValid(uint256 orgId_, uint256 reviewId_) {
-        address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
-        if (_reviewAuthorAddr == address(0)) {
-            revert Appraiser__InvalidReview();
-        }
-        if (msg.sender == _reviewAuthorAddr) {
-            revert Appraiser__VoterMatchesAuthor();
         }
         _;
     }
@@ -66,7 +48,11 @@ contract Appraiser is Ownable {
         string calldata name_,
         address addr_,
         string calldata URI_
-    ) public isUniqueOrg(name_) onlyOwner {
+    ) public onlyOwner {
+        if (s_orgNames[name_] == 1) {
+            revert Appraiser__DuplicateOrgName();
+        }
+
         uint _orgId = s_orgIds.current();
         s_organizations[_orgId] = 1;
         s_orgNames[name_] = 1;
@@ -155,7 +141,15 @@ contract Appraiser is Ownable {
         uint256 orgId_,
         uint256 reviewId_,
         bool isUpvote_
-    ) external isValidOrgId(orgId_) isVoterValid(orgId_, reviewId_) {
+    ) external isValidOrgId(orgId_) {
+        address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
+        if (_reviewAuthorAddr == address(0)) {
+            revert Appraiser__InvalidReview();
+        }
+        if (msg.sender == _reviewAuthorAddr) {
+            revert Appraiser__VoterMatchesAuthor();
+        }
+
         Users.User storage _reviewUser = s_users[s_reviews[orgId_][reviewId_]];
         if (isUpvote_ == true) {
             _reviewUser.upvotes += 1;
