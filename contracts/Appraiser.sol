@@ -33,38 +33,37 @@ contract Appraiser is Ownable {
     event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // Errors
-    error DuplicateOrgName();
-    error DuplicateOrgAddr();
-    error InvalidOrgId();
-    error UserExists();
-    error ReviewerMatchesAuthor();
-    error InvalidReview();
+    error Appraiser__DuplicateOrgName();
+    error Appraiser__DuplicateOrgAddr();
+    error Appraiser__InvalidOrgId();
+    error Appraiser__VoterMatchesAuthor();
+    error Appraiser__InvalidReview();
 
     // Modifiers
     modifier isUniqueOrg(string calldata name_, address addr_) {
         if (s_orgNames[name_]) {
-            revert DuplicateOrgName();
+            revert Appraiser__DuplicateOrgName();
         }
         if (s_orgAddresses[addr_]) {
-            revert DuplicateOrgAddr();
+            revert Appraiser__DuplicateOrgAddr();
         }
         _;
     }
 
     modifier isValidOrgId(uint256 orgId_) {
         if (address(s_aoContracts[orgId_]) == address(0)) {
-            revert InvalidOrgId();
+            revert Appraiser__InvalidOrgId();
         }
         _;
     }
 
-    modifier isReviewerValid(uint256 orgId_, uint256 reviewId_) {
+    modifier isVoterValid(uint256 orgId_, uint256 reviewId_) {
         address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
         if (_reviewAuthorAddr == address(0)) {
-            revert InvalidReview();
+            revert Appraiser__InvalidReview();
         }
         if (msg.sender == _reviewAuthorAddr) {
-            revert ReviewerMatchesAuthor();
+            revert Appraiser__VoterMatchesAuthor();
         }
         _;
     }
@@ -170,7 +169,7 @@ contract Appraiser is Ownable {
         uint256 orgId_,
         uint256 reviewId_,
         bool isUpvote_
-    ) external isValidOrgId(orgId_) isReviewerValid(orgId_, reviewId_) {
+    ) external isValidOrgId(orgId_) isVoterValid(orgId_, reviewId_) {
         Users.User storage _reviewUser = s_users[s_reviews[orgId_][reviewId_]];
         if (isUpvote_ == true) {
             _reviewUser.upvotes += 1;

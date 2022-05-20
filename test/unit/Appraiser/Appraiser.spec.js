@@ -81,23 +81,23 @@ const shouldManageOrgs = () => {
             this.eventArgs.aoContractAddress
           );
         });
-        it(`Should throw DuplicateOrgName error on duplicate WacArnolds org name`, async function () {
+        it(`Should throw Appraiser__DuplicateOrgName error on duplicate WacArnolds org name`, async function () {
           await expect(
             this.appraiser.addOrganization(
               this.companies.wacarnolds.name,
               this.companies.wacarnolds.addr,
               this.companies.wacarnolds.URI
             )
-          ).to.be.revertedWith(`DuplicateOrgName`);
+          ).to.be.revertedWith(`Appraiser__DuplicateOrgName`);
         });
-        it(`Should throw DuplicateOrgAddr error on duplicate WacArnolds org addr`, async function () {
+        it(`Should throw Appraiser__DuplicateOrgAddr error on duplicate WacArnolds org addr`, async function () {
           await expect(
             this.appraiser.addOrganization(
               `${this.companies.wacarnolds.name}1`,
               this.companies.wacarnolds.addr,
               this.companies.wacarnolds.URI
             )
-          ).to.be.revertedWith(`DuplicateOrgAddr`);
+          ).to.be.revertedWith(`Appraiser__DuplicateOrgAddr`);
         });
 
         it(`should save org2 studio54`, async function () {
@@ -161,7 +161,7 @@ const shouldManageReviews = () => {
             50,
             "test review"
           )
-        ).to.be.revertedWith(`InvalidOrgId`);
+        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
       });
 
       it(`should revert to set AppraiserOrganization contract address for non-valid org`, async function () {
@@ -170,7 +170,7 @@ const shouldManageReviews = () => {
             this.wacarnolds.orgId.toNumber() + 100, // made up false orgId
             this.mocks.mockAppraiserOrganization.address
           )
-        ).to.be.revertedWith(`InvalidOrgId`);
+        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
       });
 
       it(`should set AppraiserOrganization contract address for org2 studio54`, async function () {
@@ -344,7 +344,7 @@ const shouldManageReviewsRatings = () => {
       it(`should revert if org doesn't exist`, async function () {
         await expect(
           this.appraiser.connect(this.users.tybiggums).voteOnReview(5, 5, true)
-        ).to.be.revertedWith(`InvalidOrgId`);
+        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
       });
 
       it(`should revert if review doesn't exist`, async function () {
@@ -352,7 +352,7 @@ const shouldManageReviewsRatings = () => {
           this.appraiser
             .connect(this.users.tybiggums)
             .voteOnReview(this.wacarnolds.orgId, 5, true)
-        ).to.be.revertedWith(`InvalidReview`);
+        ).to.be.revertedWith(`Appraiser__InvalidReview`);
       });
 
       it(`should revert if ashylarry tries to upvote own review`, async function () {
@@ -364,7 +364,7 @@ const shouldManageReviewsRatings = () => {
               this.mockedResponses.mintReviewNFT,
               true
             )
-        ).to.be.revertedWith(`ReviewerMatchesAuthor`);
+        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
       });
 
       it(`should revert if ashylarry tries to downvote own review`, async function () {
@@ -376,7 +376,7 @@ const shouldManageReviewsRatings = () => {
               this.mockedResponses.mintReviewNFT,
               true
             )
-        ).to.be.revertedWith(`ReviewerMatchesAuthor`);
+        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
       });
 
       it(`should update ashylarry's upvotes when tybiggums upvotes ashylarry's review`, async function () {
