@@ -27,7 +27,7 @@ const shouldMintReviewNFT = () => {
               101,
               `this is a review`
             )
-          ).to.be.revertedWith(`InvalidRating`);
+          ).to.be.revertedWith(`AppraiserOrganization__InvalidRating`);
         });
         it(`Should throw if rating out of bounds, <= 0`, async function () {
           await expect(
@@ -36,7 +36,7 @@ const shouldMintReviewNFT = () => {
               0,
               `this is a review`
             )
-          ).to.be.revertedWith(`InvalidRating`);
+          ).to.be.revertedWith(`AppraiserOrganization__InvalidRating`);
         });
       });
 
@@ -110,7 +110,7 @@ const shouldVoteOnReviewNFT = () => {
               this.reviewId,
               this.isUpvote
             )
-          ).to.be.revertedWith(`CannotVoteOnOwnReview`);
+          ).to.be.revertedWith(`AppraiserOrganization__CannotVoteOnOwnReview`);
         });
 
         describe(`...After review1 is upvoted by dave`, async () => {
@@ -152,10 +152,12 @@ const shouldVoteOnReviewNFT = () => {
                 this.reviewId,
                 this.isUpvote
               )
-            ).to.be.revertedWith(`OneVoteAllowedPerReview`);
+            ).to.be.revertedWith(
+              `AppraiserOrganization__OneVoteAllowedPerReview`
+            );
           });
 
-          describe(`...After review1 is downvoted by rick`, async () => {
+          describe(`...After review1 is downvoted by rick james`, async () => {
             beforeEach(async function () {
               this.isUpvote = false;
               this.voteOnReviewTx =
@@ -195,7 +197,9 @@ const shouldVoteOnReviewNFT = () => {
                   this.reviewId,
                   this.isUpvote
                 )
-              ).to.be.revertedWith(`OneVoteAllowedPerReview`);
+              ).to.be.revertedWith(
+                `AppraiserOrganization__OneVoteAllowedPerReview`
+              );
             });
 
             describe(`...After prince leaves a verified review2 for WacArnolds`, async () => {

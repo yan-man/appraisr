@@ -16,9 +16,10 @@ contract Verifier is ERC1155, Ownable, AccessControl {
 
     // state vars
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    uint256 public orgId;
-    string public s_name;
     uint256 public constant VERIFIER = 0;
+
+    uint256 public s_orgId;
+    string public s_name;
     mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
     address public s_appraiserContract;
 
@@ -34,9 +35,12 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         uint256 orgId_,
         string memory name_,
         address addr_,
-        string memory URI_
+        string memory URI_,
+        address owner_
     ) ERC1155(URI_) {
-        orgId = orgId_;
+        transferOwnership(owner_);
+
+        s_orgId = orgId_;
         s_name = name_;
 
         _mint(addr_, VERIFIER, 10**3, "");

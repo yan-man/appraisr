@@ -54,7 +54,7 @@ const shouldManageOrgs = () => {
         eventId = [...this.receipt.events.keys()].filter(
           (id) => this.receipt.events[id].event === "OwnershipTransferred"
         );
-        expect(eventId).to.have.lengthOf(2);
+        expect(eventId).to.have.lengthOf(3);
         const { newOwner } = { ...this.receipt.events[eventId[0]].args };
         expect(newOwner).to.equal(this.appraiser.address);
       });

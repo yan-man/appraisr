@@ -108,7 +108,7 @@ contract Appraiser is Ownable {
         address addr_,
         string memory URI_
     ) internal returns (address) {
-        Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_);
+        Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_, owner());
         s_vContracts[orgId_] = address(_verifier);
 
         emit LogVerifierNFTContractDeployed(address(_verifier));

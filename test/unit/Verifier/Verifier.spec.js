@@ -14,8 +14,8 @@ const shouldDeploy = () => {
       ).to.equal(Math.pow(10, 3));
     });
 
-    it("Should set orgId in constructor", async function () {
-      expect(await this.verifier.orgId()).to.equal(
+    it("Should set s_orgId in constructor", async function () {
+      expect(await this.verifier.s_orgId()).to.equal(
         this.constructorParams.orgId
       );
     });

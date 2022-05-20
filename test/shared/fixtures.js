@@ -36,7 +36,8 @@ const unitAppraiserOrganizationFixture = async (signers) => {
       constructorParams.orgId,
       constructorParams.name,
       constructorParams.addr,
-      constructorParams.URI
+      constructorParams.URI,
+      deployer.address
     );
   await verifier.deployed();
   const mockVerifier = await deployMockVerifier(deployer);
@@ -74,7 +75,8 @@ const unitVerifierFixture = async (signers) => {
       constructorParams.orgId,
       constructorParams.name,
       constructorParams.addr,
-      constructorParams.URI
+      constructorParams.URI,
+      deployer.address
     );
   await verifier.deployed();
 

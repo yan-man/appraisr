@@ -40,15 +40,14 @@ contract AppraiserOrganization is ERC1155, Ownable {
     event LogNFTReviewVote(uint256 reviewId);
 
     // errors
-    error InvalidRating();
-    error OnlyOwnerCanTransferVerifierNFT();
-    error OneVoteAllowedPerReview();
-    error CannotVoteOnOwnReview();
+    error AppraiserOrganization__InvalidRating();
+    error AppraiserOrganization__OneVoteAllowedPerReview();
+    error AppraiserOrganization__CannotVoteOnOwnReview();
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
         if (rating_ == 0 || rating_ > 100) {
-            revert InvalidRating();
+            revert AppraiserOrganization__InvalidRating();
         }
         _;
     }
@@ -58,15 +57,15 @@ contract AppraiserOrganization is ERC1155, Ownable {
         bool isUpvote_
     ) {
         if (s_reviews[reviewId_].author == reviewer_) {
-            revert CannotVoteOnOwnReview();
+            revert AppraiserOrganization__CannotVoteOnOwnReview();
         }
         if (isUpvote_ == true) {
             if (s_upvotes[reviewId_][reviewer_] == true) {
-                revert OneVoteAllowedPerReview();
+                revert AppraiserOrganization__OneVoteAllowedPerReview();
             }
         } else {
             if (s_downvotes[reviewId_][reviewer_] == true) {
-                revert OneVoteAllowedPerReview();
+                revert AppraiserOrganization__OneVoteAllowedPerReview();
             }
         }
         _;
@@ -95,7 +94,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         address reviewerAddr_,
         uint256 rating_,
         string memory review_
-    ) public isValidRating(rating_) returns (uint256) {
+    ) public isValidRating(rating_) onlyOwner returns (uint256) {
         uint256 _reviewId = _s_reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
 
