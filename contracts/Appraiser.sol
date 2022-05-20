@@ -6,21 +6,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./AppraiserOrganization.sol";
-import "./Organizations.sol"; // to use struct
+import "./Verifier.sol";
 import "./Users.sol"; // to use struct
 
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
-    using Organizations for Organizations.Organization;
     using Users for Users.User;
 
     // State Vars
     Counters.Counter public s_orgIds;
-    Organizations.Organization[] public s_organizations;
+    mapping(uint256 => uint256) public s_organizations; // orgId -> intbool isActive
     mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
-    mapping(string => bool) private s_orgNames; // org name -> is active flag
-    mapping(address => bool) private s_orgAddresses; // org address -> is active flag
+    mapping(string => uint256) private s_orgNames; // org name -> intbool exists flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
     mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
 
@@ -34,18 +32,14 @@ contract Appraiser is Ownable {
 
     // Errors
     error Appraiser__DuplicateOrgName();
-    error Appraiser__DuplicateOrgAddr();
     error Appraiser__InvalidOrgId();
     error Appraiser__VoterMatchesAuthor();
     error Appraiser__InvalidReview();
 
     // Modifiers
-    modifier isUniqueOrg(string calldata name_, address addr_) {
-        if (s_orgNames[name_]) {
+    modifier isUniqueOrg(string calldata name_) {
+        if (s_orgNames[name_] == 1) {
             revert Appraiser__DuplicateOrgName();
-        }
-        if (s_orgAddresses[addr_]) {
-            revert Appraiser__DuplicateOrgAddr();
         }
         _;
     }
@@ -72,18 +66,10 @@ contract Appraiser is Ownable {
         string calldata name_,
         address addr_,
         string calldata URI_
-    ) public isUniqueOrg(name_, addr_) onlyOwner {
+    ) public isUniqueOrg(name_) onlyOwner {
         uint _orgId = s_orgIds.current();
-        Organizations.Organization memory _org = Organizations.Organization({
-            orgId: _orgId,
-            name: name_,
-            addr: addr_,
-            isActive: true,
-            isCreated: true
-        });
-        s_organizations.push(_org);
-        s_orgNames[name_] = true;
-        s_orgAddresses[addr_] = true;
+        s_organizations[_orgId] = 1;
+        s_orgNames[name_] = 1;
         s_orgIds.increment();
 
         address _verifierAddr = deployVerifierNFTContract(
@@ -185,32 +171,7 @@ contract Appraiser is Ownable {
         emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
     }
 
-    function currentOrgId() public view returns (uint256) {
+    function numberOrganizations() public view returns (uint256) {
         return s_orgIds.current();
     }
-
-    function numberOrganizations() public view returns (uint256) {
-        return s_organizations.length;
-    }
-
-    // implement these functions to allow this contract to accept 1155 tokens
-    // function onERC1155Received(
-    //     address,
-    //     address,
-    //     uint256,
-    //     uint256,
-    //     bytes memory
-    // ) public virtual returns (bytes4) {
-    //     return this.onERC1155Received.selector;
-    // }
-
-    // function onERC1155BatchReceived(
-    //     address,
-    //     address,
-    //     uint256[] memory,
-    //     uint256[] memory,
-    //     bytes memory
-    // ) public virtual returns (bytes4) {
-    //     return this.onERC1155BatchReceived.selector;
-    // }
 }

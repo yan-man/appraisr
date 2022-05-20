@@ -16,6 +16,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
     // structs
     struct Review {
+        uint256 id;
         address author;
         uint256 rating;
         string review;
@@ -59,14 +60,11 @@ contract AppraiserOrganization is ERC1155, Ownable {
         if (s_reviews[reviewId_].author == reviewer_) {
             revert AppraiserOrganization__CannotVoteOnOwnReview();
         }
-        if (isUpvote_ == true) {
-            if (s_upvotes[reviewId_][reviewer_] == true) {
-                revert AppraiserOrganization__OneVoteAllowedPerReview();
-            }
-        } else {
-            if (s_downvotes[reviewId_][reviewer_] == true) {
-                revert AppraiserOrganization__OneVoteAllowedPerReview();
-            }
+        if (
+            s_downvotes[reviewId_][reviewer_] == true ||
+            s_upvotes[reviewId_][reviewer_] == true
+        ) {
+            revert AppraiserOrganization__OneVoteAllowedPerReview();
         }
         _;
     }
@@ -106,6 +104,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         }
 
         Review memory review = Review({
+            id: _reviewId,
             author: reviewerAddr_,
             rating: rating_,
             review: review_,

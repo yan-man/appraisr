@@ -42,13 +42,11 @@ describe("Unit tests", async () => {
 
       this.companies = {
         wacarnolds: {
-          orgId: 0,
           name: "WacArnolds",
           addr: this.orgs.wacarnolds.address,
           URI: "ipfs://WacArnolds/",
         },
         studio54: {
-          orgId: 1,
           name: "studio54",
           addr: this.orgs.studio54.address,
           URI: "ipfs://studio54/",

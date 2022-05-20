@@ -15,6 +15,8 @@ const shouldManageOrgs = () => {
   context(`# manage organizations`, async function () {
     describe("...save new orgs", async () => {
       beforeEach(`save new org`, async function () {
+        this.companies.wacarnolds.orgId =
+          await this.appraiser.numberOrganizations();
         this.tx = await this.appraiser.addOrganization(
           this.companies.wacarnolds.name,
           this.companies.wacarnolds.addr,
@@ -24,19 +26,16 @@ const shouldManageOrgs = () => {
       });
 
       it(`Should update state vars after saving new organization WacArnolds`, async function () {
-        const { orgId, name, addr } = await this.appraiser.s_organizations(0);
-        expect(orgId).to.equal(ethers.BigNumber.from(0));
-        expect(name).to.equal(this.companies.wacarnolds.name);
-        expect(addr).to.equal(this.companies.wacarnolds.addr);
+        expect(
+          await this.appraiser.s_organizations(this.companies.wacarnolds.orgId)
+        ).to.not.equal(ethers.BigNumber.from(0));
       });
 
       it(`Should emit events when new organization WacArnolds saved`, async function () {
-        const { orgId } = await this.appraiser.s_organizations(0);
-
         // events emitted
         await expect(this.tx)
           .to.emit(this.appraiser, `LogAddOrganization`)
-          .withArgs(orgId);
+          .withArgs(this.companies.wacarnolds.orgId);
         await expect(this.tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
         await expect(this.tx).to.emit(
           this.appraiser,
@@ -46,10 +45,12 @@ const shouldManageOrgs = () => {
         eventId = [...this.receipt.events.keys()].filter(
           (id) => this.receipt.events[id].event === "LogAddOrganization"
         );
-        const { orgId: eventOrgId } = {
+        const { orgId: emittedOrgId } = {
           ...this.receipt.events[eventId[0]].args,
         };
-        expect(eventOrgId).to.equal(ethers.BigNumber.from(orgId));
+        expect(emittedOrgId).to.equal(
+          ethers.BigNumber.from(this.companies.wacarnolds.orgId)
+        );
 
         eventId = [...this.receipt.events.keys()].filter(
           (id) => this.receipt.events[id].event === "OwnershipTransferred"
@@ -65,11 +66,6 @@ const shouldManageOrgs = () => {
             (id) => this.receipt.events[id].event === "LogNFTContractDeployed"
           )[0];
           this.eventArgs = { ...this.receipt.events[eventId].args };
-        });
-        it(`should return next org id (1)`, async function () {
-          expect(await this.appraiser.currentOrgId()).to.equal(
-            ethers.BigNumber.from(1)
-          );
         });
         it(`should return current number of orgs (1)`, async function () {
           expect(await this.appraiser.numberOrganizations()).to.equal(
@@ -90,17 +86,10 @@ const shouldManageOrgs = () => {
             )
           ).to.be.revertedWith(`Appraiser__DuplicateOrgName`);
         });
-        it(`Should throw Appraiser__DuplicateOrgAddr error on duplicate WacArnolds org addr`, async function () {
-          await expect(
-            this.appraiser.addOrganization(
-              `${this.companies.wacarnolds.name}1`,
-              this.companies.wacarnolds.addr,
-              this.companies.wacarnolds.URI
-            )
-          ).to.be.revertedWith(`Appraiser__DuplicateOrgAddr`);
-        });
 
         it(`should save org2 studio54`, async function () {
+          this.companies.studio54.orgId =
+            await this.appraiser.numberOrganizations();
           const tx = await this.appraiser.addOrganization(
             this.companies.studio54.name,
             this.companies.studio54.addr,
@@ -110,13 +99,12 @@ const shouldManageOrgs = () => {
           const eventId = [...receipt.events.keys()].filter(
             (id) => receipt.events[id].event === "LogAddOrganization"
           );
-          const { orgId, name, addr } = await this.appraiser.s_organizations(1);
-
-          expect(orgId).to.equal(
+          const { orgId: emittedOrgId } = {
+            ...receipt.events[eventId[0]].args,
+          };
+          expect(emittedOrgId).to.equal(
             ethers.BigNumber.from(this.companies.studio54.orgId)
           );
-          expect(name).to.equal(this.companies.studio54.name);
-          expect(addr).to.equal(this.companies.studio54.addr);
         });
 
         it(`should emit events after org2 studio54 saved`, async function () {
