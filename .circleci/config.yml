@@ -20,7 +20,7 @@ commands:
     steps:
       - run: npm i && npx hardhat coverage
       - store_artifacts:
-          path: coverage
+          path: /coverage/
 executors:
   docker-executor:
     docker:
