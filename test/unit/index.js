@@ -31,52 +31,52 @@ describe("Unit tests", async () => {
     this.orgs.wacarnolds = this.signers[10];
     this.orgs.studio54 = this.signers[11];
   });
-  describe(`Appraiser`, async () => {
-    beforeEach(async function () {
-      const { appraiser, mockAppraiserOrganization, mockVerifier } =
-        await this.loadFixture(unitAppraiserFixture);
+  // describe(`Appraiser`, async () => {
+  //   beforeEach(async function () {
+  //     const { appraiser, mockAppraiserOrganization, mockVerifier } =
+  //       await this.loadFixture(unitAppraiserFixture);
 
-      this.appraiser = appraiser;
-      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
-      this.mocks.mockVerifier = mockVerifier;
+  //     this.appraiser = appraiser;
+  //     this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+  //     this.mocks.mockVerifier = mockVerifier;
 
-      this.companies = [
-        {
-          orgId: 0,
-          name: "WacArnolds",
-          addr: this.orgs.wacarnolds.address,
-          URI: "ipfs://WacArnolds/",
-        },
-        {
-          orgId: 1,
-          name: "studio54",
-          addr: this.orgs.studio54.address,
-          URI: "ipfs://studio54/",
-        },
-      ];
-    });
-    Appraiser.shouldDeploy();
-    Appraiser.shouldManageOrgs();
-    Appraiser.shouldManageReviews();
-    Appraiser.shouldManageReviewsRatings();
-  });
-  describe(`AppraiserOrganization`, async () => {
-    beforeEach(async function () {
-      const {
-        appraiserOrganization,
-        constructorParams,
-        mockVerifier,
-        verifier,
-      } = await this.loadFixture(unitAppraiserOrganizationFixture);
-      this.appraiserOrganization = appraiserOrganization;
-      this.constructorParams = constructorParams;
-      this.mocks.mockVerifier = mockVerifier;
-      this.verifier = verifier;
-    });
-    AppraiserOrganization.shouldDeploy();
-    AppraiserOrganization.shouldMintReviewNFT();
-    AppraiserOrganization.shouldVoteOnReviewNFT();
-  });
+  //     this.companies = [
+  //       {
+  //         orgId: 0,
+  //         name: "WacArnolds",
+  //         addr: this.orgs.wacarnolds.address,
+  //         URI: "ipfs://WacArnolds/",
+  //       },
+  //       {
+  //         orgId: 1,
+  //         name: "studio54",
+  //         addr: this.orgs.studio54.address,
+  //         URI: "ipfs://studio54/",
+  //       },
+  //     ];
+  //   });
+  //   Appraiser.shouldDeploy();
+  //   Appraiser.shouldManageOrgs();
+  //   Appraiser.shouldManageReviews();
+  //   Appraiser.shouldManageReviewsRatings();
+  // });
+  // describe(`AppraiserOrganization`, async () => {
+  //   beforeEach(async function () {
+  //     const {
+  //       appraiserOrganization,
+  //       constructorParams,
+  //       mockVerifier,
+  //       verifier,
+  //     } = await this.loadFixture(unitAppraiserOrganizationFixture);
+  //     this.appraiserOrganization = appraiserOrganization;
+  //     this.constructorParams = constructorParams;
+  //     this.mocks.mockVerifier = mockVerifier;
+  //     this.verifier = verifier;
+  //   });
+  //   AppraiserOrganization.shouldDeploy();
+  //   AppraiserOrganization.shouldMintReviewNFT();
+  //   AppraiserOrganization.shouldVoteOnReviewNFT();
+  // });
   describe(`Verifier`, async () => {
     beforeEach(async function () {
       const { verifier, constructorParams } = await this.loadFixture(
@@ -85,7 +85,8 @@ describe("Unit tests", async () => {
       this.verifier = verifier;
       this.constructorParams = constructorParams;
     });
-    // Verifier.shouldDeploy();
-    // Verifier.shouldMintVerifierNFT();
+    Verifier.shouldDeploy();
+    Verifier.shouldSetContractAddress();
+    Verifier.shouldMintAndTransferAndBurnNFT();
   });
 });

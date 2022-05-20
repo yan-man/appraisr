@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./AppraiserOrganization.sol";
-import "./Organizations.sol";
-import "./Users.sol";
+import "./Organizations.sol"; // to use struct
+import "./Users.sol"; // to use struct
 
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
