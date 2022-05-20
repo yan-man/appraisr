@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  codecov: codecov/codecov@3.2.2
+  node: circleci/node@5.0.2
 commands:
   fetch:
     steps:
@@ -9,9 +9,18 @@ commands:
           name: Code Has Arrived
           command: |
             ls -al
+  build:
+    steps:
+      - checkout
+      - node/install:
+          install-yarn: false
+          node-version: "16.14.2"
+      - run: node --version
   test:
     steps:
       - run: npm i && npx hardhat coverage
+      - store_artifacts:
+          path: coverage
 executors:
   docker-executor:
     docker:
@@ -34,6 +43,7 @@ jobs:
   install-node-and-test:
     executor: docker-executor
     steps:
+      - build
       - test
 workflows:
   test-app:
@@ -45,5 +55,3 @@ workflows:
       - install-node-and-test:
           requires:
             - fetch-code
-          post-steps:
-            - codecov/upload
