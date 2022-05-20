@@ -14,9 +14,9 @@ const shouldManageOrgs = () => {
     describe("...save new orgs", async () => {
       beforeEach(`save new org`, async function () {
         this.tx = await this.appraiser.addOrganization(
-          this.companies[0].name,
-          this.companies[0].addr,
-          this.companies[0].URI
+          this.companies.wacarnolds.name,
+          this.companies.wacarnolds.addr,
+          this.companies.wacarnolds.URI
         );
         this.receipt = await this.tx.wait();
       });
@@ -24,8 +24,8 @@ const shouldManageOrgs = () => {
       it(`Should update state vars after saving new organization`, async function () {
         const { orgId, name, addr } = await this.appraiser.s_organizations(0);
         expect(orgId).to.equal(ethers.BigNumber.from(0));
-        expect(name).to.equal(this.companies[0].name);
-        expect(addr).to.equal(this.companies[0].addr);
+        expect(name).to.equal(this.companies.wacarnolds.name);
+        expect(addr).to.equal(this.companies.wacarnolds.addr);
       });
 
       it(`Should emit events when new organization saved`, async function () {
@@ -82,27 +82,27 @@ const shouldManageOrgs = () => {
         it(`Should throw DuplicateOrgName error on duplicate org name`, async function () {
           await expect(
             this.appraiser.addOrganization(
-              this.companies[0].name,
-              this.companies[0].addr,
-              this.companies[0].URI
+              this.companies.wacarnolds.name,
+              this.companies.wacarnolds.addr,
+              this.companies.wacarnolds.URI
             )
           ).to.be.revertedWith(`DuplicateOrgName`);
         });
         it(`Should throw DuplicateOrgAddr error on duplicate org addr`, async function () {
           await expect(
             this.appraiser.addOrganization(
-              `${this.companies[0].name}1`,
-              this.companies[0].addr,
-              this.companies[0].URI
+              `${this.companies.wacarnolds.name}1`,
+              this.companies.wacarnolds.addr,
+              this.companies.wacarnolds.URI
             )
           ).to.be.revertedWith(`DuplicateOrgAddr`);
         });
 
         it(`should save second org`, async function () {
           const tx = await this.appraiser.addOrganization(
-            this.companies[1].name,
-            this.companies[1].addr,
-            this.companies[1].URI
+            this.companies.studio54.name,
+            this.companies.studio54.addr,
+            this.companies.studio54.URI
           );
           const receipt = await tx.wait();
           const eventId = [...receipt.events.keys()].filter(
@@ -111,17 +111,17 @@ const shouldManageOrgs = () => {
           const { orgId, name, addr } = await this.appraiser.s_organizations(1);
 
           expect(orgId).to.equal(
-            ethers.BigNumber.from(this.companies[1].orgId)
+            ethers.BigNumber.from(this.companies.studio54.orgId)
           );
-          expect(name).to.equal(this.companies[1].name);
-          expect(addr).to.equal(this.companies[1].addr);
+          expect(name).to.equal(this.companies.studio54.name);
+          expect(addr).to.equal(this.companies.studio54.addr);
         });
 
         it(`should emit events after second org saved`, async function () {
           const tx = await this.appraiser.addOrganization(
-            this.companies[1].name,
-            this.companies[1].addr,
-            this.companies[1].URI
+            this.companies.studio54.name,
+            this.companies.studio54.addr,
+            this.companies.studio54.URI
           );
           const receipt = await tx.wait();
 
@@ -140,9 +140,9 @@ const shouldManageReviews = () => {
     describe("...After new org exists", async () => {
       beforeEach(async function () {
         this.tx = await this.appraiser.addOrganization(
-          this.companies[0].name,
-          this.companies[0].addr,
-          this.companies[0].URI
+          this.companies.wacarnolds.name,
+          this.companies.wacarnolds.addr,
+          this.companies.wacarnolds.URI
         );
         this.receipt = await this.tx.wait();
         const eventId = [...this.receipt.events.keys()].filter(
@@ -248,9 +248,9 @@ const shouldManageReviews = () => {
           describe(`...After 2nd org added`, async function () {
             beforeEach(async function () {
               const tx = await this.appraiser.addOrganization(
-                this.companies[1].name,
-                this.companies[1].addr,
-                this.companies[1].URI
+                this.companies.studio54.name,
+                this.companies.studio54.addr,
+                this.companies.studio54.URI
               );
               const receipt = await tx.wait();
               const eventId = [...receipt.events.keys()].filter(
@@ -303,9 +303,9 @@ const shouldManageReviewsRatings = () => {
     describe("...After 1st org saved & review1 is minted", async () => {
       beforeEach(async function () {
         this.tx = await this.appraiser.addOrganization(
-          this.companies[0].name,
-          this.companies[0].addr,
-          this.companies[0].URI
+          this.companies.wacarnolds.name,
+          this.companies.wacarnolds.addr,
+          this.companies.wacarnolds.URI
         );
         this.receipt = await this.tx.wait();
         const eventId = [...this.receipt.events.keys()].filter(
