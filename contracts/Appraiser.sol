@@ -21,7 +21,7 @@ contract Appraiser is Ownable {
     // State Vars
     Organizations.Organization[] public s_organizations;
     mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
-    mapping(uint256 => address) public aoContracts; // orgId -> deployed AO contract
+    mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
     mapping(string => bool) private orgNames; // org name -> is active flag
     mapping(address => bool) private orgAddresses; // org address -> is active flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
@@ -55,7 +55,7 @@ contract Appraiser is Ownable {
     }
 
     modifier isValidOrgId(uint256 orgId_) {
-        if (address(aoContracts[orgId_]) == address(0)) {
+        if (address(s_aoContracts[orgId_]) == address(0)) {
             revert InvalidOrgId();
         }
         _;
@@ -133,7 +133,7 @@ contract Appraiser is Ownable {
             URI_,
             verifierAddr_
         );
-        aoContracts[orgId_] = address(_ao);
+        s_aoContracts[orgId_] = address(_ao);
 
         emit LogNFTContractDeployed(address(_ao));
     }
@@ -143,7 +143,7 @@ contract Appraiser is Ownable {
         onlyOwner
         isValidOrgId(orgId_)
     {
-        aoContracts[orgId_] = aoAddress_;
+        s_aoContracts[orgId_] = aoAddress_;
     }
 
     function mintReview(
@@ -151,7 +151,7 @@ contract Appraiser is Ownable {
         uint256 rating_,
         string calldata review_
     ) external isValidOrgId(orgId_) {
-        uint256 _reviewId = AppraiserOrganization(aoContracts[orgId_])
+        uint256 _reviewId = AppraiserOrganization(s_aoContracts[orgId_])
             .mintReviewNFT(msg.sender, rating_, review_);
         s_reviews[orgId_][_reviewId] = msg.sender;
         addUser(msg.sender);
@@ -181,7 +181,7 @@ contract Appraiser is Ownable {
         } else {
             _reviewUser.downvotes += 1;
         }
-        AppraiserOrganization(aoContracts[orgId_]).voteOnReview(
+        AppraiserOrganization(s_aoContracts[orgId_]).voteOnReview(
             msg.sender,
             reviewId_,
             isUpvote_

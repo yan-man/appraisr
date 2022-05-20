@@ -75,7 +75,7 @@ const shouldManageOrgs = () => {
           );
         });
         it(`should return deployed contract address`, async function () {
-          expect(await this.appraiser.aoContracts(0)).to.equal(
+          expect(await this.appraiser.s_aoContracts(0)).to.equal(
             this.eventArgs.aoContractAddress
           );
         });
@@ -178,7 +178,7 @@ const shouldManageReviews = () => {
           this.mocks.mockAppraiserOrganization.address
         );
         await tx.wait();
-        expect(await this.appraiser.aoContracts(0)).to.equal(
+        expect(await this.appraiser.s_aoContracts(0)).to.equal(
           this.mocks.mockAppraiserOrganization.address
         );
       });
