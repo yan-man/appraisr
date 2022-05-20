@@ -9,10 +9,8 @@ const unitAppraiserFixture = async (signers) => {
   const deployer = signers[0];
 
   const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
-
   const appraiser = await appraiserFactory.connect(deployer).deploy();
   await appraiser.deployed();
-
   const mockAppraiserOrganization = await deployMockAppraiserOrganization(
     deployer
   );
@@ -38,7 +36,8 @@ const unitAppraiserOrganizationFixture = async (signers) => {
       constructorParams.orgId,
       constructorParams.name,
       constructorParams.addr,
-      constructorParams.URI
+      constructorParams.URI,
+      deployer.address
     );
   await verifier.deployed();
   const mockVerifier = await deployMockVerifier(deployer);
@@ -76,7 +75,8 @@ const unitVerifierFixture = async (signers) => {
       constructorParams.orgId,
       constructorParams.name,
       constructorParams.addr,
-      constructorParams.URI
+      constructorParams.URI,
+      deployer.address
     );
   await verifier.deployed();
 

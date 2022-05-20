@@ -24,32 +24,30 @@ contract AppraiserOrganization is ERC1155, Ownable {
     }
 
     // state vars
-    uint256 orgId;
     mapping(uint256 => Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => mapping(address => bool)) s_upvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
     mapping(uint256 => mapping(address => bool)) s_downvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_downvoteCount; // reviewId -> # downvotes
 
-    Counters.Counter private _reviewIds;
-    Organizations.Organization private s_organization;
-    address private s_verifierContractAddress;
-    uint256 private VERIFIER_ID;
+    Counters.Counter private _s_reviewIds;
+    Organizations.Organization private _s_organization;
+    address private _s_verifierContractAddress;
+    uint256 private immutable VERIFIER_ID;
 
     // events
     event LogNFTReviewMinted(uint256 reviewId);
     event LogNFTReviewVote(uint256 reviewId);
 
     // errors
-    error InvalidRating();
-    error OnlyOwnerCanTransferVerifierNFT();
-    error OneVoteAllowedPerReview();
-    error CannotVoteOnOwnReview();
+    error AppraiserOrganization__InvalidRating();
+    error AppraiserOrganization__OneVoteAllowedPerReview();
+    error AppraiserOrganization__CannotVoteOnOwnReview();
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
         if (rating_ == 0 || rating_ > 100) {
-            revert InvalidRating();
+            revert AppraiserOrganization__InvalidRating();
         }
         _;
     }
@@ -59,15 +57,15 @@ contract AppraiserOrganization is ERC1155, Ownable {
         bool isUpvote_
     ) {
         if (s_reviews[reviewId_].author == reviewer_) {
-            revert CannotVoteOnOwnReview();
+            revert AppraiserOrganization__CannotVoteOnOwnReview();
         }
         if (isUpvote_ == true) {
             if (s_upvotes[reviewId_][reviewer_] == true) {
-                revert OneVoteAllowedPerReview();
+                revert AppraiserOrganization__OneVoteAllowedPerReview();
             }
         } else {
             if (s_downvotes[reviewId_][reviewer_] == true) {
-                revert OneVoteAllowedPerReview();
+                revert AppraiserOrganization__OneVoteAllowedPerReview();
             }
         }
         _;
@@ -80,29 +78,28 @@ contract AppraiserOrganization is ERC1155, Ownable {
         string memory URI_,
         address verifierAddr_
     ) ERC1155(URI_) {
-        Organizations.Organization memory _org = Organizations.Organization({
+        _s_organization = Organizations.Organization({
             orgId: orgId_,
             name: name_,
             addr: addr_,
             isActive: true,
             isCreated: true
         });
-        s_organization = _org;
-        s_verifierContractAddress = verifierAddr_;
-        VERIFIER_ID = Verifier(s_verifierContractAddress).VERIFIER();
-        _reviewIds.increment();
+        _s_verifierContractAddress = verifierAddr_;
+        VERIFIER_ID = Verifier(_s_verifierContractAddress).VERIFIER();
+        _s_reviewIds.increment();
     }
 
     function mintReviewNFT(
         address reviewerAddr_,
         uint256 rating_,
         string memory review_
-    ) public isValidRating(rating_) returns (uint256) {
-        uint256 _reviewId = _reviewIds.current();
+    ) public isValidRating(rating_) onlyOwner returns (uint256) {
+        uint256 _reviewId = _s_reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
 
         bool _isVerified = false;
-        Verifier _verifier = Verifier(s_verifierContractAddress);
+        Verifier _verifier = Verifier(_s_verifierContractAddress);
         if (_verifier.balanceOf(reviewerAddr_, VERIFIER_ID) > 0) {
             _verifier.burnVerifierForAddress(reviewerAddr_);
             _isVerified = true;
@@ -116,7 +113,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
             isVerified: _isVerified
         });
         s_reviews[_reviewId] = review;
-        _reviewIds.increment();
+        _s_reviewIds.increment();
 
         emit LogNFTReviewMinted(_reviewId);
         return _reviewId;
@@ -126,12 +123,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         address reviewer_,
         uint256 reviewId_,
         bool isUpvote_
-    )
-        external
-        validateVoter(reviewer_, reviewId_, isUpvote_)
-        returns (uint256)
-    {
-        uint256 _length;
+    ) external validateVoter(reviewer_, reviewId_, isUpvote_) {
         if (isUpvote_ == true) {
             s_upvotes[reviewId_][reviewer_] = true;
             uint256 count = s_upvoteCount[reviewId_];
@@ -157,6 +149,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
     }
 
     function currentReviewId() external view returns (uint256) {
-        return _reviewIds.current();
+        return _s_reviewIds.current();
     }
 }

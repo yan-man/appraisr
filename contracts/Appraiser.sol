@@ -14,18 +14,15 @@ contract Appraiser is Ownable {
     using Organizations for Organizations.Organization;
     using Users for Users.User;
 
-    Counters.Counter public orgIds;
-
-    // Structs
-
     // State Vars
+    Counters.Counter public s_orgIds;
     Organizations.Organization[] public s_organizations;
     mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
-    mapping(uint256 => address) public aoContracts; // orgId -> deployed AO contract
-    mapping(string => bool) private orgNames; // org name -> is active flag
-    mapping(address => bool) private orgAddresses; // org address -> is active flag
+    mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
+    mapping(string => bool) private s_orgNames; // org name -> is active flag
+    mapping(address => bool) private s_orgAddresses; // org address -> is active flag
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
-    mapping(address => Users.User) public users; // user/reviewer address -> User struct
+    mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
 
     // Events
     event LogAddOrganization(uint256 orgId);
@@ -36,38 +33,37 @@ contract Appraiser is Ownable {
     event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // Errors
-    error DuplicateOrgName();
-    error DuplicateOrgAddr();
-    error InvalidOrgId();
-    error UserExists();
-    error ReviewerMatchesAuthor();
-    error InvalidReview();
+    error Appraiser__DuplicateOrgName();
+    error Appraiser__DuplicateOrgAddr();
+    error Appraiser__InvalidOrgId();
+    error Appraiser__VoterMatchesAuthor();
+    error Appraiser__InvalidReview();
 
     // Modifiers
     modifier isUniqueOrg(string calldata name_, address addr_) {
-        if (orgNames[name_]) {
-            revert DuplicateOrgName();
+        if (s_orgNames[name_]) {
+            revert Appraiser__DuplicateOrgName();
         }
-        if (orgAddresses[addr_]) {
-            revert DuplicateOrgAddr();
+        if (s_orgAddresses[addr_]) {
+            revert Appraiser__DuplicateOrgAddr();
         }
         _;
     }
 
     modifier isValidOrgId(uint256 orgId_) {
-        if (address(aoContracts[orgId_]) == address(0)) {
-            revert InvalidOrgId();
+        if (address(s_aoContracts[orgId_]) == address(0)) {
+            revert Appraiser__InvalidOrgId();
         }
         _;
     }
 
-    modifier isReviewerValid(uint256 orgId_, uint256 reviewId_) {
+    modifier isVoterValid(uint256 orgId_, uint256 reviewId_) {
         address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
         if (_reviewAuthorAddr == address(0)) {
-            revert InvalidReview();
+            revert Appraiser__InvalidReview();
         }
         if (msg.sender == _reviewAuthorAddr) {
-            revert ReviewerMatchesAuthor();
+            revert Appraiser__VoterMatchesAuthor();
         }
         _;
     }
@@ -77,33 +73,33 @@ contract Appraiser is Ownable {
         address addr_,
         string calldata URI_
     ) public isUniqueOrg(name_, addr_) onlyOwner {
-        uint orgId = orgIds.current();
-        Organizations.Organization memory newOrg = Organizations.Organization({
-            orgId: orgId,
+        uint _orgId = s_orgIds.current();
+        Organizations.Organization memory _org = Organizations.Organization({
+            orgId: _orgId,
             name: name_,
             addr: addr_,
             isActive: true,
             isCreated: true
         });
-        s_organizations.push(newOrg);
-        orgNames[name_] = true;
-        orgAddresses[addr_] = true;
-        orgIds.increment();
+        s_organizations.push(_org);
+        s_orgNames[name_] = true;
+        s_orgAddresses[addr_] = true;
+        s_orgIds.increment();
 
         address _verifierAddr = deployVerifierNFTContract(
-            orgId,
+            _orgId,
             name_,
             addr_,
             URI_
         );
         deployAppraiserOrganizationNFTContract(
-            orgId,
+            _orgId,
             name_,
             addr_,
             URI_,
             _verifierAddr
         );
-        emit LogAddOrganization(orgId);
+        emit LogAddOrganization(_orgId);
     }
 
     function deployVerifierNFTContract(
@@ -112,7 +108,7 @@ contract Appraiser is Ownable {
         address addr_,
         string memory URI_
     ) internal returns (address) {
-        Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_);
+        Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_, owner());
         s_vContracts[orgId_] = address(_verifier);
 
         emit LogVerifierNFTContractDeployed(address(_verifier));
@@ -133,8 +129,7 @@ contract Appraiser is Ownable {
             URI_,
             verifierAddr_
         );
-        aoContracts[orgId_] = address(_ao);
-
+        s_aoContracts[orgId_] = address(_ao);
         emit LogNFTContractDeployed(address(_ao));
     }
 
@@ -143,7 +138,7 @@ contract Appraiser is Ownable {
         onlyOwner
         isValidOrgId(orgId_)
     {
-        aoContracts[orgId_] = aoAddress_;
+        s_aoContracts[orgId_] = aoAddress_;
     }
 
     function mintReview(
@@ -151,7 +146,7 @@ contract Appraiser is Ownable {
         uint256 rating_,
         string calldata review_
     ) external isValidOrgId(orgId_) {
-        uint256 _reviewId = AppraiserOrganization(aoContracts[orgId_])
+        uint256 _reviewId = AppraiserOrganization(s_aoContracts[orgId_])
             .mintReviewNFT(msg.sender, rating_, review_);
         s_reviews[orgId_][_reviewId] = msg.sender;
         addUser(msg.sender);
@@ -159,8 +154,8 @@ contract Appraiser is Ownable {
     }
 
     function addUser(address addr_) private {
-        if (users[addr_].isRegistered == false) {
-            users[addr_] = Users.User({
+        if (s_users[addr_].isRegistered == false) {
+            s_users[addr_] = Users.User({
                 upvotes: 0,
                 downvotes: 0,
                 isRegistered: true
@@ -174,14 +169,14 @@ contract Appraiser is Ownable {
         uint256 orgId_,
         uint256 reviewId_,
         bool isUpvote_
-    ) external isValidOrgId(orgId_) isReviewerValid(orgId_, reviewId_) {
-        Users.User storage _reviewUser = users[s_reviews[orgId_][reviewId_]];
+    ) external isValidOrgId(orgId_) isVoterValid(orgId_, reviewId_) {
+        Users.User storage _reviewUser = s_users[s_reviews[orgId_][reviewId_]];
         if (isUpvote_ == true) {
             _reviewUser.upvotes += 1;
         } else {
             _reviewUser.downvotes += 1;
         }
-        AppraiserOrganization(aoContracts[orgId_]).voteOnReview(
+        AppraiserOrganization(s_aoContracts[orgId_]).voteOnReview(
             msg.sender,
             reviewId_,
             isUpvote_
@@ -191,7 +186,7 @@ contract Appraiser is Ownable {
     }
 
     function currentOrgId() public view returns (uint256) {
-        return orgIds.current();
+        return s_orgIds.current();
     }
 
     function numberOrganizations() public view returns (uint256) {

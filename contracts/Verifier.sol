@@ -13,20 +13,21 @@ import "hardhat/console.sol";
 contract Verifier is ERC1155, Ownable, AccessControl {
     using Counters for Counters.Counter;
     using Reviews for Reviews.Review;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     // state vars
-    uint256 public orgId;
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     uint256 public constant VERIFIER = 0;
-    mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
 
+    uint256 public s_orgId;
+    string public s_name;
+    mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
     address public s_appraiserContract;
 
     // events
 
     // errors
-    error OnlyAdminCanTransferVerifierNFT();
-    error InvalidBurnerAddress();
+    error Verifier__OnlyAdminCanTransferVerifierNFT();
+    error Verifier__InvalidBurnerAddress();
     error ERC1155__NotOwnerNorApproved();
 
     // modifiers
@@ -34,9 +35,14 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         uint256 orgId_,
         string memory name_,
         address addr_,
-        string memory URI_
+        string memory URI_,
+        address owner_
     ) ERC1155(URI_) {
-        orgId = orgId_;
+        transferOwnership(owner_);
+
+        s_orgId = orgId_;
+        s_name = name_;
+
         _mint(addr_, VERIFIER, 10**3, "");
         _setupRole(ADMIN_ROLE, addr_);
         s_appraiserContract = _msgSender();
@@ -58,7 +64,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         if (
             hasRole(ADMIN_ROLE, msg.sender) == false && _msgSender() != owner()
         ) {
-            revert OnlyAdminCanTransferVerifierNFT();
+            revert Verifier__OnlyAdminCanTransferVerifierNFT();
         }
         _safeTransferFrom(from, to, id, amount, data);
     }
@@ -80,16 +86,12 @@ contract Verifier is ERC1155, Ownable, AccessControl {
 
     function burnVerifierForAddress(address burnTokenAddress) external {
         if (_msgSender() != s_appraiserContract) {
-            revert InvalidBurnerAddress();
+            revert Verifier__InvalidBurnerAddress();
         }
         _burn(burnTokenAddress, VERIFIER, 1);
     }
 
-    function hasCustomRole(string calldata role, address addr)
-        external
-        view
-        returns (bool)
-    {
+    function isAdmin(address addr) external view returns (bool) {
         return hasRole(keccak256("ADMIN_ROLE"), addr);
     }
 
