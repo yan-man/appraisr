@@ -180,7 +180,7 @@ const shouldManageReviewsRatings = () => {
         ).to.be.revertedWith(`Appraiser__InvalidReview`);
       });
 
-      it.only(`should revert if ashylarry tries to upvote own review`, async function () {
+      it(`should revert if ashylarry tries to upvote own review`, async function () {
         await expect(
           this.reviewer
             .connect(this.users.ashylarry)
@@ -214,7 +214,7 @@ const shouldManageReviewsRatings = () => {
           );
         await tx2.wait();
 
-        const { upvotes, downvotes } = await this.appraiser.s_users(
+        const { upvotes, downvotes } = await this.reviewer.s_users(
           this.users.ashylarry.address
         );
         expect(upvotes).to.equal(ethers.BigNumber.from(1));
@@ -222,7 +222,7 @@ const shouldManageReviewsRatings = () => {
       });
 
       it(`should emit event when tybiggums upvotes ashylarry's review`, async function () {
-        const tx = await this.appraiser
+        const tx = await this.reviewer
           .connect(this.users.tybiggums)
           .voteOnReview(
             this.WacArnolds.orgId,
@@ -231,7 +231,7 @@ const shouldManageReviewsRatings = () => {
           );
 
         await expect(tx)
-          .to.emit(this.appraiser, `LogVoteOnReview`)
+          .to.emit(this.reviewer, `LogVoteOnReview`)
           .withArgs(
             this.users.tybiggums.address,
             this.WacArnolds.orgId,
@@ -240,7 +240,7 @@ const shouldManageReviewsRatings = () => {
       });
 
       it(`should update ashylarry downvotes when tybiggums downvotes ashylarry's review`, async function () {
-        const tx2 = await this.appraiser
+        const tx2 = await this.reviewer
           .connect(this.users.tybiggums)
           .voteOnReview(
             this.WacArnolds.orgId,
@@ -249,7 +249,7 @@ const shouldManageReviewsRatings = () => {
           );
         await tx2.wait();
 
-        const { upvotes, downvotes } = await this.appraiser.s_users(
+        const { upvotes, downvotes } = await this.reviewer.s_users(
           this.users.ashylarry.address
         );
 
@@ -258,7 +258,7 @@ const shouldManageReviewsRatings = () => {
       });
 
       it(`should emit event when tybiggums downvotes ashylarry's review`, async function () {
-        const tx = await this.appraiser
+        const tx = await this.reviewer
           .connect(this.users.tybiggums)
           .voteOnReview(
             this.WacArnolds.orgId,
@@ -267,7 +267,7 @@ const shouldManageReviewsRatings = () => {
           );
 
         await expect(tx)
-          .to.emit(this.appraiser, `LogVoteOnReview`)
+          .to.emit(this.reviewer, `LogVoteOnReview`)
           .withArgs(
             this.users.tybiggums.address,
             this.WacArnolds.orgId,

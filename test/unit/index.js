@@ -106,13 +106,15 @@ describe("Unit tests", async () => {
       await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT
       );
+      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
       await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT2
       );
+      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
     });
     Reviewer.shouldDeploy();
     Reviewer.shouldManageReviews();
-    // Verifier.shouldMintAndTransferAndBurnNFT();
+    Reviewer.shouldManageReviewsRatings();
     // Verifier.shouldSupportInterface();
   });
 });
