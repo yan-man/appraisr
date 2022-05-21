@@ -3,18 +3,24 @@ const { ethers } = require("hardhat");
 const {
   deployMockAppraiserOrganization,
   deployMockVerifier,
+  deployMockReviewer,
+  deployMockAppraiser,
 } = require("./mocks");
 
 const unitAppraiserFixture = async (signers) => {
   const deployer = signers[0];
 
-  const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
-  const appraiser = await appraiserFactory.connect(deployer).deploy();
-  await appraiser.deployed();
+  const mockVerifier = await deployMockVerifier(deployer);
   const mockAppraiserOrganization = await deployMockAppraiserOrganization(
     deployer
   );
-  const mockVerifier = await deployMockVerifier(deployer);
+  const mockReviewer = await deployMockReviewer(deployer);
+
+  const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
+  const appraiser = await appraiserFactory
+    .connect(deployer)
+    .deploy(mockReviewer.address);
+  await appraiser.deployed();
 
   return { appraiser, mockAppraiserOrganization, mockVerifier };
 };
@@ -23,7 +29,7 @@ const unitAppraiserOrganizationFixture = async (signers) => {
   const deployer = signers[0];
 
   const constructorParams = {
-    orgId: 1,
+    orgId: 0,
     name: "WacArnolds",
     addr: signers[10].address,
     URI: "ipfs://WacArnolds/",
@@ -83,8 +89,27 @@ const unitVerifierFixture = async (signers) => {
   return { verifier, constructorParams };
 };
 
+const unitReviewerFixture = async (signers) => {
+  const deployer = signers[0];
+
+  const reviewerFactory = await ethers.getContractFactory(`Reviewer`);
+  const reviewer = await reviewerFactory.connect(deployer).deploy();
+  await reviewer.deployed();
+
+  const mockAppraiserOrganization = await deployMockAppraiserOrganization(
+    deployer
+  );
+
+  const mockAppraiserOrganization2 = await deployMockAppraiserOrganization(
+    deployer
+  );
+
+  return { reviewer, mockAppraiserOrganization, mockAppraiserOrganization2 };
+};
+
 module.exports = {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
+  unitReviewerFixture,
 };

@@ -1,6 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
+require("hardhat-contract-sizer");
 require("./tasks/faucet");
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -25,14 +26,18 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 300,
       },
     },
   },
   networks: {
     hardhat: {
       chainId: 31337,
-      allowUnlimitedContractSize: true,
+      allowUnlimitedContractSize: false,
     },
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: false,
   },
 };

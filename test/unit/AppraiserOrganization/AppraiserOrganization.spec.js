@@ -9,9 +9,17 @@ const shouldDeploy = () => {
       );
     });
     it(`Should set default URI`, async function () {
-      expect(await this.appraiserOrganization.uri(0)).to.equal(
-        this.constructorParams.URI
-      );
+      expect(
+        await this.appraiserOrganization.uri(this.constructorParams.orgId)
+      ).to.equal(this.constructorParams.URI);
+    });
+    it(`Should update state vars after saving new organization WacArnolds`, async function () {
+      const org = await this.appraiserOrganization.organization();
+      expect(org.orgId).to.equal(this.constructorParams.orgId);
+      expect(org.name).to.equal(this.constructorParams.name);
+      expect(org.addr).to.equal(this.constructorParams.addr);
+      expect(org.isActive).to.equal(true);
+      expect(org.isCreated).to.equal(true);
     });
   });
 };
@@ -89,7 +97,6 @@ const shouldVoteOnReviewNFT = () => {
     describe(`...After AppraiserOrganization contract is deployed`, async function () {
       describe(`...After ashy larry leaves a non-verified review1 for WacArnolds`, async function () {
         beforeEach(async function () {
-          this.reviewId = await this.appraiserOrganization.currentReviewId();
           this.review = {
             author: this.users.ashylarry.address,
             rating: 50,
@@ -100,15 +107,23 @@ const shouldVoteOnReviewNFT = () => {
             this.review.rating,
             this.review.review
           );
-          await this.tx.wait();
+          this.receipt = await this.tx.wait();
           this.VERIFIER = (await this.verifier.VERIFIER()).toNumber();
+
+          const eventId = [...this.receipt.events.keys()].filter(
+            (id) => this.receipt.events[id].event === "LogNFTReviewMinted"
+          );
+          const { reviewId } = {
+            ...this.receipt.events[eventId[0]].args,
+          };
+          this.reviewId = reviewId;
         });
-        it(`should not allow ashy larry to vote on own review`, async function () {
+        it(`should not allow ashy larry to upvote own review`, async function () {
           await expect(
             this.appraiserOrganization.voteOnReview(
               this.users.ashylarry.address,
               this.reviewId,
-              this.isUpvote
+              true
             )
           ).to.be.revertedWith(`AppraiserOrganization__CannotVoteOnOwnReview`);
         });
@@ -151,6 +166,18 @@ const shouldVoteOnReviewNFT = () => {
                 this.users.dave.address,
                 this.reviewId,
                 this.isUpvote
+              )
+            ).to.be.revertedWith(
+              `AppraiserOrganization__OneVoteAllowedPerReview`
+            );
+          });
+
+          it(`should revert if multiple votes given by dave for same review`, async function () {
+            await expect(
+              this.appraiserOrganization.voteOnReview(
+                this.users.dave.address,
+                this.reviewId,
+                !this.isUpvote
               )
             ).to.be.revertedWith(
               `AppraiserOrganization__OneVoteAllowedPerReview`
