@@ -43,8 +43,6 @@ contract Reviewer is Ownable {
         }
     }
 
-    constructor() {}
-
     function addUser(address addr_) private {
         if (s_users[addr_].isRegistered == false) {
             s_users[addr_] = Users.User({

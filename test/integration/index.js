@@ -19,24 +19,31 @@ describe("Integration tests", async () => {
     this.users.dave = this.signers[4];
     this.users.prince = this.signers[5];
 
-    this.orgs.wacarnolds = this.signers[10];
+    this.orgs.WacArnolds = this.signers[10];
     this.orgs.studio54 = this.signers[11];
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
+      const reviewerFactory = await ethers.getContractFactory(`Reviewer`);
+      const reviewer = await reviewerFactory
+        .connect(this.users.deployer)
+        .deploy();
+      await reviewer.deployed();
+
       const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
       const appraiser = await appraiserFactory
         .connect(this.users.deployer)
-        .deploy();
+        .deploy(reviewer.address);
       await appraiser.deployed();
 
       this.appraiser = appraiser;
+      this.reviewer = reviewer;
 
       this.companies = {
-        wacarnolds: {
+        WacArnolds: {
           orgId: 0,
           name: "WacArnolds",
-          addr: this.orgs.wacarnolds.address,
+          addr: this.orgs.WacArnolds.address,
           URI: "ipfs://WacArnolds/",
         },
         studio54: {
