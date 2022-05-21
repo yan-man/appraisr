@@ -54,12 +54,16 @@ contract Appraiser is Ownable {
             addr_,
             URI_
         );
-        deployAppraiserOrganizationNFTContract(
+        address _aoContract = deployAppraiserOrganizationNFTContract(
             _orgId,
             name_,
             addr_,
             URI_,
             _verifierAddr
+        );
+        Reviewer(s_reviewerContract).setApprovalOrganizationContractAddress(
+            _orgId,
+            address(_aoContract)
         );
         emit LogAddOrganization(_orgId);
     }
@@ -83,7 +87,7 @@ contract Appraiser is Ownable {
         address addr_,
         string calldata URI_,
         address verifierAddr_
-    ) internal {
+    ) internal returns (address) {
         AppraiserOrganization _ao = new AppraiserOrganization(
             orgId_,
             name_,
@@ -91,11 +95,7 @@ contract Appraiser is Ownable {
             URI_,
             verifierAddr_
         );
-
-        Reviewer(s_reviewerContract).setApprovalOrganizationContractAddress(
-            orgId_,
-            address(_ao)
-        );
+        return address(_ao);
     }
 
     function numberOrganizations() external view returns (uint256) {

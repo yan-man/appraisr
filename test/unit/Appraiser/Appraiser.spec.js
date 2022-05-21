@@ -25,7 +25,7 @@ const shouldManageOrgs = () => {
         this.receipt = await this.tx.wait();
       });
 
-      it(`Should update state vars after saving new organization WacArnolds`, async function () {
+      it.only(`Should update state vars after saving new organization WacArnolds`, async function () {
         expect(
           await this.appraiser.s_organizations(this.companies.wacarnolds.orgId)
         ).to.not.equal(ethers.BigNumber.from(0));

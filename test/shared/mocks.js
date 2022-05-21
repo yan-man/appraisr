@@ -23,6 +23,7 @@ async function deployMockVerifier(deployer) {
 
 async function deployMockReviewer(deployer) {
   const reviewer = await waffle.deployMockContract(deployer, Reviewer_ABI.abi);
+  await reviewer.mock.setApprovalOrganizationContractAddress.returns();
 
   return reviewer;
 }
