@@ -3,18 +3,23 @@ const { ethers } = require("hardhat");
 const {
   deployMockAppraiserOrganization,
   deployMockVerifier,
+  deployMockReviewer,
 } = require("./mocks");
 
 const unitAppraiserFixture = async (signers) => {
   const deployer = signers[0];
 
-  const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
-  const appraiser = await appraiserFactory.connect(deployer).deploy();
-  await appraiser.deployed();
+  const mockVerifier = await deployMockVerifier(deployer);
   const mockAppraiserOrganization = await deployMockAppraiserOrganization(
     deployer
   );
-  const mockVerifier = await deployMockVerifier(deployer);
+  const mockReviewer = await deployMockReviewer(deployer);
+
+  const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
+  const appraiser = await appraiserFactory
+    .connect(deployer)
+    .deploy(mockReviewer.address);
+  await appraiser.deployed();
 
   return { appraiser, mockAppraiserOrganization, mockVerifier };
 };
