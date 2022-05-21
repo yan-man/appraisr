@@ -62,6 +62,15 @@ const shouldManageReviews = () => {
               .connect(this.users.ashylarry)
               .mintReview(this.orgId, 50, "test review");
             await this.mintReviewTx.wait();
+
+            const receipt = await this.mintReviewTx.wait();
+            const eventId = [...receipt.events.keys()].filter(
+              (id) => receipt.events[id].event === "LogMintReview"
+            );
+            const { reviewId } = {
+              ...receipt.events[eventId[0]].args,
+            };
+            this.reviewId = reviewId;
           });
 
           it(`should not revert to mint review for valid org`, async function () {
@@ -73,34 +82,24 @@ const shouldManageReviews = () => {
           });
 
           it(`should update s_reviews state var`, async function () {
-            const tx = await this.reviewer
-              .connect(this.users.ashylarry)
-              .mintReview(this.orgId, 50, "test review");
-            const receipt = await tx.wait();
-            const eventId = [...receipt.events.keys()].filter(
-              (id) => receipt.events[id].event === "LogMintReview"
-            );
-            const { reviewId } = {
-              ...receipt.events[eventId[0]].args,
-            };
             expect(
-              await this.reviewer.s_reviews(this.orgId, reviewId)
+              await this.reviewer.s_reviews(this.orgId, this.reviewId)
             ).to.equal(this.users.ashylarry.address);
           });
 
-          // it(`should create new user when ashylarry's first review is minted`, async function () {
-          //   const { upvotes, downvotes, isRegistered } =
-          //     await this.appraiser.s_users(this.users.ashylarry.address);
-          //   expect(upvotes).to.equal(ethers.BigNumber.from(0));
-          //   expect(downvotes).to.equal(ethers.BigNumber.from(0));
-          //   expect(isRegistered).to.equal(true);
-          // });
+          it(`should create new user when ashylarry's first review is minted`, async function () {
+            const { upvotes, downvotes, isRegistered } =
+              await this.reviewer.s_users(this.users.ashylarry.address);
+            expect(upvotes).to.equal(ethers.BigNumber.from(0));
+            expect(downvotes).to.equal(ethers.BigNumber.from(0));
+            expect(isRegistered).to.equal(true);
+          });
 
-          // it(`should emit LogMintReview event`, async function () {
-          //   await expect(this.mintReviewTx)
-          //     .to.emit(this.appraiser, `LogMintReview`)
-          //     .withArgs(this.mockedResponses.mintReviewNFT);
-          // });
+          it(`should emit LogMintReview event`, async function () {
+            await expect(this.mintReviewTx)
+              .to.emit(this.reviewer, `LogMintReview`)
+              .withArgs(this.mockedResponses.mintReviewNFT);
+          });
 
           // it(`should emit LogNewUser event`, async function () {
           //   await expect(this.mintReviewTx)
