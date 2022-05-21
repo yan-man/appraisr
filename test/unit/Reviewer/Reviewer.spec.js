@@ -150,156 +150,136 @@ const shouldManageReviews = () => {
   });
 };
 
-// const shouldManageReviewsRatings = () => {
-//   context(`# manage reviews`, async function () {
-//     describe("...After org1 WacArnolds saved & ashylarry's review1 is minted", async () => {
-//       beforeEach(async function () {
-//         this.tx = await this.appraiser.addOrganization(
-//           this.companies.wacarnolds.name,
-//           this.companies.wacarnolds.addr,
-//           this.companies.wacarnolds.URI
-//         );
-//         this.receipt = await this.tx.wait();
-//         const eventId = [...this.receipt.events.keys()].filter(
-//           (id) => this.receipt.events[id].event === "LogAddOrganization"
-//         );
-//         const { orgId } = {
-//           ...this.receipt.events[eventId[0]].args,
-//         };
-//         this.wacarnolds = { orgId };
-//         this.mockedResponses = {
-//           mintReviewNFT: 100,
-//         };
-//         await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
-//           this.mockedResponses.mintReviewNFT
-//         );
-//         await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
-//         const tx = await this.appraiser.setAOContractAddress(
-//           this.wacarnolds.orgId.toNumber(),
-//           this.mocks.mockAppraiserOrganization.address
-//         );
-//         await tx.wait();
+const shouldManageReviewsRatings = () => {
+  context(`# manage reviews`, async function () {
+    describe("...After org1 WacArnolds saved & ashylarry's review1 is minted", async () => {
+      beforeEach(async function () {
+        this.WacArnolds = { orgId: 0 };
+        await this.reviewer.setAppraiserOrganizationContractAddress(
+          this.WacArnolds.orgId,
+          this.mocks.mockAppraiserOrganization.address
+        );
 
-//         const mintReviewtx = await this.appraiser
-//           .connect(this.users.ashylarry)
-//           .mintReview(this.wacarnolds.orgId.toNumber(), 50, "test review");
-//         await mintReviewtx.wait();
-//       });
+        const mintReviewTx = await this.reviewer
+          .connect(this.users.ashylarry)
+          .mintReview(this.WacArnolds.orgId, 50, "test review");
+        await mintReviewTx.wait();
+      });
 
-//       it(`should revert if org doesn't exist`, async function () {
-//         await expect(
-//           this.appraiser.connect(this.users.tybiggums).voteOnReview(5, 5, true)
-//         ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
-//       });
+      it(`should revert if org doesn't exist`, async function () {
+        await expect(
+          this.reviewer.connect(this.users.tybiggums).voteOnReview(5, 5, true)
+        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
+      });
 
-//       it(`should revert if review doesn't exist`, async function () {
-//         await expect(
-//           this.appraiser
-//             .connect(this.users.tybiggums)
-//             .voteOnReview(this.wacarnolds.orgId, 5, true)
-//         ).to.be.revertedWith(`Appraiser__InvalidReview`);
-//       });
+      it(`should revert if review doesn't exist`, async function () {
+        await expect(
+          this.reviewer
+            .connect(this.users.tybiggums)
+            .voteOnReview(this.WacArnolds.orgId, 5, true)
+        ).to.be.revertedWith(`Appraiser__InvalidReview`);
+      });
 
-//       it(`should revert if ashylarry tries to upvote own review`, async function () {
-//         await expect(
-//           this.appraiser
-//             .connect(this.users.ashylarry)
-//             .voteOnReview(
-//               this.wacarnolds.orgId,
-//               this.mockedResponses.mintReviewNFT,
-//               true
-//             )
-//         ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
-//       });
+      it.only(`should revert if ashylarry tries to upvote own review`, async function () {
+        await expect(
+          this.reviewer
+            .connect(this.users.ashylarry)
+            .voteOnReview(
+              this.WacArnolds.orgId,
+              this.mockedResponses.mintReviewNFT,
+              true
+            )
+        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
+      });
 
-//       it(`should revert if ashylarry tries to downvote own review`, async function () {
-//         await expect(
-//           this.appraiser
-//             .connect(this.users.ashylarry)
-//             .voteOnReview(
-//               this.wacarnolds.orgId,
-//               this.mockedResponses.mintReviewNFT,
-//               true
-//             )
-//         ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
-//       });
+      it(`should revert if ashylarry tries to downvote own review`, async function () {
+        await expect(
+          this.reviewer
+            .connect(this.users.ashylarry)
+            .voteOnReview(
+              this.WacArnolds.orgId,
+              this.mockedResponses.mintReviewNFT,
+              true
+            )
+        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
+      });
 
-//       it(`should update ashylarry's upvotes when tybiggums upvotes ashylarry's review`, async function () {
-//         const tx2 = await this.appraiser
-//           .connect(this.users.tybiggums)
-//           .voteOnReview(
-//             this.wacarnolds.orgId,
-//             this.mockedResponses.mintReviewNFT,
-//             true
-//           );
-//         await tx2.wait();
+      it(`should update ashylarry's upvotes when tybiggums upvotes ashylarry's review`, async function () {
+        const tx2 = await this.reviewer
+          .connect(this.users.tybiggums)
+          .voteOnReview(
+            this.WacArnolds.orgId,
+            this.mockedResponses.mintReviewNFT,
+            true
+          );
+        await tx2.wait();
 
-//         const { upvotes, downvotes } = await this.appraiser.s_users(
-//           this.users.ashylarry.address
-//         );
-//         expect(upvotes).to.equal(ethers.BigNumber.from(1));
-//         expect(downvotes).to.equal(ethers.BigNumber.from(0));
-//       });
+        const { upvotes, downvotes } = await this.appraiser.s_users(
+          this.users.ashylarry.address
+        );
+        expect(upvotes).to.equal(ethers.BigNumber.from(1));
+        expect(downvotes).to.equal(ethers.BigNumber.from(0));
+      });
 
-//       it(`should emit event when tybiggums upvotes ashylarry's review`, async function () {
-//         const tx = await this.appraiser
-//           .connect(this.users.tybiggums)
-//           .voteOnReview(
-//             this.wacarnolds.orgId,
-//             this.mockedResponses.mintReviewNFT,
-//             true
-//           );
+      it(`should emit event when tybiggums upvotes ashylarry's review`, async function () {
+        const tx = await this.appraiser
+          .connect(this.users.tybiggums)
+          .voteOnReview(
+            this.WacArnolds.orgId,
+            this.mockedResponses.mintReviewNFT,
+            true
+          );
 
-//         await expect(tx)
-//           .to.emit(this.appraiser, `LogVoteOnReview`)
-//           .withArgs(
-//             this.users.tybiggums.address,
-//             this.wacarnolds.orgId,
-//             this.mockedResponses.mintReviewNFT
-//           );
-//       });
+        await expect(tx)
+          .to.emit(this.appraiser, `LogVoteOnReview`)
+          .withArgs(
+            this.users.tybiggums.address,
+            this.WacArnolds.orgId,
+            this.mockedResponses.mintReviewNFT
+          );
+      });
 
-//       it(`should update ashylarry downvotes when tybiggums downvotes ashylarry's review`, async function () {
-//         const tx2 = await this.appraiser
-//           .connect(this.users.tybiggums)
-//           .voteOnReview(
-//             this.wacarnolds.orgId,
-//             this.mockedResponses.mintReviewNFT,
-//             false
-//           );
-//         await tx2.wait();
+      it(`should update ashylarry downvotes when tybiggums downvotes ashylarry's review`, async function () {
+        const tx2 = await this.appraiser
+          .connect(this.users.tybiggums)
+          .voteOnReview(
+            this.WacArnolds.orgId,
+            this.mockedResponses.mintReviewNFT,
+            false
+          );
+        await tx2.wait();
 
-//         const { upvotes, downvotes } = await this.appraiser.s_users(
-//           this.users.ashylarry.address
-//         );
+        const { upvotes, downvotes } = await this.appraiser.s_users(
+          this.users.ashylarry.address
+        );
 
-//         expect(upvotes).to.equal(ethers.BigNumber.from(0));
-//         expect(downvotes).to.equal(ethers.BigNumber.from(1));
-//       });
+        expect(upvotes).to.equal(ethers.BigNumber.from(0));
+        expect(downvotes).to.equal(ethers.BigNumber.from(1));
+      });
 
-//       it(`should emit event when tybiggums downvotes ashylarry's review`, async function () {
-//         const tx = await this.appraiser
-//           .connect(this.users.tybiggums)
-//           .voteOnReview(
-//             this.wacarnolds.orgId,
-//             this.mockedResponses.mintReviewNFT,
-//             false
-//           );
+      it(`should emit event when tybiggums downvotes ashylarry's review`, async function () {
+        const tx = await this.appraiser
+          .connect(this.users.tybiggums)
+          .voteOnReview(
+            this.WacArnolds.orgId,
+            this.mockedResponses.mintReviewNFT,
+            false
+          );
 
-//         await expect(tx)
-//           .to.emit(this.appraiser, `LogVoteOnReview`)
-//           .withArgs(
-//             this.users.tybiggums.address,
-//             this.wacarnolds.orgId,
-//             this.mockedResponses.mintReviewNFT
-//           );
-//       });
-//     });
-//   });
-// };
+        await expect(tx)
+          .to.emit(this.appraiser, `LogVoteOnReview`)
+          .withArgs(
+            this.users.tybiggums.address,
+            this.WacArnolds.orgId,
+            this.mockedResponses.mintReviewNFT
+          );
+      });
+    });
+  });
+};
 
 module.exports = {
   shouldDeploy,
   shouldManageReviews,
-  // shouldManageReviewsRatings,
+  shouldManageReviewsRatings,
 };
