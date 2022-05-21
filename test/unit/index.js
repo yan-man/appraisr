@@ -97,7 +97,7 @@ describe("Unit tests", async () => {
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
     });
     Reviewer.shouldDeploy();
-    // Verifier.shouldSetContractAddress();
+    Reviewer.shouldManageReviews();
     // Verifier.shouldMintAndTransferAndBurnNFT();
     // Verifier.shouldSupportInterface();
   });

@@ -72,7 +72,7 @@ contract Reviewer is Ownable {
     function setAppraiserOrganizationContractAddress(
         uint256 orgId_,
         address contractAddr_
-    ) external {
+    ) external onlyOwner {
         s_aoContracts[orgId_] = contractAddr_;
     }
 
