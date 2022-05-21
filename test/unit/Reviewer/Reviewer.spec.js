@@ -32,16 +32,16 @@ const shouldManageReviews = () => {
   context(`# manage reviews`, async function () {
     describe("...After mock AppraiserOrganization contract address is set", async () => {
       beforeEach(async function () {
-        this.orgId = 0;
+        this.WacArnolds = { orgId: 0 };
         await this.reviewer.setAppraiserOrganizationContractAddress(
-          this.orgId,
+          this.WacArnolds.orgId,
           this.mocks.mockAppraiserOrganization.address
         );
       });
       it(`should revert to mint review for non-valid org`, async function () {
         await expect(
           this.reviewer.mintReview(
-            this.orgId + 100, // made up false orgId
+            this.WacArnolds.orgId + 100, // made up false orgId
             50,
             "test review"
           )
@@ -51,7 +51,7 @@ const shouldManageReviews = () => {
         await expect(
           this.reviewer
             .connect(this.users.ashylarry)
-            .mintReview(this.orgId, 50, "test review")
+            .mintReview(this.WacArnolds.orgId, 50, "test review")
         ).to.not.be.reverted;
       });
 
@@ -60,7 +60,7 @@ const shouldManageReviews = () => {
           beforeEach(async function () {
             this.mintReviewTx = await this.reviewer
               .connect(this.users.ashylarry)
-              .mintReview(this.orgId, 50, "test review");
+              .mintReview(this.WacArnolds.orgId, 50, "test review");
             await this.mintReviewTx.wait();
 
             const receipt = await this.mintReviewTx.wait();
@@ -75,7 +75,10 @@ const shouldManageReviews = () => {
 
           it(`should update s_reviews state var`, async function () {
             expect(
-              await this.reviewer.s_reviews(this.orgId, this.reviewId)
+              await this.reviewer.s_reviews(
+                this.WacArnolds.orgId,
+                this.reviewId
+              )
             ).to.equal(this.users.ashylarry.address);
           });
 
@@ -102,22 +105,22 @@ const shouldManageReviews = () => {
           it(`should not create a new user if ashylarry leaves 2nd review at WacArnolds`, async function () {
             const tx2 = await this.reviewer
               .connect(this.users.ashylarry)
-              .mintReview(this.orgId, 51, "test review2");
+              .mintReview(this.WacArnolds.orgId, 51, "test review2");
             await expect(tx2).to.not.emit(this.reviewer, `LogNewUser`);
           });
 
           describe(`...After 2nd org studio54 added`, async function () {
             beforeEach(async function () {
-              this.orgId2 = 1;
+              this.studio54 = { orgId: 1 };
               await this.reviewer.setAppraiserOrganizationContractAddress(
-                this.orgId2,
+                this.studio54.orgId,
                 this.mocks.mockAppraiserOrganization2.address
               );
             });
-            it.only(`should save new review if existing user ashy larry adds review to org2 studio54`, async function () {
+            it(`should save new review if existing user ashy larry adds review to org2 studio54`, async function () {
               const tx = await this.reviewer
                 .connect(this.users.ashylarry)
-                .mintReview(this.orgId2, 54, "test review2");
+                .mintReview(this.studio54.orgId, 54, "test review2");
               const receipt = await tx.wait();
               const eventId = [...receipt.events.keys()].filter(
                 (id) => receipt.events[id].event === "LogMintReview"
@@ -126,24 +129,20 @@ const shouldManageReviews = () => {
                 ...receipt.events[eventId[0]].args,
               };
               expect(
-                await this.reviewer.s_reviews(this.orgId2, reviewId)
+                await this.reviewer.s_reviews(this.studio54.orgId, reviewId)
               ).to.equal(this.users.ashylarry.address);
             });
-            // it(`should not emit LogNewUser event if existing user1 adds review to org2`, async function () {
-            //   const tx = await this.appraiser
-            //     .connect(this.users.ashylarry)
-            //     .mintReview(
-            //       this.wacarnolds.orgId.toNumber(),
-            //       50,
-            //       "test review"
-            //     );
-            //   await tx.wait();
-            //   const tx2 = await this.appraiser
-            //     .connect(this.users.ashylarry)
-            //     .mintReview(this.studio54.orgId.toNumber(), 54, "test review2");
-            //   const receipt2 = await tx2.wait();
-            //   await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
-            // });
+            it(`should not emit LogNewUser event if existing user ashy larry adds review to org2 studio54`, async function () {
+              const tx = await this.reviewer
+                .connect(this.users.ashylarry)
+                .mintReview(this.WacArnolds.orgId, 50, "test review");
+              await tx.wait();
+              const tx2 = await this.reviewer
+                .connect(this.users.ashylarry)
+                .mintReview(this.studio54.orgId, 54, "test review2");
+              const receipt2 = await tx2.wait();
+              await expect(tx2).to.not.emit(this.reviewer, `LogNewUser`);
+            });
           });
         });
       });
