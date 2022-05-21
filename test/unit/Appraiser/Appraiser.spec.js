@@ -36,23 +36,8 @@ const shouldManageOrgs = () => {
         await expect(this.tx)
           .to.emit(this.appraiser, `LogAddOrganization`)
           .withArgs(this.companies.wacarnolds.orgId);
-        await expect(this.tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
-        await expect(this.tx).to.emit(
-          this.appraiser,
-          `LogVerifierNFTContractDeployed`
-        );
 
-        eventId = [...this.receipt.events.keys()].filter(
-          (id) => this.receipt.events[id].event === "LogAddOrganization"
-        );
-        const { orgId: emittedOrgId } = {
-          ...this.receipt.events[eventId[0]].args,
-        };
-        expect(emittedOrgId).to.equal(
-          ethers.BigNumber.from(this.companies.wacarnolds.orgId)
-        );
-
-        eventId = [...this.receipt.events.keys()].filter(
+        const eventId = [...this.receipt.events.keys()].filter(
           (id) => this.receipt.events[id].event === "OwnershipTransferred"
         );
         expect(eventId).to.have.lengthOf(3);
@@ -61,12 +46,7 @@ const shouldManageOrgs = () => {
       });
 
       describe(`...After new org WacArnolds saved`, async () => {
-        beforeEach(async function () {
-          eventId = [...this.receipt.events.keys()].filter(
-            (id) => this.receipt.events[id].event === "LogNFTContractDeployed"
-          )[0];
-          this.eventArgs = { ...this.receipt.events[eventId].args };
-        });
+        beforeEach(async function () {});
         it(`should return current number of orgs (1)`, async function () {
           expect(await this.appraiser.numberOrganizations()).to.equal(
             ethers.BigNumber.from(1)
@@ -118,7 +98,6 @@ const shouldManageOrgs = () => {
           await expect(tx)
             .to.emit(this.appraiser, `LogAddOrganization`)
             .withArgs(1);
-          await expect(tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
         });
       });
     });
