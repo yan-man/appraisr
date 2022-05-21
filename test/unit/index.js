@@ -5,10 +5,12 @@ const {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
+  unitReviewerFixture,
 } = require("../shared/fixtures");
 const Appraiser = require("./Appraiser/Appraiser.spec");
 const AppraiserOrganization = require("./AppraiserOrganization/AppraiserOrganization.spec");
 const Verifier = require("./Verifier/Verifier.spec");
+const Reviewer = require("./Reviewer/Reviewer.spec");
 
 describe("Unit tests", async () => {
   before(async function () {
@@ -55,8 +57,6 @@ describe("Unit tests", async () => {
     });
     Appraiser.shouldDeploy();
     Appraiser.shouldManageOrgs();
-    Appraiser.shouldManageReviews();
-    Appraiser.shouldManageReviewsRatings();
   });
   describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
@@ -87,5 +87,34 @@ describe("Unit tests", async () => {
     Verifier.shouldSetContractAddress();
     Verifier.shouldMintAndTransferAndBurnNFT();
     Verifier.shouldSupportInterface();
+  });
+  describe(`Reviewer`, async () => {
+    beforeEach(async function () {
+      const {
+        reviewer,
+        mockAppraiserOrganization,
+        mockAppraiserOrganization2,
+      } = await this.loadFixture(unitReviewerFixture);
+      this.reviewer = reviewer;
+      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+      this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
+
+      this.mockedResponses = {
+        mintReviewNFT: 100,
+        mintReviewNFT2: 5,
+      };
+      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT
+      );
+      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
+      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT2
+      );
+      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
+    });
+    Reviewer.shouldDeploy();
+    Reviewer.shouldManageReviews();
+    Reviewer.shouldManageReviewsRatings();
+    // Verifier.shouldSupportInterface();
   });
 });
