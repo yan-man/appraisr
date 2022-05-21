@@ -88,8 +88,19 @@ const unitVerifierFixture = async (signers) => {
   return { verifier, constructorParams };
 };
 
+const unitReviewerFixture = async (signers) => {
+  const deployer = signers[0];
+
+  const reviewerFactory = await ethers.getContractFactory(`Reviewer`);
+  const reviewer = await reviewerFactory.connect(deployer).deploy();
+  await reviewer.deployed();
+
+  return { reviewer };
+};
+
 module.exports = {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
+  unitReviewerFixture,
 };

@@ -5,10 +5,12 @@ const {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
+  unitReviewerFixture,
 } = require("../shared/fixtures");
 const Appraiser = require("./Appraiser/Appraiser.spec");
 const AppraiserOrganization = require("./AppraiserOrganization/AppraiserOrganization.spec");
 const Verifier = require("./Verifier/Verifier.spec");
+const Reviewer = require("./Reviewer/Reviewer.spec");
 
 describe("Unit tests", async () => {
   before(async function () {
@@ -55,8 +57,6 @@ describe("Unit tests", async () => {
     });
     Appraiser.shouldDeploy();
     Appraiser.shouldManageOrgs();
-    // Appraiser.shouldManageReviews();
-    // Appraiser.shouldManageReviewsRatings();
   });
   describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
@@ -88,4 +88,14 @@ describe("Unit tests", async () => {
     Verifier.shouldMintAndTransferAndBurnNFT();
     Verifier.shouldSupportInterface();
   });
+  // describe(`Reviewer`, async () => {
+  //   beforeEach(async function () {
+  //     const { reviewer } = await this.loadFixture(unitReviewerFixture);
+  //     this.reviewer = reviewer;
+  //   });
+  //   // Reviewer.shouldDeploy();
+  //   // Verifier.shouldSetContractAddress();
+  //   // Verifier.shouldMintAndTransferAndBurnNFT();
+  //   // Verifier.shouldSupportInterface();
+  // });
 });
