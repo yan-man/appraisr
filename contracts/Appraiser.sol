@@ -19,7 +19,6 @@ contract Appraiser is Ownable {
     mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
     mapping(string => uint256) private s_orgNames; // org name -> intbool exists flag
     address private s_reviewerContract;
-    mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
 
     // Events
     event LogAddOrganization(uint256 orgId);
@@ -60,7 +59,7 @@ contract Appraiser is Ownable {
             URI_,
             _verifierAddr
         );
-        Reviewer(s_reviewerContract).setApprovalOrganizationContractAddress(
+        Reviewer(s_reviewerContract).setAppraiserOrganizationContractAddress(
             _orgId,
             address(_aoContract)
         );

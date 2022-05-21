@@ -4,6 +4,7 @@ const {
   deployMockAppraiserOrganization,
   deployMockVerifier,
   deployMockReviewer,
+  deployMockAppraiser,
 } = require("./mocks");
 
 const unitAppraiserFixture = async (signers) => {
@@ -95,7 +96,11 @@ const unitReviewerFixture = async (signers) => {
   const reviewer = await reviewerFactory.connect(deployer).deploy();
   await reviewer.deployed();
 
-  return { reviewer };
+  const mockAppraiserOrganization = await deployMockAppraiserOrganization(
+    deployer
+  );
+
+  return { reviewer, mockAppraiserOrganization };
 };
 
 module.exports = {

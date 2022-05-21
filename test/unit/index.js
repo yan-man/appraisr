@@ -88,14 +88,17 @@ describe("Unit tests", async () => {
     Verifier.shouldMintAndTransferAndBurnNFT();
     Verifier.shouldSupportInterface();
   });
-  // describe(`Reviewer`, async () => {
-  //   beforeEach(async function () {
-  //     const { reviewer } = await this.loadFixture(unitReviewerFixture);
-  //     this.reviewer = reviewer;
-  //   });
-  //   // Reviewer.shouldDeploy();
-  //   // Verifier.shouldSetContractAddress();
-  //   // Verifier.shouldMintAndTransferAndBurnNFT();
-  //   // Verifier.shouldSupportInterface();
-  // });
+  describe(`Reviewer`, async () => {
+    beforeEach(async function () {
+      const { reviewer, mockAppraiserOrganization } = await this.loadFixture(
+        unitReviewerFixture
+      );
+      this.reviewer = reviewer;
+      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+    });
+    Reviewer.shouldDeploy();
+    // Verifier.shouldSetContractAddress();
+    // Verifier.shouldMintAndTransferAndBurnNFT();
+    // Verifier.shouldSupportInterface();
+  });
 });

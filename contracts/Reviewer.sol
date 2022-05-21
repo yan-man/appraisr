@@ -17,7 +17,6 @@ contract Reviewer is Ownable {
 
     // state vars
     mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
-    address public s_appraiserContract;
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
     mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
@@ -70,7 +69,7 @@ contract Reviewer is Ownable {
         emit LogMintReview(_reviewId);
     }
 
-    function setApprovalOrganizationContractAddress(
+    function setAppraiserOrganizationContractAddress(
         uint256 orgId_,
         address contractAddr_
     ) external {
