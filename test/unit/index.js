@@ -95,6 +95,13 @@ describe("Unit tests", async () => {
       );
       this.reviewer = reviewer;
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+
+      this.mockedResponses = {
+        mintReviewNFT: 100,
+      };
+      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT
+      );
     });
     Reviewer.shouldDeploy();
     Reviewer.shouldManageReviews();

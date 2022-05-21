@@ -47,17 +47,17 @@ const shouldManageReviews = () => {
           )
         ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
       });
+      it(`should not revert to mint review for valid org`, async function () {
+        await expect(
+          this.reviewer
+            .connect(this.users.ashylarry)
+            .mintReview(this.orgId, 50, "test review")
+        ).to.not.be.reverted;
+      });
 
       context(`# mint review`, async function () {
         describe(`...After review1 minted`, async () => {
           beforeEach(async function () {
-            this.mockedResponses = {
-              mintReviewNFT: 100,
-            };
-            await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
-              this.mockedResponses.mintReviewNFT
-            );
-
             this.mintReviewTx = await this.reviewer
               .connect(this.users.ashylarry)
               .mintReview(this.orgId, 50, "test review");
@@ -73,21 +73,13 @@ const shouldManageReviews = () => {
             this.reviewId = reviewId;
           });
 
-          it(`should not revert to mint review for valid org`, async function () {
-            await expect(
-              this.reviewer
-                .connect(this.users.ashylarry)
-                .mintReview(this.orgId, 50, "test review")
-            ).to.not.be.reverted;
-          });
-
           it(`should update s_reviews state var`, async function () {
             expect(
               await this.reviewer.s_reviews(this.orgId, this.reviewId)
             ).to.equal(this.users.ashylarry.address);
           });
 
-          it(`should create new user when ashylarry's first review is minted`, async function () {
+          it(`should create new user when ashylarry's first review is minted at WacArnolds`, async function () {
             const { upvotes, downvotes, isRegistered } =
               await this.reviewer.s_users(this.users.ashylarry.address);
             expect(upvotes).to.equal(ethers.BigNumber.from(0));
@@ -101,18 +93,18 @@ const shouldManageReviews = () => {
               .withArgs(this.mockedResponses.mintReviewNFT);
           });
 
-          // it(`should emit LogNewUser event`, async function () {
-          //   await expect(this.mintReviewTx)
-          //     .to.emit(this.appraiser, `LogNewUser`)
-          //     .withArgs(this.users.ashylarry.address);
-          // });
+          it(`should emit LogNewUser event`, async function () {
+            await expect(this.mintReviewTx)
+              .to.emit(this.reviewer, `LogNewUser`)
+              .withArgs(this.users.ashylarry.address);
+          });
 
-          // it(`should not create a new user if ashylarry leaves 2nd review at WacArnolds`, async function () {
-          //   const tx2 = await this.appraiser
-          //     .connect(this.users.ashylarry)
-          //     .mintReview(this.wacarnolds.orgId.toNumber(), 51, "test review2");
-          //   await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
-          // });
+          it(`should not create a new user if ashylarry leaves 2nd review at WacArnolds`, async function () {
+            const tx2 = await this.reviewer
+              .connect(this.users.ashylarry)
+              .mintReview(this.orgId, 51, "test review2");
+            await expect(tx2).to.not.emit(this.reviewer, `LogNewUser`);
+          });
 
           // describe(`...After 2nd org studio54 added`, async function () {
           //   beforeEach(async function () {
