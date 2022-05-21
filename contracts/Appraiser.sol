@@ -23,7 +23,6 @@ contract Appraiser is Ownable {
 
     // Events
     event LogAddOrganization(uint256 orgId);
-    event LogVerifierNFTContractDeployed(address verifierContractAddress);
 
     // Errors
     error Appraiser__DuplicateOrgName();
@@ -77,7 +76,6 @@ contract Appraiser is Ownable {
         Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_, owner());
         s_vContracts[orgId_] = address(_verifier);
 
-        emit LogVerifierNFTContractDeployed(address(_verifier));
         return address(_verifier);
     }
 

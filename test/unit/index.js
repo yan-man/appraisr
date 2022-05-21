@@ -55,8 +55,8 @@ describe("Unit tests", async () => {
     });
     Appraiser.shouldDeploy();
     Appraiser.shouldManageOrgs();
-    Appraiser.shouldManageReviews();
-    Appraiser.shouldManageReviewsRatings();
+    // Appraiser.shouldManageReviews();
+    // Appraiser.shouldManageReviewsRatings();
   });
   describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
