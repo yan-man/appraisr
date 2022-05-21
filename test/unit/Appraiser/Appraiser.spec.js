@@ -52,11 +52,6 @@ const shouldManageOrgs = () => {
             ethers.BigNumber.from(1)
           );
         });
-        // it(`should return deployed contract address`, async function () {
-        //   expect(await this.appraiser.s_aoContracts(0)).to.equal(
-        //     this.eventArgs.aoContractAddress
-        //   );
-        // });
         it(`Should throw Appraiser__DuplicateOrgName error on duplicate WacArnolds org name`, async function () {
           await expect(
             this.appraiser.addOrganization(
