@@ -90,17 +90,24 @@ describe("Unit tests", async () => {
   });
   describe(`Reviewer`, async () => {
     beforeEach(async function () {
-      const { reviewer, mockAppraiserOrganization } = await this.loadFixture(
-        unitReviewerFixture
-      );
+      const {
+        reviewer,
+        mockAppraiserOrganization,
+        mockAppraiserOrganization2,
+      } = await this.loadFixture(unitReviewerFixture);
       this.reviewer = reviewer;
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+      this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
 
       this.mockedResponses = {
         mintReviewNFT: 100,
+        mintReviewNFT2: 5,
       };
       await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT
+      );
+      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT2
       );
     });
     Reviewer.shouldDeploy();

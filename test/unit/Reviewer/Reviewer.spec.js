@@ -106,63 +106,45 @@ const shouldManageReviews = () => {
             await expect(tx2).to.not.emit(this.reviewer, `LogNewUser`);
           });
 
-          // describe(`...After 2nd org studio54 added`, async function () {
-          //   beforeEach(async function () {
-          //     const tx = await this.appraiser.addOrganization(
-          //       this.companies.studio54.name,
-          //       this.companies.studio54.addr,
-          //       this.companies.studio54.URI
-          //     );
-          //     const receipt = await tx.wait();
-          //     const eventId = [...receipt.events.keys()].filter(
-          //       (id) => receipt.events[id].event === "LogAddOrganization"
-          //     );
-          //     this.studio54 = {
-          //       ...receipt.events[eventId[0]].args,
-          //     };
-          //     const tx2 = await this.appraiser.setAOContractAddress(
-          //       this.studio54.orgId.toNumber(),
-          //       this.mocks.mockAppraiserOrganization.address
-          //     );
-          //     await tx2.wait();
-          //   });
-          //   it(`should save new review if existing user ashy larry adds review to org2 studio54`, async function () {
-          //     const tx = await this.appraiser
-          //       .connect(this.users.ashylarry)
-          //       .mintReview(
-          //         this.wacarnolds.orgId.toNumber(),
-          //         50,
-          //         "test review"
-          //       );
-          //     await tx.wait();
-          //     const tx2 = await this.appraiser
-          //       .connect(this.users.ashylarry)
-          //       .mintReview(this.studio54.orgId.toNumber(), 54, "test review2");
-          //     const receipt2 = await tx2.wait();
-
-          //     expect(
-          //       await this.appraiser.s_reviews(
-          //         this.studio54.orgId.toNumber(),
-          //         this.mockedResponses.mintReviewNFT
-          //       )
-          //     ).to.equal(this.users.ashylarry.address);
-          //   });
-          //   it(`should not emit LogNewUser event if existing user1 adds review to org2`, async function () {
-          //     const tx = await this.appraiser
-          //       .connect(this.users.ashylarry)
-          //       .mintReview(
-          //         this.wacarnolds.orgId.toNumber(),
-          //         50,
-          //         "test review"
-          //       );
-          //     await tx.wait();
-          //     const tx2 = await this.appraiser
-          //       .connect(this.users.ashylarry)
-          //       .mintReview(this.studio54.orgId.toNumber(), 54, "test review2");
-          //     const receipt2 = await tx2.wait();
-          //     await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
-          //   });
-          // });
+          describe(`...After 2nd org studio54 added`, async function () {
+            beforeEach(async function () {
+              this.orgId2 = 1;
+              await this.reviewer.setAppraiserOrganizationContractAddress(
+                this.orgId2,
+                this.mocks.mockAppraiserOrganization2.address
+              );
+            });
+            it.only(`should save new review if existing user ashy larry adds review to org2 studio54`, async function () {
+              const tx = await this.reviewer
+                .connect(this.users.ashylarry)
+                .mintReview(this.orgId2, 54, "test review2");
+              const receipt = await tx.wait();
+              const eventId = [...receipt.events.keys()].filter(
+                (id) => receipt.events[id].event === "LogMintReview"
+              );
+              const { reviewId } = {
+                ...receipt.events[eventId[0]].args,
+              };
+              expect(
+                await this.reviewer.s_reviews(this.orgId2, reviewId)
+              ).to.equal(this.users.ashylarry.address);
+            });
+            // it(`should not emit LogNewUser event if existing user1 adds review to org2`, async function () {
+            //   const tx = await this.appraiser
+            //     .connect(this.users.ashylarry)
+            //     .mintReview(
+            //       this.wacarnolds.orgId.toNumber(),
+            //       50,
+            //       "test review"
+            //     );
+            //   await tx.wait();
+            //   const tx2 = await this.appraiser
+            //     .connect(this.users.ashylarry)
+            //     .mintReview(this.studio54.orgId.toNumber(), 54, "test review2");
+            //   const receipt2 = await tx2.wait();
+            //   await expect(tx2).to.not.emit(this.appraiser, `LogNewUser`);
+            // });
+          });
         });
       });
     });

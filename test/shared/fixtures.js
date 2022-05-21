@@ -100,7 +100,11 @@ const unitReviewerFixture = async (signers) => {
     deployer
   );
 
-  return { reviewer, mockAppraiserOrganization };
+  const mockAppraiserOrganization2 = await deployMockAppraiserOrganization(
+    deployer
+  );
+
+  return { reviewer, mockAppraiserOrganization, mockAppraiserOrganization2 };
 };
 
 module.exports = {
