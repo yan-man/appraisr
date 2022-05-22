@@ -16,7 +16,6 @@ contract Appraiser is Ownable {
     // State Vars
     Counters.Counter public s_orgIds;
     mapping(uint256 => uint256) public s_organizations; // orgId -> intbool isActive
-    mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
     mapping(string => uint256) private s_orgNames; // org name -> intbool exists flag
     address private s_reviewerContract;
 
@@ -73,7 +72,6 @@ contract Appraiser is Ownable {
         string memory URI_
     ) internal returns (address) {
         Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_, owner());
-        s_vContracts[orgId_] = address(_verifier);
 
         return address(_verifier);
     }
