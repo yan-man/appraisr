@@ -115,6 +115,5 @@ describe("Unit tests", async () => {
     Reviewer.shouldDeploy();
     Reviewer.shouldManageReviews();
     Reviewer.shouldManageReviewsRatings();
-    // Verifier.shouldSupportInterface();
   });
 });
