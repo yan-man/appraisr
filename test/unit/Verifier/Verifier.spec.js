@@ -64,9 +64,9 @@ const shouldMintAndTransferAndBurnNFT = () => {
           await this.verifier.s_appraiserContract();
       });
 
-      it("should batch mint 5 VERIFIER NFTs to dave", async function () {
+      it("should admin batch mint 5 VERIFIER NFTs to dave", async function () {
         const tokenAmount = 5;
-        const tx = await this.verifier.mintBatch(
+        const tx = await this.verifier.adminMintBatch(
           [this.VERIFIER],
           [tokenAmount],
           this.users.dave.address
@@ -77,10 +77,82 @@ const shouldMintAndTransferAndBurnNFT = () => {
         ).to.equal(tokenAmount);
       });
 
+      it("should admin batch mint 5 VERIFIER NFTs to dave", async function () {
+        const tokenAmount = 5;
+        const tx = await this.verifier.adminMintBatch(
+          [this.VERIFIER],
+          [tokenAmount],
+          this.users.dave.address
+        );
+        await tx.wait();
+        expect(
+          await this.verifier.balanceOf(this.users.dave.address, this.VERIFIER)
+        ).to.equal(tokenAmount);
+      });
+
+      it("should not batch mint to dave from non-WacArnolds admin", async function () {
+        await expect(
+          this.verifier
+            .connect(this.users.ashylarry)
+            .mintBatch(this.users.dave.address)
+        ).to.be.revertedWith(`Verifier__OnlyAdminCanMintNFT`);
+      });
+
+      it("should not batch mint from non-WacArnolds admin with 0 funds", async function () {
+        await expect(
+          this.verifier
+            .connect(this.orgs.wacarnolds)
+            .mintBatch(this.users.dave.address)
+        ).to.be.revertedWith(`Verifier__InvalidMsgValue`);
+      });
+
+      it("should not batch mint from non-WacArnolds admin with insufficient funds", async function () {
+        const FLOOR_PRICE = await this.verifier.FLOOR_PRICE();
+        await expect(
+          this.verifier
+            .connect(this.orgs.wacarnolds)
+            .mintBatch(this.users.dave.address, {
+              value: ethers.utils.parseUnits(
+                FLOOR_PRICE.sub(1).toString(),
+                "wei"
+              ),
+            })
+        ).to.be.revertedWith(`Verifier__InvalidMsgValue`);
+      });
+
+      it("should not be reverted to batch mint from non-WacArnolds admin with valid funds", async function () {
+        const FLOOR_PRICE = await this.verifier.FLOOR_PRICE();
+        await expect(
+          this.verifier
+            .connect(this.orgs.wacarnolds)
+            .mintBatch(this.users.dave.address, {
+              value: ethers.utils.parseUnits(FLOOR_PRICE.toString(), "wei"),
+            })
+        ).to.not.be.reverted;
+      });
+
+      it("should batch mint 5 VERIFIER NFTs to dave from WacArnolds admin with valid funds", async function () {
+        const tokenAmount = 5;
+
+        const FLOOR_PRICE = await this.verifier.FLOOR_PRICE();
+        const tx = await this.verifier
+          .connect(this.orgs.wacarnolds)
+          .mintBatch(this.users.dave.address, {
+            value: ethers.utils.parseUnits(
+              FLOOR_PRICE.mul(tokenAmount).toString(),
+              "wei"
+            ),
+          });
+        await tx.wait();
+        expect(
+          await this.verifier.balanceOf(this.users.dave.address, this.VERIFIER)
+        ).to.equal(tokenAmount);
+      });
+
       describe("...After 5 VERIFIER NFTs are minted to a random user dave", async function () {
         beforeEach(async function () {
           this.tokenAmount = 5;
-          this.tx = await this.verifier.mintBatch(
+          this.tx = await this.verifier.adminMintBatch(
             [this.VERIFIER],
             [this.tokenAmount],
             this.users.dave.address

@@ -17,6 +17,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     // state vars
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     uint256 public constant VERIFIER = 0;
+    uint256 public FLOOR_PRICE = 100000000000000; // 0.0001 eth
 
     uint256 public s_orgId;
     string public s_name;
@@ -26,8 +27,10 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     // events
 
     // errors
+    error Verifier__OnlyAdminCanMintNFT();
     error Verifier__OnlyAdminCanTransferVerifierNFT();
     error Verifier__InvalidBurnerAddress();
+    error Verifier__InvalidMsgValue();
     error ERC1155__NotOwnerNorApproved();
 
     // modifiers
@@ -48,6 +51,16 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         s_appraiserContract = _msgSender();
     }
 
+    function _isAdminOrOwner() private view returns (bool) {
+        if (
+            hasRole(ADMIN_ROLE, _msgSender()) == false &&
+            _msgSender() != owner()
+        ) {
+            return false;
+        }
+        return true;
+    }
+
     function safeTransferFrom(
         address from,
         address to,
@@ -61,19 +74,37 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         ) {
             revert ERC1155__NotOwnerNorApproved();
         }
-        if (
-            hasRole(ADMIN_ROLE, msg.sender) == false && _msgSender() != owner()
-        ) {
+        if (!_isAdminOrOwner()) {
             revert Verifier__OnlyAdminCanTransferVerifierNFT();
         }
         _safeTransferFrom(from, to, id, amount, data);
     }
 
-    function mintBatch(
+    function adminMintBatch(
         uint256[] memory ids_,
         uint256[] memory amounts_,
         address to_
     ) external onlyOwner {
+        _mintBatch(to_, ids_, amounts_, "");
+    }
+
+    // check admin role for sender
+    function mintBatch(address to_) external payable {
+        if (!_isAdminOrOwner()) {
+            revert Verifier__OnlyAdminCanMintNFT();
+        }
+        uint256 _msgVal = msg.value;
+        if (_msgVal < FLOOR_PRICE) {
+            revert Verifier__InvalidMsgValue();
+        }
+        uint256 amount_ = _msgVal / FLOOR_PRICE;
+        payable(owner()).transfer(_msgVal);
+        uint256[] memory amounts_ = new uint[](1);
+        uint256[] memory ids_ = new uint[](1);
+
+        ids_[0] = VERIFIER;
+        amounts_[0] = amount_;
+
         _mintBatch(to_, ids_, amounts_, "");
     }
 
