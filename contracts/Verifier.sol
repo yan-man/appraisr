@@ -51,7 +51,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         s_appraiserContract = _msgSender();
     }
 
-    function _isAdminOrOwner() private returns (bool) {
+    function _isAdminOrOwner() private view returns (bool) {
         if (
             hasRole(ADMIN_ROLE, _msgSender()) == false &&
             _msgSender() != owner()

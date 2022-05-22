@@ -54,7 +54,7 @@ describe("Integration tests", async () => {
         },
       };
     });
-    Integration.shouldManageOrgs();
+    // Integration.shouldManageOrgs();
     // shouldManageReviews();
     // shouldManageReviewsRatings();
   });

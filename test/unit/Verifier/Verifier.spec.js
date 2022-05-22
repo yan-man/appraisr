@@ -90,7 +90,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
         ).to.equal(tokenAmount);
       });
 
-      it.only("should not batch mint to dave from non-WacArnolds admin", async function () {
+      it("should not batch mint to dave from non-WacArnolds admin", async function () {
         await expect(
           this.verifier
             .connect(this.users.ashylarry)
@@ -131,7 +131,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
         ).to.not.be.reverted;
       });
 
-      it.only("should batch mint 5 VERIFIER NFTs to dave from WacArnolds admin with valid funds", async function () {
+      it("should batch mint 5 VERIFIER NFTs to dave from WacArnolds admin with valid funds", async function () {
         const tokenAmount = 5;
 
         const FLOOR_PRICE = await this.verifier.FLOOR_PRICE();
