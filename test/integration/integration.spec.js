@@ -15,9 +15,9 @@ const shouldManageOrgs = () => {
           this.appraiser
             .connect(this.users.deployer)
             .addOrganization(
-              this.companies.WacArnolds.name,
-              this.companies.WacArnolds.addr,
-              this.companies.WacArnolds.URI
+              this.orgs.WacArnolds.name,
+              this.orgs.WacArnolds.addr,
+              this.orgs.WacArnolds.URI
             )
         ).to.not.be.reverted;
       });
@@ -26,9 +26,9 @@ const shouldManageOrgs = () => {
         const tx = await this.appraiser
           .connect(this.users.deployer)
           .addOrganization(
-            this.companies.WacArnolds.name,
-            this.companies.WacArnolds.addr,
-            this.companies.WacArnolds.URI
+            this.orgs.WacArnolds.name,
+            this.orgs.WacArnolds.addr,
+            this.orgs.WacArnolds.URI
           );
 
         await expect(tx).to.emit(this.appraiser, `LogAddOrganization`);
@@ -38,9 +38,9 @@ const shouldManageOrgs = () => {
         const tx = await this.appraiser
           .connect(this.users.deployer)
           .addOrganization(
-            this.companies.WacArnolds.name,
-            this.companies.WacArnolds.addr,
-            this.companies.WacArnolds.URI
+            this.orgs.WacArnolds.name,
+            this.orgs.WacArnolds.addr,
+            this.orgs.WacArnolds.URI
           );
 
         const receipt = await tx.wait();
@@ -63,9 +63,9 @@ const shouldManageOrgs = () => {
           this.tx = await this.appraiser
             .connect(this.users.deployer)
             .addOrganization(
-              this.companies.WacArnolds.name,
-              this.companies.WacArnolds.addr,
-              this.companies.WacArnolds.URI
+              this.orgs.WacArnolds.name,
+              this.orgs.WacArnolds.addr,
+              this.orgs.WacArnolds.URI
             );
 
           this.receipt = await this.tx.wait();
@@ -96,22 +96,15 @@ const shouldManageOrgs = () => {
         it(`Should mint 1000 initial Verifier NFTs to WacArnolds`, async function () {
           const VERIFIER = await this.verifier.VERIFIER();
           expect(
-            await this.verifier.balanceOf(
-              this.companies.WacArnolds.addr,
-              VERIFIER
-            )
+            await this.verifier.balanceOf(this.orgs.WacArnolds.addr, VERIFIER)
           ).to.equal(1000);
         });
 
-        it(`Should allow WacArnolds admin to transfer Verifier tokens to dave`, async function () {
-          const VERIFIER = await this.verifier.VERIFIER();
-          expect(
-            await this.verifier.balanceOf(
-              this.companies.WacArnolds.addr,
-              VERIFIER
-            )
-          ).to.equal(1000);
-        });
+        // test setAppraiserOrganizationContractAddress
+        // test balanceOf
+
+        // mintReviewNFT
+        // voteOnReview
       });
     });
   });
@@ -122,9 +115,9 @@ const shouldManageReviews = () => {
   //   describe("...After org2 studio54 exists", async () => {
   //     beforeEach(async function () {
   //       this.tx = await this.appraiser.addOrganization(
-  //         this.companies.WacArnolds.name,
-  //         this.companies.WacArnolds.addr,
-  //         this.companies.WacArnolds.URI
+  //         this.orgs.WacArnolds.name,
+  //         this.orgs.WacArnolds.addr,
+  //         this.orgs.WacArnolds.URI
   //       );
   //       this.receipt = await this.tx.wait();
   //       const eventId = [...this.receipt.events.keys()].filter(
@@ -214,9 +207,9 @@ const shouldManageReviews = () => {
   //         describe(`...After 2nd org studio54 added`, async function () {
   //           beforeEach(async function () {
   //             const tx = await this.appraiser.addOrganization(
-  //               this.companies.studio54.name,
-  //               this.companies.studio54.addr,
-  //               this.companies.studio54.URI
+  //               this.orgs.studio54.name,
+  //               this.orgs.studio54.addr,
+  //               this.orgs.studio54.URI
   //             );
   //             const receipt = await tx.wait();
   //             const eventId = [...receipt.events.keys()].filter(
@@ -278,9 +271,9 @@ const shouldManageReviewsRatings = () => {
   //   describe("...After org1 WacArnolds saved & ashylarry's review1 is minted", async () => {
   //     beforeEach(async function () {
   //       this.tx = await this.appraiser.addOrganization(
-  //         this.companies.WacArnolds.name,
-  //         this.companies.WacArnolds.addr,
-  //         this.companies.WacArnolds.URI
+  //         this.orgs.WacArnolds.name,
+  //         this.orgs.WacArnolds.addr,
+  //         this.orgs.WacArnolds.URI
   //       );
   //       this.receipt = await this.tx.wait();
   //       const eventId = [...this.receipt.events.keys()].filter(

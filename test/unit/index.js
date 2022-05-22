@@ -30,7 +30,7 @@ describe("Unit tests", async () => {
     this.users.dave = this.signers[4];
     this.users.prince = this.signers[5];
 
-    this.orgs.wacarnolds = this.signers[10];
+    this.orgs.WacArnolds = this.signers[10];
     this.orgs.studio54 = this.signers[11];
   });
   describe(`Appraiser`, async () => {
@@ -42,18 +42,13 @@ describe("Unit tests", async () => {
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
       this.mocks.mockVerifier = mockVerifier;
 
-      this.companies = {
-        wacarnolds: {
-          name: "WacArnolds",
-          addr: this.orgs.wacarnolds.address,
-          URI: "ipfs://WacArnolds/",
-        },
-        studio54: {
-          name: "studio54",
-          addr: this.orgs.studio54.address,
-          URI: "ipfs://studio54/",
-        },
-      };
+      this.orgs.WacArnolds.name = "WacArnolds";
+      this.orgs.WacArnolds.addr = this.orgs.WacArnolds.address;
+      this.orgs.WacArnolds.URI = "ipfs://WacArnolds/";
+
+      this.orgs.studio54.name = "studio54";
+      this.orgs.studio54.addr = this.orgs.WacArnolds.address;
+      this.orgs.studio54.URI = "ipfs://studio54/";
     });
     Appraiser.shouldDeploy();
     Appraiser.shouldManageOrgs();
