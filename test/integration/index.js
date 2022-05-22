@@ -24,16 +24,14 @@ describe("Integration tests", async () => {
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
-      const reviewerFactory = await ethers.getContractFactory(`Reviewer`);
-      const reviewer = await reviewerFactory
-        .connect(this.users.deployer)
-        .deploy();
+      const Reviewer = await ethers.getContractFactory(`Reviewer`);
+      const reviewer = await Reviewer.connect(this.users.deployer).deploy();
       await reviewer.deployed();
 
-      const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
-      const appraiser = await appraiserFactory
-        .connect(this.users.deployer)
-        .deploy(reviewer.address);
+      const Appraiser = await ethers.getContractFactory(`Appraiser`);
+      const appraiser = await Appraiser.connect(this.users.deployer).deploy(
+        reviewer.address
+      );
       await appraiser.deployed();
 
       this.appraiser = appraiser;
