@@ -85,7 +85,6 @@ contract AppraiserOrganization is ERC1155, Ownable {
         });
         _s_verifierContractAddress = verifierAddr_;
         VERIFIER_ID = Verifier(_s_verifierContractAddress).VERIFIER();
-        _s_reviewIds.increment();
     }
 
     function mintReviewNFT(
