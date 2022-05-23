@@ -21,30 +21,30 @@ const Home = () => {
   const { isAuthenticated, Moralis, account } = useMoralis();
   const [myMovies, setMyMovies] = useState();
 
-  useEffect(() => {
-    async function fetchMyList() {
-      await Moralis.start({
-        serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
-        appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
-      }); //if getting errors add this
+  // useEffect(() => {
+  //   async function fetchMyList() {
+  //     await Moralis.start({
+  //       serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
+  //       appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
+  //     }); //if getting errors add this
 
-      try {
-        const theList = await Moralis.Cloud.run("getMyList", {
-          addrs: account,
-        });
+  //     try {
+  //       const theList = await Moralis.Cloud.run("getMyList", {
+  //         addrs: account,
+  //       });
 
-        const filterdA = movies.filter(function (e) {
-          return theList.indexOf(e.Name) > -1;
-        });
+  //       const filterdA = movies.filter(function (e) {
+  //         return theList.indexOf(e.Name) > -1;
+  //       });
 
-        setMyMovies(filterdA);
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  //       setMyMovies(filterdA);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
 
-    fetchMyList();
-  }, [account]);
+  //   fetchMyList();
+  // }, [account]);
 
   const dispatch = useNotification();
 
@@ -77,7 +77,7 @@ const Home = () => {
       </div>
       <div className="topBanner">
         <TabList defaultActiveKey={1} tabStyle="bar">
-          <Tab tabKey={1} tabName={"Movies"}>
+          <Tab tabKey={1} tabName={"Organizations"}>
             <div className="scene">
               <img src={movies[0].Scene} className="sceneImg" alt=""></img>
               <img className="sceneLogo" src={movies[0].Logo} alt=""></img>
@@ -119,8 +119,8 @@ const Home = () => {
                 })}
             </div>
           </Tab>
-          <Tab tabKey={2} tabName={"Series"} isDisabled={true}></Tab>
-          <Tab tabKey={3} tabName={"MyList"}>
+
+          <Tab tabKey={2} tabName={"MyList"}>
             <div className="ownListContent">
               <div className="title">Your Library</div>
               {myMovies && isAuthenticated ? (
@@ -148,6 +148,7 @@ const Home = () => {
               )}
             </div>
           </Tab>
+          <Tab tabKey={3} tabName={"MyOrgs"} isDisabled={true}></Tab>
         </TabList>
         {selectedFilm && (
           <div className="modal">
@@ -159,7 +160,6 @@ const Home = () => {
             >
               <div className="modalContent">
                 <img src={selectedFilm.Scene} className="modalImg" alt=""></img>
-                <img className="modalLogo" src={selectedFilm.Logo} alt=""></img>
                 <div className="modalPlayButton">
                   {isAuthenticated ? (
                     <>
@@ -205,19 +205,10 @@ const Home = () => {
                   )}
                 </div>
                 <div className="movieInfo">
-                  <div className="description">
-                    <div className="details">
-                      <span>{selectedFilm.Year}</span>
-                      <span>{selectedFilm.Duration}</span>
-                    </div>
-                    {selectedFilm.Description}
-                  </div>
+                  <div className="description">{selectedFilm.Description}</div>
                   <div className="detailedInfo">
                     Genre:
                     <span className="deets">{selectedFilm.Genre}</span>
-                    <br />
-                    Actors:
-                    <span className="deets">{selectedFilm.Actors}</span>
                   </div>
                 </div>
               </div>
