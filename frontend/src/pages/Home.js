@@ -12,6 +12,7 @@ import {
   useNotification,
 } from "web3uikit";
 import { movies } from "../helpers/library";
+import { orgs } from "../helpers/libraryOrgs";
 import { useState } from "react";
 import { useMoralis } from "react-moralis";
 
@@ -20,31 +21,33 @@ const Home = () => {
   const [selectedFilm, setSelectedFilm] = useState();
   const { isAuthenticated, Moralis, account } = useMoralis();
   const [myMovies, setMyMovies] = useState();
+  const [myReviews, setMyReviews] = useState();
+  const [selectedOrg, setSelectedOrg] = useState();
 
-  // useEffect(() => {
-  //   async function fetchMyList() {
-  //     await Moralis.start({
-  //       serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
-  //       appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
-  //     }); //if getting errors add this
+  useEffect(() => {
+    async function fetchReviews() {
+      // await Moralis.start({
+      //   serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
+      //   appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
+      // }); //if getting errors add this
 
-  //     try {
-  //       const theList = await Moralis.Cloud.run("getMyList", {
-  //         addrs: account,
-  //       });
+      try {
+        //   const theList = await Moralis.Cloud.run("getMyList", {
+        //     addrs: account,
+        //   });
 
-  //       const filterdA = movies.filter(function (e) {
-  //         return theList.indexOf(e.Name) > -1;
-  //       });
+        // const filterdA = movies.filter(function (e) {
+        //   return theList.indexOf(e.Name) > -1;
+        // });
 
-  //       setMyMovies(filterdA);
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
+        setMyReviews(orgs);
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
-  //   fetchMyList();
-  // }, [account]);
+    fetchReviews();
+  }, [account]);
 
   const dispatch = useNotification();
 
@@ -79,9 +82,9 @@ const Home = () => {
         <TabList defaultActiveKey={1} tabStyle="bar">
           <Tab tabKey={1} tabName={"Organizations"}>
             <div className="scene">
-              <img src={movies[0].Scene} className="sceneImg" alt=""></img>
-              <img className="sceneLogo" src={movies[0].Logo} alt=""></img>
-              <p className="sceneDesc">{movies[0].Description}</p>
+              <img src={orgs[0].BgImg} className="sceneImg" alt=""></img>
+              <img className="sceneLogo" src={orgs[0].Logo} alt=""></img>
+              <p className="sceneDesc">{orgs[0].Description}</p>
               <div className="playButton">
                 <Button
                   icon="chevronRightX2"
@@ -101,16 +104,16 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="title">Movies</div>
+            <div className="title">Organizations</div>
             <div className="thumbs">
-              {movies &&
-                movies.map((e) => {
+              {orgs &&
+                orgs.map((e) => {
                   return (
                     <img
-                      src={e.Thumnbnail}
+                      src={e.Img}
                       className="thumbnail"
                       onClick={() => {
-                        setSelectedFilm(e);
+                        setSelectedOrg(e);
                         setVisible(true);
                       }}
                       alt=""
@@ -120,7 +123,7 @@ const Home = () => {
             </div>
           </Tab>
 
-          <Tab tabKey={2} tabName={"MyList"}>
+          <Tab tabKey={2} tabName={"MyReviews"}>
             <div className="ownListContent">
               <div className="title">Your Library</div>
               {myMovies && isAuthenticated ? (
@@ -148,7 +151,6 @@ const Home = () => {
               )}
             </div>
           </Tab>
-          <Tab tabKey={3} tabName={"MyOrgs"} isDisabled={true}></Tab>
         </TabList>
         {selectedFilm && (
           <div className="modal">

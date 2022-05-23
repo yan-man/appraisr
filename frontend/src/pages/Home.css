@@ -39,14 +39,14 @@
 
 .sceneLogo {
   position: relative;
-  bottom: calc(100vw * 0.56);
+  bottom: calc(100vw * 0.45);
   left: 5vw;
   width: 25vw;
 }
 
 .sceneDesc {
   position: relative;
-  bottom: calc(100vw * 0.56);
+  bottom: calc(100vw * 0.45);
   left: 6vw;
   width: 30vw;
   font-weight: 500;
@@ -56,7 +56,7 @@
 
 .playButton {
   position: relative;
-  bottom: calc(100vw * 0.55);
+  bottom: calc(100vw * 0.37);
   left: 6vw;
   display: flex;
   gap: 10px;
