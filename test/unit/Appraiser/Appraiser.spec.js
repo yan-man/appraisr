@@ -15,19 +15,18 @@ const shouldManageOrgs = () => {
   context(`# manage organizations`, async function () {
     describe("...save new orgs", async () => {
       beforeEach(`save new org`, async function () {
-        this.companies.wacarnolds.orgId =
-          await this.appraiser.numberOrganizations();
+        this.orgs.WacArnolds.orgId = await this.appraiser.numberOrganizations();
         this.tx = await this.appraiser.addOrganization(
-          this.companies.wacarnolds.name,
-          this.companies.wacarnolds.addr,
-          this.companies.wacarnolds.URI
+          this.orgs.WacArnolds.name,
+          this.orgs.WacArnolds.addr,
+          this.orgs.WacArnolds.URI
         );
         this.receipt = await this.tx.wait();
       });
 
       it(`Should update state vars after saving new organization WacArnolds`, async function () {
         expect(
-          await this.appraiser.s_organizations(this.companies.wacarnolds.orgId)
+          await this.appraiser.s_organizations(this.orgs.WacArnolds.orgId)
         ).to.not.equal(ethers.BigNumber.from(0));
       });
 
@@ -35,7 +34,7 @@ const shouldManageOrgs = () => {
         // events emitted
         await expect(this.tx)
           .to.emit(this.appraiser, `LogAddOrganization`)
-          .withArgs(this.companies.wacarnolds.orgId);
+          .withArgs(this.orgs.WacArnolds.orgId);
 
         const eventId = [...this.receipt.events.keys()].filter(
           (id) => this.receipt.events[id].event === "OwnershipTransferred"
@@ -55,20 +54,19 @@ const shouldManageOrgs = () => {
         it(`Should throw Appraiser__DuplicateOrgName error on duplicate WacArnolds org name`, async function () {
           await expect(
             this.appraiser.addOrganization(
-              this.companies.wacarnolds.name,
-              this.companies.wacarnolds.addr,
-              this.companies.wacarnolds.URI
+              this.orgs.WacArnolds.name,
+              this.orgs.WacArnolds.addr,
+              this.orgs.WacArnolds.URI
             )
           ).to.be.revertedWith(`Appraiser__DuplicateOrgName`);
         });
 
         it(`should save org2 studio54`, async function () {
-          this.companies.studio54.orgId =
-            await this.appraiser.numberOrganizations();
+          this.orgs.studio54.orgId = await this.appraiser.numberOrganizations();
           const tx = await this.appraiser.addOrganization(
-            this.companies.studio54.name,
-            this.companies.studio54.addr,
-            this.companies.studio54.URI
+            this.orgs.studio54.name,
+            this.orgs.studio54.addr,
+            this.orgs.studio54.URI
           );
           const receipt = await tx.wait();
           const eventId = [...receipt.events.keys()].filter(
@@ -78,15 +76,15 @@ const shouldManageOrgs = () => {
             ...receipt.events[eventId[0]].args,
           };
           expect(emittedOrgId).to.equal(
-            ethers.BigNumber.from(this.companies.studio54.orgId)
+            ethers.BigNumber.from(this.orgs.studio54.orgId)
           );
         });
 
         it(`should emit events after org2 studio54 saved`, async function () {
           const tx = await this.appraiser.addOrganization(
-            this.companies.studio54.name,
-            this.companies.studio54.addr,
-            this.companies.studio54.URI
+            this.orgs.studio54.name,
+            this.orgs.studio54.addr,
+            this.orgs.studio54.URI
           );
           const receipt = await tx.wait();
 

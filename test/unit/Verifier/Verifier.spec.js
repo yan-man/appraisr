@@ -10,7 +10,7 @@ const shouldDeploy = () => {
     it("Should mint default VERIFIER NFTs and send them to org address", async function () {
       const verifier = await this.verifier.VERIFIER();
       expect(
-        await this.verifier.balanceOf(this.orgs.wacarnolds.address, verifier)
+        await this.verifier.balanceOf(this.orgs.WacArnolds.address, verifier)
       ).to.equal(Math.pow(10, 3));
     });
 
@@ -101,7 +101,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
       it("should not batch mint from non-WacArnolds admin with 0 funds", async function () {
         await expect(
           this.verifier
-            .connect(this.orgs.wacarnolds)
+            .connect(this.orgs.WacArnolds)
             .mintBatch(this.users.dave.address)
         ).to.be.revertedWith(`Verifier__InvalidMsgValue`);
       });
@@ -110,7 +110,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
         const FLOOR_PRICE = await this.verifier.FLOOR_PRICE();
         await expect(
           this.verifier
-            .connect(this.orgs.wacarnolds)
+            .connect(this.orgs.WacArnolds)
             .mintBatch(this.users.dave.address, {
               value: ethers.utils.parseUnits(
                 FLOOR_PRICE.sub(1).toString(),
@@ -124,7 +124,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
         const FLOOR_PRICE = await this.verifier.FLOOR_PRICE();
         await expect(
           this.verifier
-            .connect(this.orgs.wacarnolds)
+            .connect(this.orgs.WacArnolds)
             .mintBatch(this.users.dave.address, {
               value: ethers.utils.parseUnits(FLOOR_PRICE.toString(), "wei"),
             })
@@ -136,7 +136,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
 
         const FLOOR_PRICE = await this.verifier.FLOOR_PRICE();
         const tx = await this.verifier
-          .connect(this.orgs.wacarnolds)
+          .connect(this.orgs.WacArnolds)
           .mintBatch(this.users.dave.address, {
             value: ethers.utils.parseUnits(
               FLOOR_PRICE.mul(tokenAmount).toString(),
@@ -190,9 +190,9 @@ const shouldMintAndTransferAndBurnNFT = () => {
       it(`should allow transfer of tokens from admin to ashylarry`, async function () {
         const tokenAmount = 2;
         const tx = await this.verifier
-          .connect(this.orgs.wacarnolds)
+          .connect(this.orgs.WacArnolds)
           .safeTransferFrom(
-            this.orgs.wacarnolds.address,
+            this.orgs.WacArnolds.address,
             this.users.ashylarry.address,
             this.VERIFIER,
             tokenAmount,
@@ -201,7 +201,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
         await tx.wait();
         expect(
           await this.verifier.balanceOf(
-            this.orgs.wacarnolds.address,
+            this.orgs.WacArnolds.address,
             this.VERIFIER
           )
         ).to.equal(ethers.BigNumber.from("1000").sub(tokenAmount));
@@ -217,9 +217,9 @@ const shouldMintAndTransferAndBurnNFT = () => {
         beforeEach(async function () {
           this.tokenAmount = 1;
           this.tx = await this.verifier
-            .connect(this.orgs.wacarnolds)
+            .connect(this.orgs.WacArnolds)
             .safeTransferFrom(
-              this.orgs.wacarnolds.address,
+              this.orgs.WacArnolds.address,
               this.users.ashylarry.address,
               this.VERIFIER,
               this.tokenAmount,
@@ -256,7 +256,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
         it(`Should not burn token from Appraiser contract address if not connected to owner`, async function () {
           await expect(
             this.verifier
-              .connect(this.orgs.wacarnolds)
+              .connect(this.orgs.WacArnolds)
               .burnVerifierForAddress(this.users.ashylarry.address)
           ).to.be.revertedWith(`Verifier__InvalidBurnerAddress`);
         });

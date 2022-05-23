@@ -15,9 +15,9 @@ const shouldManageOrgs = () => {
           this.appraiser
             .connect(this.users.deployer)
             .addOrganization(
-              this.companies.WacArnolds.name,
-              this.companies.WacArnolds.addr,
-              this.companies.WacArnolds.URI
+              this.orgs.WacArnolds.name,
+              this.orgs.WacArnolds.addr,
+              this.orgs.WacArnolds.URI
             )
         ).to.not.be.reverted;
       });
@@ -26,21 +26,21 @@ const shouldManageOrgs = () => {
         const tx = await this.appraiser
           .connect(this.users.deployer)
           .addOrganization(
-            this.companies.WacArnolds.name,
-            this.companies.WacArnolds.addr,
-            this.companies.WacArnolds.URI
+            this.orgs.WacArnolds.name,
+            this.orgs.WacArnolds.addr,
+            this.orgs.WacArnolds.URI
           );
 
         await expect(tx).to.emit(this.appraiser, `LogAddOrganization`);
       });
 
-      it(`Should not revert when addOrganization`, async function () {
+      it(`Should update 's_deployedContracts' var -  when 'addOrganization'`, async function () {
         const tx = await this.appraiser
           .connect(this.users.deployer)
           .addOrganization(
-            this.companies.WacArnolds.name,
-            this.companies.WacArnolds.addr,
-            this.companies.WacArnolds.URI
+            this.orgs.WacArnolds.name,
+            this.orgs.WacArnolds.addr,
+            this.orgs.WacArnolds.URI
           );
 
         const receipt = await tx.wait();
@@ -58,116 +58,54 @@ const shouldManageOrgs = () => {
         ).to.equal(1);
       });
 
-      it(`Should update state vars after saving new organization WacArnolds`, async function () {
-        // const { orgId, name, addr } = await this.appraiser.s_organizations(0);
-        // expect(orgId).to.equal(ethers.BigNumber.from(0));
-        // expect(name).to.equal(this.companies.WacArnolds.name);
-        // expect(addr).to.equal(this.companies.WacArnolds.addr);
+      describe("...After org1 WacArnolds saved", async () => {
+        beforeEach(`Transfer ownership`, async function () {
+          this.tx = await this.appraiser
+            .connect(this.users.deployer)
+            .addOrganization(
+              this.orgs.WacArnolds.name,
+              this.orgs.WacArnolds.addr,
+              this.orgs.WacArnolds.URI
+            );
+
+          this.receipt = await this.tx.wait();
+          this.eventId = [...this.receipt.events.keys()].filter(
+            (id) => this.receipt.events[id].event === "LogAddOrganization"
+          );
+          const { orgId: emittedOrgId } = {
+            ...this.receipt.events[this.eventId[0]].args,
+          };
+
+          this.deployedContracts = await this.appraiser
+            .connect(this.users.deployer)
+            .s_deployedContracts(emittedOrgId);
+
+          const AppraiserOrganization = await ethers.getContractFactory(
+            `AppraiserOrganization`
+          );
+          this.appraiserrOrganization = await AppraiserOrganization.attach(
+            this.deployedContracts.AppraiserOrganization
+          );
+
+          const Verifier = await ethers.getContractFactory(`Verifier`);
+          this.verifier = await Verifier.attach(
+            this.deployedContracts.Verifier
+          );
+        });
+
+        it(`Should mint 1000 initial Verifier NFTs to WacArnolds`, async function () {
+          const VERIFIER = await this.verifier.VERIFIER();
+          expect(
+            await this.verifier.balanceOf(this.orgs.WacArnolds.addr, VERIFIER)
+          ).to.equal(1000);
+        });
+
+        // test setAppraiserOrganizationContractAddress
+        // test balanceOf
+
+        // mintReviewNFT
+        // voteOnReview
       });
-
-      // it(`Should emit events when new organization WacArnolds saved`, async function () {
-      //   const { orgId } = await this.appraiser.s_organizations(0);
-
-      //   // events emitted
-      //   await expect(this.tx)
-      //     .to.emit(this.appraiser, `LogAddOrganization`)
-      //     .withArgs(orgId);
-      //   await expect(this.tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
-      //   await expect(this.tx).to.emit(
-      //     this.appraiser,
-      //     `LogVerifierNFTContractDeployed`
-      //   );
-
-      //   eventId = [...this.receipt.events.keys()].filter(
-      //     (id) => this.receipt.events[id].event === "LogAddOrganization"
-      //   );
-      //   const { orgId: eventOrgId } = {
-      //     ...this.receipt.events[eventId[0]].args,
-      //   };
-      //   expect(eventOrgId).to.equal(ethers.BigNumber.from(orgId));
-
-      //   eventId = [...this.receipt.events.keys()].filter(
-      //     (id) => this.receipt.events[id].event === "OwnershipTransferred"
-      //   );
-      //   expect(eventId).to.have.lengthOf(3);
-      //   const { newOwner } = { ...this.receipt.events[eventId[0]].args };
-      //   expect(newOwner).to.equal(this.appraiser.address);
-      // });
-
-      // describe(`...After new org WacArnolds saved`, async () => {
-      //   beforeEach(async function () {
-      //     eventId = [...this.receipt.events.keys()].filter(
-      //       (id) => this.receipt.events[id].event === "LogNFTContractDeployed"
-      //     )[0];
-      //     this.eventArgs = { ...this.receipt.events[eventId].args };
-      //   });
-      //   it(`should return next org id (1)`, async function () {
-      //     expect(await this.appraiser.currentOrgId()).to.equal(
-      //       ethers.BigNumber.from(1)
-      //     );
-      //   });
-      //   it(`should return current number of orgs (1)`, async function () {
-      //     expect(await this.appraiser.numberOrganizations()).to.equal(
-      //       ethers.BigNumber.from(1)
-      //     );
-      //   });
-      //   it(`should return deployed contract address`, async function () {
-      //     expect(await this.appraiser.s_aoContracts(0)).to.equal(
-      //       this.eventArgs.aoContractAddress
-      //     );
-      //   });
-      //   it(`Should throw Appraiser__DuplicateOrgName error on duplicate WacArnolds org name`, async function () {
-      //     await expect(
-      //       this.appraiser.addOrganization(
-      //         this.companies.WacArnolds.name,
-      //         this.companies.WacArnolds.addr,
-      //         this.companies.WacArnolds.URI
-      //       )
-      //     ).to.be.revertedWith(`Appraiser__DuplicateOrgName`);
-      //   });
-      //   it(`Should throw Appraiser__DuplicateOrgAddr error on duplicate WacArnolds org addr`, async function () {
-      //     await expect(
-      //       this.appraiser.addOrganization(
-      //         `${this.companies.WacArnolds.name}1`,
-      //         this.companies.WacArnolds.addr,
-      //         this.companies.WacArnolds.URI
-      //       )
-      //     ).to.be.revertedWith(`Appraiser__DuplicateOrgAddr`);
-      //   });
-
-      //   it(`should save org2 studio54`, async function () {
-      //     const tx = await this.appraiser.addOrganization(
-      //       this.companies.studio54.name,
-      //       this.companies.studio54.addr,
-      //       this.companies.studio54.URI
-      //     );
-      //     const receipt = await tx.wait();
-      //     const eventId = [...receipt.events.keys()].filter(
-      //       (id) => receipt.events[id].event === "LogAddOrganization"
-      //     );
-      //     const { orgId, name, addr } = await this.appraiser.s_organizations(1);
-
-      //     expect(orgId).to.equal(
-      //       ethers.BigNumber.from(this.companies.studio54.orgId)
-      //     );
-      //     expect(name).to.equal(this.companies.studio54.name);
-      //     expect(addr).to.equal(this.companies.studio54.addr);
-      //   });
-
-      //   it(`should emit events after org2 studio54 saved`, async function () {
-      //     const tx = await this.appraiser.addOrganization(
-      //       this.companies.studio54.name,
-      //       this.companies.studio54.addr,
-      //       this.companies.studio54.URI
-      //     );
-      //     const receipt = await tx.wait();
-
-      //     await expect(tx)
-      //       .to.emit(this.appraiser, `LogAddOrganization`)
-      //       .withArgs(1);
-      //     await expect(tx).to.emit(this.appraiser, `LogNFTContractDeployed`);
-      //   });
-      // });
     });
   });
 };
@@ -177,9 +115,9 @@ const shouldManageReviews = () => {
   //   describe("...After org2 studio54 exists", async () => {
   //     beforeEach(async function () {
   //       this.tx = await this.appraiser.addOrganization(
-  //         this.companies.WacArnolds.name,
-  //         this.companies.WacArnolds.addr,
-  //         this.companies.WacArnolds.URI
+  //         this.orgs.WacArnolds.name,
+  //         this.orgs.WacArnolds.addr,
+  //         this.orgs.WacArnolds.URI
   //       );
   //       this.receipt = await this.tx.wait();
   //       const eventId = [...this.receipt.events.keys()].filter(
@@ -269,9 +207,9 @@ const shouldManageReviews = () => {
   //         describe(`...After 2nd org studio54 added`, async function () {
   //           beforeEach(async function () {
   //             const tx = await this.appraiser.addOrganization(
-  //               this.companies.studio54.name,
-  //               this.companies.studio54.addr,
-  //               this.companies.studio54.URI
+  //               this.orgs.studio54.name,
+  //               this.orgs.studio54.addr,
+  //               this.orgs.studio54.URI
   //             );
   //             const receipt = await tx.wait();
   //             const eventId = [...receipt.events.keys()].filter(
@@ -333,9 +271,9 @@ const shouldManageReviewsRatings = () => {
   //   describe("...After org1 WacArnolds saved & ashylarry's review1 is minted", async () => {
   //     beforeEach(async function () {
   //       this.tx = await this.appraiser.addOrganization(
-  //         this.companies.WacArnolds.name,
-  //         this.companies.WacArnolds.addr,
-  //         this.companies.WacArnolds.URI
+  //         this.orgs.WacArnolds.name,
+  //         this.orgs.WacArnolds.addr,
+  //         this.orgs.WacArnolds.URI
   //       );
   //       this.receipt = await this.tx.wait();
   //       const eventId = [...this.receipt.events.keys()].filter(

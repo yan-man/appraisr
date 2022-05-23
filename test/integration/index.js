@@ -24,37 +24,28 @@ describe("Integration tests", async () => {
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
-      const reviewerFactory = await ethers.getContractFactory(`Reviewer`);
-      const reviewer = await reviewerFactory
-        .connect(this.users.deployer)
-        .deploy();
+      const Reviewer = await ethers.getContractFactory(`Reviewer`);
+      const reviewer = await Reviewer.connect(this.users.deployer).deploy();
       await reviewer.deployed();
 
-      const appraiserFactory = await ethers.getContractFactory(`Appraiser`);
-      const appraiser = await appraiserFactory
-        .connect(this.users.deployer)
-        .deploy(reviewer.address);
+      const Appraiser = await ethers.getContractFactory(`Appraiser`);
+      const appraiser = await Appraiser.connect(this.users.deployer).deploy(
+        reviewer.address
+      );
       await appraiser.deployed();
 
       this.appraiser = appraiser;
       this.reviewer = reviewer;
 
-      this.companies = {
-        WacArnolds: {
-          orgId: 0,
-          name: "WacArnolds",
-          addr: this.orgs.WacArnolds.address,
-          URI: "ipfs://WacArnolds/",
-        },
-        studio54: {
-          orgId: 1,
-          name: "studio54",
-          addr: this.orgs.studio54.address,
-          URI: "ipfs://studio54/",
-        },
-      };
+      this.orgs.WacArnolds.name = "WacArnolds";
+      this.orgs.WacArnolds.addr = this.orgs.WacArnolds.address;
+      this.orgs.WacArnolds.URI = "ipfs://WacArnolds/";
+
+      this.orgs.studio54.name = "studio54";
+      this.orgs.studio54.addr = this.orgs.studio54.address;
+      this.orgs.studio54.URI = "ipfs://studio54/";
     });
-    // Integration.shouldManageOrgs();
+    Integration.shouldManageOrgs();
     // shouldManageReviews();
     // shouldManageReviewsRatings();
   });

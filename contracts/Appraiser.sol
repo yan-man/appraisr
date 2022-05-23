@@ -13,10 +13,15 @@ import "./Reviewer.sol"; // to use struct
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
 
+    struct Deployed {
+        address AppraiserOrganization;
+        address Verifier;
+    }
+
     // State Vars
     Counters.Counter public s_orgIds;
     mapping(uint256 => uint256) public s_organizations; // orgId -> intbool isActive
-    mapping(uint256 => address) public s_vContracts; // orgId -> deployed Verifier contract
+    mapping(uint256 => Deployed) public s_deployedContracts;
     mapping(string => uint256) private s_orgNames; // org name -> intbool exists flag
     address private s_reviewerContract;
 
@@ -63,6 +68,12 @@ contract Appraiser is Ownable {
             _orgId,
             address(_aoContract)
         );
+
+        s_deployedContracts[_orgId] = Deployed({
+            Verifier: _verifierAddr,
+            AppraiserOrganization: _aoContract
+        });
+
         emit LogAddOrganization(_orgId);
     }
 
@@ -73,7 +84,6 @@ contract Appraiser is Ownable {
         string memory URI_
     ) internal returns (address) {
         Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_, owner());
-        s_vContracts[orgId_] = address(_verifier);
 
         return address(_verifier);
     }
