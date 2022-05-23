@@ -37,24 +37,6 @@ contract Reviewer is Ownable {
         _;
     }
 
-    function _isValidOrgId(uint256 orgId_) private view {
-        if (address(s_aoContracts[orgId_]) == address(0)) {
-            revert Appraiser__InvalidOrgId();
-        }
-    }
-
-    function addUser(address addr_) private {
-        if (s_users[addr_].isRegistered == false) {
-            s_users[addr_] = Users.User({
-                upvotes: 0,
-                downvotes: 0,
-                isRegistered: true
-            });
-
-            emit LogNewUser(addr_);
-        }
-    }
-
     function mintReview(
         uint256 orgId_,
         uint256 rating_,
@@ -100,5 +82,23 @@ contract Reviewer is Ownable {
         );
 
         emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
+    }
+
+    function _isValidOrgId(uint256 orgId_) private view {
+        if (address(s_aoContracts[orgId_]) == address(0)) {
+            revert Appraiser__InvalidOrgId();
+        }
+    }
+
+    function addUser(address addr_) private {
+        if (s_users[addr_].isRegistered == false) {
+            s_users[addr_] = Users.User({
+                upvotes: 0,
+                downvotes: 0,
+                isRegistered: true
+            });
+
+            emit LogNewUser(addr_);
+        }
     }
 }

@@ -51,16 +51,6 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         s_appraiserContract = _msgSender();
     }
 
-    function _isAdminOrOwner() private view returns (bool) {
-        if (
-            hasRole(ADMIN_ROLE, _msgSender()) == false &&
-            _msgSender() != owner()
-        ) {
-            return false;
-        }
-        return true;
-    }
-
     function safeTransferFrom(
         address from,
         address to,
@@ -124,6 +114,16 @@ contract Verifier is ERC1155, Ownable, AccessControl {
 
     function isAdmin(address addr) external view returns (bool) {
         return hasRole(keccak256("ADMIN_ROLE"), addr);
+    }
+
+    function _isAdminOrOwner() private view returns (bool) {
+        if (
+            hasRole(ADMIN_ROLE, _msgSender()) == false &&
+            _msgSender() != owner()
+        ) {
+            return false;
+        }
+        return true;
     }
 
     // MUST be implemented to override from ERC1155 / AccessControl
