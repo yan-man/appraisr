@@ -1,4 +1,4 @@
-const { initOrgs } = require("./initOrgs");
+const { deployInitialOrganizations } = require("./initOrgs");
 
 async function main() {
   if (network.name === "hardhat") {
@@ -22,7 +22,7 @@ async function main() {
   const tx = await reviewer.transferOwnership(appraiser.address);
   await tx.wait();
 
-  const deployedOrgs = await initOrgs(appraiser, reviewer);
+  const deployedOrgs = await deployInitialOrganizations(appraiser, reviewer);
 
   saveFrontendFiles(appraiser, reviewer, deployedOrgs);
 }

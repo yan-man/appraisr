@@ -1,6 +1,44 @@
 const orgs = require("../helpers/library.json");
 
-const initOrgs = async (appraiser, reviewer) => {
+const deployInitialOrganizations = async (appraiser, reviewer) => {
+  const deployedOrgs = await deployOrgs(appraiser, reviewer);
+  await deployReviews(appraiser, reviewer);
+};
+
+const deployReviews = async (appraiser, reviewer) => {
+  const signers = await ethers.getSigners();
+  const users = signers.slice(10);
+
+  await Promise.all(
+    orgs.map(async (o, index) => {
+      const reviews = [];
+      await Promise.all(
+        o.Reviews.map(async (review) => {
+          const user = users.pop();
+
+          console.log();
+
+          const tx = await reviewer
+            .connect(user)
+            .mintReview(o.orgId, review.Rating, review.Review);
+          const receipt = await tx.wait();
+          const eventId = [...receipt.events.keys()].filter(
+            (id) => receipt.events[id].event === "LogMintReview"
+          );
+          const { reviewId: emittedId } = {
+            ...receipt.events[eventId[0]].args,
+          };
+          const reviewId = emittedId.toNumber();
+          review.reviewId = reviewId;
+          reviews.push(review);
+        })
+      );
+      console.log(reviews);
+    })
+  );
+};
+
+const deployOrgs = async (appraiser, reviewer) => {
   const signers = await ethers.getSigners();
   const admins = signers.slice("-" + orgs.length);
   const updatedOrgs = [];
@@ -28,11 +66,11 @@ const initOrgs = async (appraiser, reviewer) => {
     })
   );
 
-  saveFrontendFiles(updatedOrgs);
+  saveOrgsFrontendFiles(updatedOrgs);
   return deployedOrgs;
 };
 
-function saveFrontendFiles(deployedOrgs) {
+function saveOrgsFrontendFiles(deployedOrgs) {
   const fs = require("fs");
   const contractsDir = __dirname + "/../helpers";
 
@@ -42,4 +80,14 @@ function saveFrontendFiles(deployedOrgs) {
   );
 }
 
-module.exports = { initOrgs };
+function saveReviewsFrontendFiles(deployedOrgs) {
+  const fs = require("fs");
+  const contractsDir = __dirname + "/../helpers";
+
+  fs.writeFileSync(
+    contractsDir + "/library.json",
+    JSON.stringify(deployedOrgs, undefined, 2)
+  );
+}
+
+module.exports = { deployInitialOrganizations };
