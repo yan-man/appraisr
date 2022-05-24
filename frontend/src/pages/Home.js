@@ -11,7 +11,7 @@ import {
   Modal,
   useNotification,
 } from "web3uikit";
-import { orgs, reviews } from "../helpers/libraryOrgs";
+import { orgs } from "../helpers/libraryOrgs";
 import { useState } from "react";
 import { useMoralis } from "react-moralis";
 

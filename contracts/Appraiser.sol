@@ -21,7 +21,7 @@ contract Appraiser is Ownable {
     // State Vars
     Counters.Counter public s_orgIds;
     mapping(uint256 => uint256) public s_organizations; // orgId -> intbool isActive
-    mapping(uint256 => Deployed) public s_deployedContracts;
+    mapping(uint256 => Deployed) public s_deployedContracts; // orgId -> [AppraiserOrganization address, Verifier address]
     mapping(string => uint256) private s_orgNames; // org name -> intbool exists flag
     address private s_reviewerContract;
 

@@ -1,3 +1,5 @@
+const { initOrgs } = require("./initOrgs");
+
 async function main() {
   if (network.name === "hardhat") {
     console.warn(
@@ -16,7 +18,13 @@ async function main() {
   const reviewer = await deployReviewerContract();
   const appraiser = await deployAppraiserContract(reviewer.address);
 
-  saveFrontendFiles(appraiser, reviewer);
+  // must set reviewer owner to appraiser, to access reviewer functions
+  const tx = await reviewer.transferOwnership(appraiser.address);
+  await tx.wait();
+
+  const deployedOrgs = await initOrgs(appraiser, reviewer);
+
+  saveFrontendFiles(appraiser, reviewer, deployedOrgs);
 }
 
 async function deployReviewerContract() {
@@ -37,7 +45,7 @@ async function deployAppraiserContract(reviewerAddr) {
   return appraiser;
 }
 
-async function saveFrontendFiles(appraiser, reviewer) {
+async function saveFrontendFiles(appraiser, reviewer, deployedOrgs) {
   const fs = require("fs");
   const contractsDir = __dirname + "/../frontend/src/contracts";
 
