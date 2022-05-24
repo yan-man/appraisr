@@ -72,11 +72,11 @@ describe("Unit tests", async () => {
   });
   describe(`Verifier`, async () => {
     beforeEach(async function () {
-      const { verifier, constructorParams } = await this.loadFixture(
-        unitVerifierFixture
-      );
+      const { verifier, constructorParams, mockAppraiser } =
+        await this.loadFixture(unitVerifierFixture);
       this.verifier = verifier;
       this.constructorParams = constructorParams;
+      this.mocks.mockAppraiser = mockAppraiser;
     });
     Verifier.shouldDeploy();
     Verifier.shouldSetContractAddress();

@@ -1,23 +1,23 @@
+const { ethers } = require("hardhat");
 const orgs = require("../helpers/library.json");
 
 const deployInitialOrganizations = async (appraiser, reviewer) => {
   const deployedOrgs = await deployOrgs(appraiser, reviewer);
-  await deployReviews(appraiser, reviewer);
+  await deployReviews(appraiser, reviewer, deployedOrgs);
 };
 
-const deployReviews = async (appraiser, reviewer) => {
+const deployReviews = async (appraiser, reviewer, deployedOrgs) => {
   const signers = await ethers.getSigners();
-  const users = signers.slice(10);
+  const users = signers.slice(1, -2);
 
   await Promise.all(
-    orgs.map(async (o, index) => {
+    orgs.map(async (o, orgInd) => {
       const reviews = [];
       await Promise.all(
         o.Reviews.map(async (review) => {
           const user = users.pop();
 
-          console.log();
-
+          // console.log(o.orgId);
           const tx = await reviewer
             .connect(user)
             .mintReview(o.orgId, review.Rating, review.Review);
@@ -29,11 +29,19 @@ const deployReviews = async (appraiser, reviewer) => {
             ...receipt.events[eventId[0]].args,
           };
           const reviewId = emittedId.toNumber();
+
+          review.Author = user.address;
           review.reviewId = reviewId;
           reviews.push(review);
+
+          const ao = await ethers.getContractAt(
+            `AppraiserOrganization`,
+            deployedOrgs[orgInd].AppraiserOrganization
+          );
+          console.log(await ao.s_reviews(reviewId));
         })
       );
-      console.log(reviews);
+      // console.log(reviews);
     })
   );
 };
@@ -45,7 +53,7 @@ const deployOrgs = async (appraiser, reviewer) => {
   const deployedOrgs = [];
   await Promise.all(
     orgs.map(async (o, index) => {
-      o.Admin = o.Admin ? o.Admin : admins[index].address;
+      o.Admin = admins[index].address;
       const tx = await appraiser
         .connect(signers[0])
         .addOrganization(o.Name, o.Admin, o.URI, {
@@ -59,10 +67,16 @@ const deployOrgs = async (appraiser, reviewer) => {
         ...receipt.events[eventId[0]].args,
       };
       const orgId = emittedId.toNumber();
-      deployedOrgs.push(await appraiser.s_deployedContracts(orgId));
+      const org = await appraiser.s_deployedContracts(orgId);
+      deployedOrgs.push(org);
 
       o.orgId = orgId;
       updatedOrgs.push(o);
+
+      console.log(`${o.Name} org deployed: `);
+      console.log(`     Admin: ${o.Admin}`);
+      console.log(`     AppraiserOrganization: ${org.AppraiserOrganization}`);
+      console.log(`     Verifier: ${org.Verifier}`);
     })
   );
 

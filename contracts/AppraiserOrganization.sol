@@ -73,7 +73,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     }
 
     modifier onlyReviewerContract() {
-        if (_msgSender() != _s_reviewerContractAddress) {
+        if (msg.sender != _s_reviewerContractAddress) {
             revert AppraiserOrganization__OnlyReviewerContractCanCall();
         }
         _;

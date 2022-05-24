@@ -1,14 +1,15 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Reviews.sol";
-
-import "hardhat/console.sol";
+import "./Appraiser.sol";
 
 contract Verifier is ERC1155, Ownable, AccessControl {
     using Counters for Counters.Counter;
@@ -105,8 +106,11 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         s_appraiserContract = appraiserContractAddress_;
     }
 
+    // only AppraiserOrganization contract can burn tokens, via mintReviewNFT function
     function burnVerifierForAddress(address burnTokenAddress) external {
-        if (_msgSender() != s_appraiserContract) {
+        Appraiser _appraiser = Appraiser(s_appraiserContract);
+        (address _ao, ) = _appraiser.s_deployedContracts(s_orgId);
+        if (msg.sender != _ao) {
             revert Verifier__InvalidBurnerAddress();
         }
         _burn(burnTokenAddress, VERIFIER, 1);

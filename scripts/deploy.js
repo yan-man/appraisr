@@ -10,6 +10,7 @@ async function main() {
   }
 
   const [deployer] = await ethers.getSigners();
+  console.log((await ethers.getSigners()).map((e) => e.address));
   console.log(
     "Deploying the contracts with the account:",
     await deployer.getAddress()
