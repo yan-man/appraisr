@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Home.css";
-import { Logo } from "../images/Netflix";
+import { Logo } from "../img/Appraisr";
 import {
   ConnectButton,
   Icon,
