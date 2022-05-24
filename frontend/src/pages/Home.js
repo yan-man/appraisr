@@ -68,7 +68,15 @@ const Home = () => {
   };
 
   const voteOnReview = (isUpvote) => {
-    console.log(isUpvote);
+    if (!isAuthenticated) {
+      handleNewNotification();
+    } else {
+      if (isUpvote) {
+        console.log("upvote");
+      } else {
+        console.log("downvote");
+      }
+    }
   };
 
   return (
@@ -76,7 +84,18 @@ const Home = () => {
       <div className="logo">
         <Logo />
       </div>
+
       <div className="connect">
+        <Button
+          color="#6795b1"
+          icon="plus"
+          iconLayout="icon-only"
+          id="test-button-primary-icon-only"
+          onClick={function noRefCheck() {}}
+          radius={20}
+          theme="colored"
+          type="button"
+        />
         <ConnectButton />
       </div>
       <div className="topBanner">
@@ -121,32 +140,67 @@ const Home = () => {
             </div>
           </Tab>
 
-          <Tab tabKey={2} tabName={"MyReviews"}>
+          <Tab tabKey={2} tabName={"Reviews"}>
             <div className="ownListContent">
-              <div className="title">Your Library</div>
-              {false ? (
-                <>
-                  <div className="ownThumbs">
-                    {reviews.map((e) => {
-                      return (
-                        <img
-                          src={e.Thumnbnail}
-                          className="thumbnail"
-                          onClick={() => {
-                            setSelectedFilm(e);
-                            setVisible(true);
-                          }}
-                          alt=""
-                        ></img>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
+              <div className="title">
+                Reviews
+                <Icon
+                  className="backButton"
+                  fill="rgba(255,255,255,0.25)"
+                  size={60}
+                  svg="arrowCircleLeft"
+                  style={{ left: 0 }}
+                />
+              </div>
+              <>
                 <div className="ownThumbs">
-                  You need to Authenicate TO View Your Own list
+                  {selectedOrg && selectedOrg.Reviews ? (
+                    selectedOrg.Reviews.map((r, index) => {
+                      return (
+                        <div className="review-card">
+                          <div className="review" style={{ margin: "0px" }}>
+                            <p>Author: {r.Author}</p>
+                            <p>Rating: {r.Rating}</p>
+                            <p>Review: {r.Review}</p>
+                          </div>
+
+                          <div className="votes" style={{ display: "flex" }}>
+                            <div>
+                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
+                              <p
+                                onClick={() => {
+                                  voteOnReview(true);
+                                }}
+                              >
+                                {r.Upvotes}
+                              </p>
+                            </div>
+
+                            <div>
+                              <Icon
+                                fill="#ffffff"
+                                size={24}
+                                svg="triangleDown"
+                              />
+                              <p
+                                onClick={() => {
+                                  voteOnReview(false);
+                                }}
+                              >
+                                {r.Downvotes}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="">
+                      You need to select a movie to view reviews
+                    </div>
+                  )}
                 </div>
-              )}
+              </>
             </div>
           </Tab>
         </TabList>
@@ -170,27 +224,33 @@ const Home = () => {
                             <p>Rating: {r.Rating}</p>
                             <p>Review: {r.Review}</p>
                           </div>
+
                           <div className="votes" style={{ display: "flex" }}>
-                            <p
-                              onClick={() => {
-                                voteOnReview(true);
-                              }}
-                            >
+                            <div>
                               <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              {r.Upvotes}
-                            </p>
-                            <p
-                              onClick={() => {
-                                voteOnReview(false);
-                              }}
-                            >
+                              <p
+                                onClick={() => {
+                                  voteOnReview(true);
+                                }}
+                              >
+                                {r.Upvotes}
+                              </p>
+                            </div>
+
+                            <div>
                               <Icon
                                 fill="#ffffff"
                                 size={24}
                                 svg="triangleDown"
                               />
-                              {r.Downvotes}
-                            </p>
+                              <p
+                                onClick={() => {
+                                  voteOnReview(false);
+                                }}
+                              >
+                                {r.Downvotes}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       );

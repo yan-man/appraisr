@@ -188,16 +188,16 @@
 }
 
 .review-card {
-  padding: 20px 0;
+  padding: 20px;
 }
 .review > p {
   margin: 0;
 }
 
-.votes > p {
+.votes > div > p {
   margin: 0 10px;
 }
 
-.votes > p:hover {
+.votes > div:hover {
   cursor: pointer;
 }
