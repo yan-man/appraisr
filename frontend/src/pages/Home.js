@@ -48,14 +48,6 @@ const Home = () => {
     fetchReviews();
   }, [account]);
 
-  useEffect(() => {
-    async function fetchReviews() {
-      console.log(selectedTab);
-    }
-
-    fetchReviews();
-  }, [selectedTab]);
-
   const dispatch = useNotification();
 
   const handleNewNotification = () => {
@@ -112,7 +104,7 @@ const Home = () => {
           defaultActiveKey={selectedTab}
           tabStyle="bar"
           onChange={(selectedKey) => {
-            if (selectedKey == 2) {
+            if (selectedKey === 2) {
               setSelectedTab(2);
             }
           }}
@@ -253,7 +245,9 @@ const Home = () => {
                   />
                 </div>
                 <div className="movieInfo">
-                  <div className="description">{selectedOrg.Description}</div>
+                  <div className="description" style={{ textAlign: "center" }}>
+                    {selectedOrg.Description}
+                  </div>
                   <div className="description">
                     Category:
                     <span className="deets">{selectedOrg.Category}</span>
