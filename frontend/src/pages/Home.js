@@ -99,6 +99,7 @@ const Home = () => {
                   type="button"
                   onClick={() => {
                     console.log(myMovies);
+                    console.log(isAuthenticated);
                   }}
                 />
               </div>
@@ -107,7 +108,7 @@ const Home = () => {
             <div className="title">Organizations</div>
             <div className="thumbs">
               {orgs &&
-                orgs.map((e) => {
+                orgs.map((e, index) => {
                   return (
                     <img
                       src={e.Img}
@@ -116,6 +117,7 @@ const Home = () => {
                         setSelectedOrg(e);
                         setVisible(true);
                       }}
+                      key={index}
                       alt=""
                     ></img>
                   );
@@ -152,7 +154,7 @@ const Home = () => {
             </div>
           </Tab>
         </TabList>
-        {selectedFilm && (
+        {selectedOrg && (
           <div className="modal">
             <Modal
               onCloseButtonPressed={() => setVisible(false)}
@@ -161,11 +163,11 @@ const Home = () => {
               width="1000px"
             >
               <div className="modalContent">
-                <img src={selectedFilm.Scene} className="modalImg" alt=""></img>
+                <img src={selectedOrg.Img} className="modalImg" alt=""></img>
                 <div className="modalPlayButton">
                   {isAuthenticated ? (
                     <>
-                      <Link to="/player" state={selectedFilm.Movie}>
+                      <Link to="/player" state={selectedOrg.Movie}>
                         <Button
                           icon="chevronRightX2"
                           text="Play"
@@ -179,10 +181,10 @@ const Home = () => {
                         theme="translucent"
                         type="button"
                         onClick={async () => {
-                          await Moralis.Cloud.run("updateMyList", {
-                            addrs: account,
-                            newFav: selectedFilm.Name,
-                          });
+                          // await Moralis.Cloud.run("updateMyList", {
+                          //   addrs: account,
+                          //   newFav: selectedFilm.Name,
+                          // });
                           handleAddNotification();
                         }}
                       />
@@ -207,10 +209,10 @@ const Home = () => {
                   )}
                 </div>
                 <div className="movieInfo">
-                  <div className="description">{selectedFilm.Description}</div>
+                  <div className="description">{selectedOrg.Description}</div>
                   <div className="detailedInfo">
-                    Genre:
-                    <span className="deets">{selectedFilm.Genre}</span>
+                    Category:
+                    <span className="deets">{selectedOrg.Category}</span>
                   </div>
                 </div>
               </div>

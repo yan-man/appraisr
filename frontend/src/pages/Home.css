@@ -116,8 +116,9 @@
 }
 
 .modalImg {
-  width: 50%;
-  margin: 0 25%;
+  max-width: 30%;
+  margin: 0 35%;
+  height: 250px;
 }
 
 .modalLogo {
@@ -129,7 +130,7 @@
 
 .modalPlayButton {
   position: fixed;
-  top: 500px;
+  top: 300px;
   left: 6%;
   display: flex;
   gap: 10px;
@@ -139,7 +140,7 @@
   color: white;
   font-weight: bold;
   gap: 20px;
-  padding: 20px 0px;
+  padding: 10px 0px;
   display: flex;
   font-size: 20px;
 }
