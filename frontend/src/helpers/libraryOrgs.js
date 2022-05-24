@@ -29,3 +29,20 @@ export const orgs = [
     Admin: "",
   },
 ];
+
+export const reviews = [
+  {
+    Author: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    Rating: "8.6",
+    Review: "It's the best restaurant ever",
+    Upvotes: 120,
+    Downvotes: 23,
+  },
+  {
+    Author: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    Rating: "7.9",
+    Review: "WacArnolds ruined my life!",
+    Upvotes: 66,
+    Downvotes: 45,
+  },
+];

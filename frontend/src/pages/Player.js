@@ -9,9 +9,11 @@ const Player = () => {
   return (
     <>
       <div className="playerPage">
-        <video autoPlay controls className="videoPlayer">
+        {/* <video autoPlay controls className="videoPlayer">
           <source src={currentlyPLaying} type="video/mp4"></source>
-        </video>
+        </video> */}
+
+        <div>Hello</div>
 
         <div className="backHome">
           <Link to="/">

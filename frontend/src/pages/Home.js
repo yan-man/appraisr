@@ -11,8 +11,7 @@ import {
   Modal,
   useNotification,
 } from "web3uikit";
-import { movies } from "../helpers/library";
-import { orgs } from "../helpers/libraryOrgs";
+import { orgs, reviews } from "../helpers/libraryOrgs";
 import { useState } from "react";
 import { useMoralis } from "react-moralis";
 
@@ -20,7 +19,6 @@ const Home = () => {
   const [visible, setVisible] = useState(false);
   const [selectedFilm, setSelectedFilm] = useState();
   const { isAuthenticated, Moralis, account } = useMoralis();
-  const [myMovies, setMyMovies] = useState();
   const [myReviews, setMyReviews] = useState();
   const [selectedOrg, setSelectedOrg] = useState();
 
@@ -69,13 +67,16 @@ const Home = () => {
     });
   };
 
+  const voteOnReview = (isUpvote) => {
+    console.log(isUpvote);
+  };
+
   return (
     <>
       <div className="logo">
         <Logo />
       </div>
       <div className="connect">
-        <Icon fill="#ffffff" size={24} svg="bell" />
         <ConnectButton />
       </div>
       <div className="topBanner">
@@ -92,7 +93,10 @@ const Home = () => {
                   text="See Reviews"
                   theme="secondary"
                   type="button"
-                  onClick={handleNewNotification}
+                  onClick={() => {
+                    setSelectedOrg(orgs[0]);
+                    setVisible(true);
+                  }}
                 />
               </div>
             </div>
@@ -120,10 +124,10 @@ const Home = () => {
           <Tab tabKey={2} tabName={"MyReviews"}>
             <div className="ownListContent">
               <div className="title">Your Library</div>
-              {myMovies && isAuthenticated ? (
+              {false ? (
                 <>
                   <div className="ownThumbs">
-                    {myMovies.map((e) => {
+                    {reviews.map((e) => {
                       return (
                         <img
                           src={e.Thumnbnail}
@@ -157,52 +161,44 @@ const Home = () => {
               <div className="modalContent">
                 <img src={selectedOrg.Img} className="modalImg" alt=""></img>
                 <div className="modalPlayButton">
-                  {isAuthenticated ? (
-                    <>
-                      <Link to="/player" state={selectedOrg.Movie}>
-                        <Button
-                          icon="chevronRightX2"
-                          text="Play"
-                          theme="secondary"
-                          type="button"
-                        />
-                      </Link>
-                      <Button
-                        icon="plus"
-                        text="Add to My List"
-                        theme="translucent"
-                        type="button"
-                        onClick={async () => {
-                          // await Moralis.Cloud.run("updateMyList", {
-                          //   addrs: account,
-                          //   newFav: selectedFilm.Name,
-                          // });
-                          handleAddNotification();
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        icon="chevronRightX2"
-                        text="Play"
-                        theme="secondary"
-                        type="button"
-                        onClick={handleNewNotification}
-                      />
-                      <Button
-                        icon="plus"
-                        text="Add to My List"
-                        theme="translucent"
-                        type="button"
-                        onClick={handleNewNotification}
-                      />
-                    </>
-                  )}
+                  {reviews &&
+                    reviews.map((r, index) => {
+                      return (
+                        <div className="review-card">
+                          <div className="review" style={{ margin: "0px" }}>
+                            <p>Author: {r.Author}</p>
+                            <p>Rating: {r.Rating}</p>
+                            <p>Review: {r.Review}</p>
+                          </div>
+                          <div className="votes" style={{ display: "flex" }}>
+                            <p
+                              onClick={() => {
+                                voteOnReview(true);
+                              }}
+                            >
+                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
+                              {r.Upvotes}
+                            </p>
+                            <p
+                              onClick={() => {
+                                voteOnReview(false);
+                              }}
+                            >
+                              <Icon
+                                fill="#ffffff"
+                                size={24}
+                                svg="triangleDown"
+                              />
+                              {r.Downvotes}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
                 <div className="movieInfo">
                   <div className="description">{selectedOrg.Description}</div>
-                  <div className="detailedInfo">
+                  <div className="description">
                     Category:
                     <span className="deets">{selectedOrg.Category}</span>
                   </div>

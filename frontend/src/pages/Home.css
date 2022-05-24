@@ -142,7 +142,6 @@
   position: fixed;
   top: 300px;
   left: 6%;
-  display: flex;
   gap: 10px;
 }
 
@@ -156,22 +155,21 @@
 }
 
 .movieInfo {
-  display: flex;
+  /* display: flex; */
   font-size: 18px;
   letter-spacing: 0.5px;
 }
 
 .description {
   padding-left: 50px;
-  width: 60%;
+  width: 70%;
   color: white;
 }
 
 .detailedInfo {
-  padding-left: 10%;
-  padding-right: 5%;
+  padding-left: 50px;
   padding-top: 60px;
-  width: 30%;
+  width: 100%;
 }
 
 .deets {
@@ -187,4 +185,19 @@
 
 .msg {
   margin-left: 5vw;
+}
+
+.review-card {
+  padding: 20px 0;
+}
+.review > p {
+  margin: 0;
+}
+
+.votes > p {
+  margin: 0 10px;
+}
+
+.votes > p:hover {
+  cursor: pointer;
 }
