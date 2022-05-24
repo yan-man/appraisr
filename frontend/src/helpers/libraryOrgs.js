@@ -14,6 +14,7 @@ export const orgs = [
     Name: "WacArnold's",
     Description: "Big Wacs since 2003. 69,420 sold daily.",
     Category: "Restaurant",
+    AvgRating: "9.0",
     Admin: "",
   },
   {
@@ -24,6 +25,7 @@ export const orgs = [
     Name: "studio54",
     Description: "I'm Rick James.",
     Category: "Nightclub",
+    AvgRating: "8.0",
     Admin: "",
   },
 ];

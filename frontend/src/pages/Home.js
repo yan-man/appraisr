@@ -85,22 +85,14 @@ const Home = () => {
               <img src={orgs[0].BgImg} className="sceneImg" alt=""></img>
               <img className="sceneLogo" src={orgs[0].Logo} alt=""></img>
               <p className="sceneDesc">{orgs[0].Description}</p>
+              <h2 className="rating">Avg Rating: {orgs[0].AvgRating}</h2>
               <div className="playButton">
                 <Button
                   icon="chevronRightX2"
-                  text="Play"
+                  text="See Reviews"
                   theme="secondary"
                   type="button"
-                />
-                <Button
-                  icon="plus"
-                  text="Add to My List"
-                  theme="translucent"
-                  type="button"
-                  onClick={() => {
-                    console.log(myMovies);
-                    console.log(isAuthenticated);
-                  }}
+                  onClick={handleNewNotification}
                 />
               </div>
             </div>

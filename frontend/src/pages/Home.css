@@ -54,9 +54,19 @@
   line-height: calc(100vw * 0.02);
 }
 
+.rating {
+  position: relative;
+  bottom: calc(100vw * 0.44);
+  left: 6vw;
+  width: 30vw;
+  font-weight: 500;
+  font-size: calc(100vw * 0.035);
+  line-height: calc(100vw * 0.02);
+}
+
 .playButton {
   position: relative;
-  bottom: calc(100vw * 0.37);
+  bottom: calc(100vw * 0.4);
   left: 6vw;
   display: flex;
   gap: 10px;
