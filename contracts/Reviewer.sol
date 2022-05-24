@@ -43,9 +43,9 @@ contract Reviewer is Ownable {
         string calldata review_
     ) external isValidOrgId(orgId_) {
         uint256 _reviewId = AppraiserOrganization(s_aoContracts[orgId_])
-            .mintReviewNFT(msg.sender, rating_, review_);
-        s_reviews[orgId_][_reviewId] = msg.sender;
-        addUser(msg.sender);
+            .mintReviewNFT(_msgSender(), rating_, review_);
+        s_reviews[orgId_][_reviewId] = _msgSender();
+        addUser(_msgSender());
         emit LogMintReview(_reviewId);
     }
 
@@ -65,7 +65,7 @@ contract Reviewer is Ownable {
         if (_reviewAuthorAddr == address(0)) {
             revert Appraiser__InvalidReview();
         }
-        if (msg.sender == _reviewAuthorAddr) {
+        if (_msgSender() == _reviewAuthorAddr) {
             revert Appraiser__VoterMatchesAuthor();
         }
 
@@ -76,12 +76,12 @@ contract Reviewer is Ownable {
             _reviewUser.downvotes += 1;
         }
         AppraiserOrganization(s_aoContracts[orgId_]).voteOnReview(
-            msg.sender,
+            _msgSender(),
             reviewId_,
             isUpvote_
         );
 
-        emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
+        emit LogVoteOnReview(_msgSender(), orgId_, reviewId_);
     }
 
     function _isValidOrgId(uint256 orgId_) private view {

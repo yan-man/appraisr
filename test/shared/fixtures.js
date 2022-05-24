@@ -58,7 +58,8 @@ const unitAppraiserOrganizationFixture = async (signers) => {
       constructorParams.name,
       constructorParams.addr,
       constructorParams.URI,
-      mockVerifier.address
+      mockVerifier.address,
+      deployer.address
     );
   await appraiserOrganization.deployed();
 

@@ -25,6 +25,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     }
 
     // state vars
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     mapping(uint256 => Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => mapping(address => bool)) s_upvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
@@ -34,6 +35,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     Counters.Counter private _s_reviewIds;
     Organizations.Organization private _s_organization;
     address private _s_verifierContractAddress;
+    address private _s_reviewerContractAddress;
     uint256 private immutable VERIFIER_ID;
 
     // events
@@ -44,6 +46,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     error AppraiserOrganization__InvalidRating();
     error AppraiserOrganization__OneVoteAllowedPerReview();
     error AppraiserOrganization__CannotVoteOnOwnReview();
+    error AppraiserOrganization__OnlyReviewerContractCanCall();
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
@@ -69,12 +72,20 @@ contract AppraiserOrganization is ERC1155, Ownable {
         _;
     }
 
+    modifier onlyReviewerContract() {
+        if (_msgSender() != _s_reviewerContractAddress) {
+            revert AppraiserOrganization__OnlyReviewerContractCanCall();
+        }
+        _;
+    }
+
     constructor(
         uint256 orgId_,
         string memory name_,
         address addr_,
         string memory URI_,
-        address verifierAddr_
+        address verifierAddr_,
+        address reviewerAddr_
     ) ERC1155(URI_) {
         _s_organization = Organizations.Organization({
             orgId: orgId_,
@@ -84,6 +95,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
             isCreated: true
         });
         _s_verifierContractAddress = verifierAddr_;
+        _s_reviewerContractAddress = reviewerAddr_;
         VERIFIER_ID = Verifier(_s_verifierContractAddress).VERIFIER();
         _s_reviewIds.increment();
     }
@@ -92,7 +104,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
         address reviewerAddr_,
         uint256 rating_,
         string memory review_
-    ) public isValidRating(rating_) onlyOwner returns (uint256) {
+    ) public isValidRating(rating_) onlyReviewerContract returns (uint256) {
         uint256 _reviewId = _s_reviewIds.current();
         _mint(reviewerAddr_, _reviewId, 1, "");
 

@@ -32,7 +32,6 @@ contract Appraiser is Ownable {
     error Appraiser__DuplicateOrgName();
 
     // Modifiers
-
     constructor(address reviewerContract_) {
         s_reviewerContract = reviewerContract_;
     }
@@ -100,7 +99,8 @@ contract Appraiser is Ownable {
             name_,
             addr_,
             URI_,
-            verifierAddr_
+            verifierAddr_,
+            s_reviewerContract
         );
         return address(_ao);
     }
