@@ -21,6 +21,7 @@ const Home = () => {
   const { isAuthenticated, Moralis, account } = useMoralis();
   const [myReviews, setMyReviews] = useState();
   const [selectedOrg, setSelectedOrg] = useState();
+  const [selectedTab, setSelectedTab] = useState(1);
 
   useEffect(() => {
     async function fetchReviews() {
@@ -46,6 +47,14 @@ const Home = () => {
 
     fetchReviews();
   }, [account]);
+
+  useEffect(() => {
+    async function fetchReviews() {
+      console.log(selectedTab);
+    }
+
+    fetchReviews();
+  }, [selectedTab]);
 
   const dispatch = useNotification();
 
@@ -99,7 +108,15 @@ const Home = () => {
         <ConnectButton />
       </div>
       <div className="topBanner">
-        <TabList defaultActiveKey={1} tabStyle="bar">
+        <TabList
+          defaultActiveKey={selectedTab}
+          tabStyle="bar"
+          onChange={(selectedKey) => {
+            if (selectedKey == 2) {
+              setSelectedTab(2);
+            }
+          }}
+        >
           <Tab tabKey={1} tabName={"Organizations"}>
             <div className="scene">
               <img src={orgs[0].BgImg} className="sceneImg" alt=""></img>
@@ -114,7 +131,8 @@ const Home = () => {
                   type="button"
                   onClick={() => {
                     setSelectedOrg(orgs[0]);
-                    setVisible(true);
+                    setSelectedTab(2);
+                    setVisible(false);
                   }}
                 />
               </div>
@@ -143,21 +161,28 @@ const Home = () => {
           <Tab tabKey={2} tabName={"Reviews"}>
             <div className="ownListContent">
               <div className="title">
-                Reviews
-                <Icon
+                <Button
+                  icon="arrowCircleLeft"
+                  iconLayout="icon-only"
                   className="backButton"
-                  fill="rgba(255,255,255,0.25)"
                   size={60}
-                  svg="arrowCircleLeft"
-                  style={{ left: 0 }}
+                  onClick={() => {
+                    setSelectedTab(1);
+                    setSelectedOrg(orgs[0]);
+                    setVisible(false);
+                  }}
                 />
+                <h1 style={{ color: "white" }}>
+                  {selectedOrg && selectedOrg.Name}
+                </h1>
+                Reviews
               </div>
               <>
                 <div className="ownThumbs">
                   {selectedOrg && selectedOrg.Reviews ? (
                     selectedOrg.Reviews.map((r, index) => {
                       return (
-                        <div className="review-card">
+                        <div className="review-card" key={index}>
                           <div className="review" style={{ margin: "0px" }}>
                             <p>Author: {r.Author}</p>
                             <p>Rating: {r.Rating}</p>
@@ -214,53 +239,27 @@ const Home = () => {
             >
               <div className="modalContent">
                 <img src={selectedOrg.Img} className="modalImg" alt=""></img>
+
                 <div className="modalPlayButton">
-                  {reviews &&
-                    reviews.map((r, index) => {
-                      return (
-                        <div className="review-card">
-                          <div className="review" style={{ margin: "0px" }}>
-                            <p>Author: {r.Author}</p>
-                            <p>Rating: {r.Rating}</p>
-                            <p>Review: {r.Review}</p>
-                          </div>
-
-                          <div className="votes" style={{ display: "flex" }}>
-                            <div>
-                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(true);
-                                }}
-                              >
-                                {r.Upvotes}
-                              </p>
-                            </div>
-
-                            <div>
-                              <Icon
-                                fill="#ffffff"
-                                size={24}
-                                svg="triangleDown"
-                              />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(false);
-                                }}
-                              >
-                                {r.Downvotes}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <Button
+                    icon="chevronRightX2"
+                    text="See Reviews"
+                    theme="secondary"
+                    type="button"
+                    onClick={() => {
+                      setSelectedTab(2);
+                      setVisible(false);
+                    }}
+                  />
                 </div>
                 <div className="movieInfo">
                   <div className="description">{selectedOrg.Description}</div>
                   <div className="description">
                     Category:
                     <span className="deets">{selectedOrg.Category}</span>
+                  </div>
+                  <div className="description" style={{ fontSize: "150%" }}>
+                    Avg Rating: {selectedOrg.AvgRating}
                   </div>
                 </div>
               </div>
