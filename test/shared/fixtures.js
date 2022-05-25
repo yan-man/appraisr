@@ -58,7 +58,8 @@ const unitAppraiserOrganizationFixture = async (signers) => {
       constructorParams.name,
       constructorParams.addr,
       constructorParams.URI,
-      mockVerifier.address
+      mockVerifier.address,
+      deployer.address
     );
   await appraiserOrganization.deployed();
 
@@ -86,7 +87,9 @@ const unitVerifierFixture = async (signers) => {
     );
   await verifier.deployed();
 
-  return { verifier, constructorParams };
+  const mockAppraiser = await deployMockAppraiser(deployer);
+
+  return { verifier, constructorParams, mockAppraiser };
 };
 
 const unitReviewerFixture = async (signers) => {

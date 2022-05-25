@@ -21,7 +21,7 @@ contract Appraiser is Ownable {
     // State Vars
     Counters.Counter public s_orgIds;
     mapping(uint256 => uint256) public s_organizations; // orgId -> intbool isActive
-    mapping(uint256 => Deployed) public s_deployedContracts;
+    mapping(uint256 => Deployed) public s_deployedContracts; // orgId -> [AppraiserOrganization address, Verifier address]
     mapping(string => uint256) private s_orgNames; // org name -> intbool exists flag
     address private s_reviewerContract;
 
@@ -32,7 +32,6 @@ contract Appraiser is Ownable {
     error Appraiser__DuplicateOrgName();
 
     // Modifiers
-
     constructor(address reviewerContract_) {
         s_reviewerContract = reviewerContract_;
     }
@@ -100,7 +99,8 @@ contract Appraiser is Ownable {
             name_,
             addr_,
             URI_,
-            verifierAddr_
+            verifierAddr_,
+            s_reviewerContract
         );
         return address(_ao);
     }

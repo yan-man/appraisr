@@ -95,7 +95,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
           this.verifier
             .connect(this.users.ashylarry)
             .mintBatch(this.users.dave.address)
-        ).to.be.revertedWith(`Verifier__OnlyAdminCanMintNFT`);
+        ).to.be.reverted;
       });
 
       it("should not batch mint from non-WacArnolds admin with 0 funds", async function () {
@@ -103,7 +103,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
           this.verifier
             .connect(this.orgs.WacArnolds)
             .mintBatch(this.users.dave.address)
-        ).to.be.revertedWith(`Verifier__InvalidMsgValue`);
+        ).to.be.reverted;
       });
 
       it("should not batch mint from non-WacArnolds admin with insufficient funds", async function () {
@@ -117,7 +117,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
                 "wei"
               ),
             })
-        ).to.be.revertedWith(`Verifier__InvalidMsgValue`);
+        ).to.be.reverted;
       });
 
       it("should not be reverted to batch mint from non-WacArnolds admin with valid funds", async function () {
@@ -170,7 +170,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
                 1,
                 []
               )
-          ).to.be.revertedWith(`Verifier__OnlyAdminCanTransferVerifierNFT`);
+          ).to.be.reverted;
         });
         it(`Should not allow transfers of VERIFIER token from non-approved`, async function () {
           await expect(
@@ -183,7 +183,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
                 1,
                 []
               )
-          ).to.be.revertedWith(`ERC1155__NotOwnerNorApproved`);
+          ).to.be.reverted;
         });
       });
 
@@ -238,7 +238,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
                 1,
                 []
               )
-          ).to.be.revertedWith(`Verifier__OnlyAdminCanTransferVerifierNFT`);
+          ).to.be.reverted;
         });
         it(`Should not allow transfers of VERIFIER token from non-approved`, async function () {
           await expect(
@@ -251,24 +251,36 @@ const shouldMintAndTransferAndBurnNFT = () => {
                 1,
                 []
               )
-          ).to.be.revertedWith(`ERC1155__NotOwnerNorApproved`);
+          ).to.be.reverted;
         });
         it(`Should not burn token from Appraiser contract address if not connected to owner`, async function () {
           await expect(
             this.verifier
               .connect(this.orgs.WacArnolds)
               .burnVerifierForAddress(this.users.ashylarry.address)
-          ).to.be.revertedWith(`Verifier__InvalidBurnerAddress`);
+          ).to.be.reverted;
         });
 
         describe("...After Appraiser contract address has been set", async function () {
           beforeEach(async function () {
             await this.verifier.setAppraiserContractAddress(
+              this.mocks.mockAppraiser.address
+            );
+            await this.mocks.mockAppraiser.mock.s_deployedContracts.returns(
+              this.users.prince.address,
               this.users.prince.address
             );
           });
 
-          it(`Should burn token from Appraiser contract address if connected to s_appraiserContract`, async function () {
+          it(`Should throw if trying to burn token from Appraiser contract address if not connected to deployed AO contract`, async function () {
+            await expect(
+              this.verifier
+                .connect(this.users.ashylarry)
+                .burnVerifierForAddress(this.users.ashylarry.address)
+            ).to.be.reverted;
+          });
+
+          it(`Should burn token from Appraiser contract address if connected to deployed AO contract`, async function () {
             await expect(
               this.verifier
                 .connect(this.users.prince)
@@ -276,7 +288,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
             ).to.not.be.reverted;
           });
 
-          it(`Should burn token from Appraiser contract address if connected to s_appraiserContract`, async function () {
+          it(`Should burn token from Appraiser contract address if connected to deployed AO contract`, async function () {
             await this.verifier
               .connect(this.users.prince)
               .burnVerifierForAddress(this.users.ashylarry.address);

@@ -12,11 +12,9 @@ import "./Users.sol";
 
 contract Reviewer is Ownable {
     using Counters for Counters.Counter;
-    using Reviews for Reviews.Review;
     using Users for Users.User;
 
     // state vars
-    mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
     mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
@@ -37,33 +35,15 @@ contract Reviewer is Ownable {
         _;
     }
 
-    function _isValidOrgId(uint256 orgId_) private view {
-        if (address(s_aoContracts[orgId_]) == address(0)) {
-            revert Appraiser__InvalidOrgId();
-        }
-    }
-
-    function addUser(address addr_) private {
-        if (s_users[addr_].isRegistered == false) {
-            s_users[addr_] = Users.User({
-                upvotes: 0,
-                downvotes: 0,
-                isRegistered: true
-            });
-
-            emit LogNewUser(addr_);
-        }
-    }
-
     function mintReview(
         uint256 orgId_,
         uint256 rating_,
         string calldata review_
     ) external isValidOrgId(orgId_) {
         uint256 _reviewId = AppraiserOrganization(s_aoContracts[orgId_])
-            .mintReviewNFT(msg.sender, rating_, review_);
-        s_reviews[orgId_][_reviewId] = msg.sender;
-        addUser(msg.sender);
+            .mintReviewNFT(_msgSender(), rating_, review_);
+        s_reviews[orgId_][_reviewId] = _msgSender();
+        addUser(_msgSender());
         emit LogMintReview(_reviewId);
     }
 
@@ -83,7 +63,7 @@ contract Reviewer is Ownable {
         if (_reviewAuthorAddr == address(0)) {
             revert Appraiser__InvalidReview();
         }
-        if (msg.sender == _reviewAuthorAddr) {
+        if (_msgSender() == _reviewAuthorAddr) {
             revert Appraiser__VoterMatchesAuthor();
         }
 
@@ -94,11 +74,29 @@ contract Reviewer is Ownable {
             _reviewUser.downvotes += 1;
         }
         AppraiserOrganization(s_aoContracts[orgId_]).voteOnReview(
-            msg.sender,
+            _msgSender(),
             reviewId_,
             isUpvote_
         );
 
-        emit LogVoteOnReview(msg.sender, orgId_, reviewId_);
+        emit LogVoteOnReview(_msgSender(), orgId_, reviewId_);
+    }
+
+    function _isValidOrgId(uint256 orgId_) private view {
+        if (address(s_aoContracts[orgId_]) == address(0)) {
+            revert Appraiser__InvalidOrgId();
+        }
+    }
+
+    function addUser(address addr_) private {
+        if (s_users[addr_].isRegistered == false) {
+            s_users[addr_] = Users.User({
+                upvotes: 0,
+                downvotes: 0,
+                isRegistered: true
+            });
+
+            emit LogNewUser(addr_);
+        }
     }
 }
