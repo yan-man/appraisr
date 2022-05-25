@@ -272,6 +272,14 @@ const shouldMintAndTransferAndBurnNFT = () => {
             );
           });
 
+          it(`Should throw if trying to burn token from Appraiser contract address if not connected to deployed AO contract`, async function () {
+            await expect(
+              this.verifier
+                .connect(this.users.ashylarry)
+                .burnVerifierForAddress(this.users.ashylarry.address)
+            ).to.be.reverted;
+          });
+
           it(`Should burn token from Appraiser contract address if connected to deployed AO contract`, async function () {
             await expect(
               this.verifier

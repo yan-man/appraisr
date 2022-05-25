@@ -46,6 +46,19 @@ const shouldMintReviewNFT = () => {
             )
           ).to.be.revertedWith(`AppraiserOrganization__InvalidRating`);
         });
+        it(`Should throw if caller is not verifierContractAddress`, async function () {
+          await expect(
+            this.appraiserOrganization
+              .connect(this.users.ashylarry)
+              .mintReviewNFT(
+                this.users.ashylarry.address,
+                5,
+                `this is a review`
+              )
+          ).to.be.revertedWith(
+            `AppraiserOrganization__OnlyReviewerContractCanCall`
+          );
+        });
       });
 
       describe(`...After ashy larry leaves a non-verified review1 for WacArnolds`, async function () {
