@@ -22,6 +22,7 @@ import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
   const { isAuthenticated, Moralis, isWeb3Enabled, account, user } =
     useMoralis();
   const [selectedOrg, setSelectedOrg] = useState();
@@ -130,7 +131,7 @@ const Home = () => {
           })
         );
         org.Reviews = reviews;
-        console.log(orgs);
+        // console.log(orgs);
       }
     }
     updateVotes();
@@ -174,6 +175,10 @@ const Home = () => {
     }
   };
 
+  const openReviewModal = () => {
+    console.log("open review");
+  };
+
   return (
     <>
       <div className="logo">
@@ -188,10 +193,7 @@ const Home = () => {
           defaultActiveKey={selectedTab}
           tabStyle="bar"
           onChange={(selectedKey) => {
-            // console.log("change", selectedKey);
-            // if (selectedKey === 2) {
-            //   setSelectedTab(2);
-            // }
+            setSelectedTab(selectedKey);
           }}
         >
           <Tab tabKey={1} tabName={"Organizations"}>
@@ -215,6 +217,7 @@ const Home = () => {
                         setSelectedOrg(orgs[0]);
                         setSelectedTab(2);
                         setVisible(false);
+                        setFormVisible(false);
                         // updateVotes(1);
                       }}
                     />
@@ -252,10 +255,10 @@ const Home = () => {
                   className="backButton"
                   size={60}
                   onClick={() => {
-                    setSelectedTab(1);
-                    setSelectedOrg(orgs[0]);
                     setVisible(false);
-                    // updateVotes(1);
+                    setFormVisible(false);
+                    setSelectedTab(1);
+                    console.log("back");
                   }}
                 />
                 <h1 style={{ color: "#6795b1" }}>
@@ -315,28 +318,7 @@ const Home = () => {
           </Tab>
 
           <Tab tabKey={3} tabName={"MyReviews"}>
-            <div className="ownListContent">
-              <div className="title">
-                <Button
-                  icon="arrowCircleLeft"
-                  iconLayout="icon-only"
-                  className="backButton"
-                  size={60}
-                  onClick={() => {
-                    setSelectedTab(1);
-                    setSelectedOrg(orgs[0]);
-                    setVisible(false);
-                  }}
-                />
-                <h1 style={{ color: "#6795b1" }}>
-                  {selectedOrg && selectedOrg.Name}
-                </h1>
-                <h2 style={{ color: "#6795b1" }}>
-                  <em>{selectedOrg && selectedOrg.Description}</em>
-                </h2>
-                <p style={{ color: "white" }}>Reviews</p>
-              </div>
-            </div>
+            <div className="ownListContent"></div>
           </Tab>
         </TabList>
         {selectedOrg && (
@@ -361,6 +343,7 @@ const Home = () => {
                         onClick={() => {
                           setSelectedTab(2);
                           setVisible(false);
+                          setFormVisible(false);
                         }}
                       />
                     </div>
@@ -371,7 +354,11 @@ const Home = () => {
                       icon="plus"
                       iconLayout="icon-only"
                       id="add-review"
-                      onClick={function noRefCheck() {}}
+                      onClick={() => {
+                        setFormVisible(true);
+                        setVisible(false);
+                        setFormVisible(true);
+                      }}
                       radius={20}
                       theme="colored"
                       type="button"
@@ -392,6 +379,36 @@ const Home = () => {
                   </div>
                   <div className="description">
                     Total Reviews: {selectedOrg.NumRatings}
+                  </div>
+                </div>
+              </div>
+            </Modal>
+            <Modal
+              onCloseButtonPressed={() => setFormVisible(false)}
+              isVisible={formVisible}
+              hasFooter={false}
+              width="1000px"
+            >
+              <div className="modalContent">
+                <img src={selectedOrg.Img} className="modalImg" alt=""></img>
+
+                <div className="movieInfo">
+                  <div className="description">
+                    <Button
+                      color="#6795b1"
+                      icon="plus"
+                      iconLayout="icon-only"
+                      id="add-review"
+                      onClick={() => {
+                        openReviewModal();
+                      }}
+                      radius={20}
+                      theme="colored"
+                      type="button"
+                    />
+                  </div>
+                  <div className="description" style={{ textAlign: "center" }}>
+                    <p></p>
                   </div>
                 </div>
               </div>
