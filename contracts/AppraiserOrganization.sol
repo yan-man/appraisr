@@ -9,24 +9,18 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Verifier.sol";
 import "./Organizations.sol";
+import "./Reviews.sol";
 
 contract AppraiserOrganization is ERC1155, Ownable {
     using Counters for Counters.Counter;
     using Organizations for Organizations.Organization;
+    using Reviews for Reviews.Review;
 
     // structs
-    struct Review {
-        uint256 id;
-        address author;
-        uint256 rating;
-        string review;
-        uint256 unixtime;
-        bool isVerified;
-    }
 
     // state vars
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    mapping(uint256 => Review) public s_reviews; // reviewId -> Review
+    mapping(uint256 => Reviews.Review) public s_reviews; // reviewId -> Review
     mapping(uint256 => mapping(address => bool)) s_upvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
     mapping(uint256 => mapping(address => bool)) s_downvotes; // reviewId -> (voting address -> isVoted)
@@ -115,7 +109,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
             _isVerified = true;
         }
 
-        Review memory review = Review({
+        Reviews.Review memory review = Reviews.Review({
             id: _reviewId,
             author: reviewerAddr_,
             rating: rating_,

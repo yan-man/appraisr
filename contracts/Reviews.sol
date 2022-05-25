@@ -6,9 +6,11 @@ import "hardhat/console.sol";
 
 library Reviews {
     struct Review {
+        uint256 id;
+        address author;
         uint256 rating;
         string review;
-        uint256 upvotes;
-        uint256 downvotes;
+        uint256 unixtime;
+        bool isVerified;
     }
 }

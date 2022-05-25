@@ -12,11 +12,9 @@ import "./Users.sol";
 
 contract Reviewer is Ownable {
     using Counters for Counters.Counter;
-    using Reviews for Reviews.Review;
     using Users for Users.User;
 
     // state vars
-    mapping(uint256 => Reviews.Review) public s_verifiers; // orgId -> # of tokens
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
     mapping(address => Users.User) public s_users; // user/reviewer address -> User struct

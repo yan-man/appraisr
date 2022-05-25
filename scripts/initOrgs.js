@@ -38,14 +38,18 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
           };
           const reviewId = emittedId.toNumber();
 
-          review.Author = user.address;
-          review.reviewId = reviewId;
-          reviews.push(review);
-
           const ao = await ethers.getContractAt(
             `AppraiserOrganization`,
             deployedOrgs[orgInd].AppraiserOrganization
           );
+          const savedReview = await ao.s_reviews(reviewId);
+
+          review.Author = user.address;
+          review.reviewId = reviewId;
+          review.Timestamp = savedReview.unixtime;
+
+          reviews.push(review);
+
           console.log(
             `Review for ${o.Name} given by ${review.Author} ("${review.Review}", Rating = ${review.Rating})`
           );
