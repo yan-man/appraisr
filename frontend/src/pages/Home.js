@@ -29,6 +29,17 @@ const Home = () => {
   const [web3Provider, setWeb3Provider] = useState();
   // const contractProcessor = useWeb3ExecuteFunction();
 
+  // useEffect(() => {
+  //   async function updateWeb3Provider() {
+  //     if (!Moralis.web3._isProvider) {
+  //       const web3Provider = await Moralis.enableWeb3();
+  //       console.log(web3Provider);
+  //       // setWeb3Provider();
+  //     }
+  //   }
+  //   updateWeb3Provider();
+  // }, [Moralis]);
+
   useEffect(() => {
     async function updateReviewDetails() {
       await Promise.all(
@@ -88,9 +99,7 @@ const Home = () => {
 
   useEffect(() => {
     async function updateReviewDetails() {
-      if (!web3Provider && selectedOrg) {
-        const web3Provider = await Moralis.enableWeb3();
-        setWeb3Provider(web3Provider);
+      if (selectedOrg) {
         const ethers = Moralis.web3Library;
 
         const org = selectedOrg;
@@ -101,7 +110,7 @@ const Home = () => {
             const appraiserOrganization = new ethers.Contract(
               org.AppraiserOrganization,
               appraiserOrganization_abi.abi,
-              web3Provider
+              Moralis.web3
             );
             review.Upvotes = (
               await appraiserOrganization.s_upvoteCount(review.reviewId)
@@ -112,57 +121,33 @@ const Home = () => {
           })
         );
         org.Reviews = reviews;
+        console.log(org);
         setSelectedOrg(org);
       }
     }
     updateReviewDetails();
-  }, [selectedOrg, web3Provider]);
+  }, [selectedTab, orgs, selectedOrg]);
 
   const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
       handleNewNotification();
     } else {
-      console.log(account);
+      const ethers = Moralis.web3Library;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
 
-      // let options = {
-      //   contractAddress: contractAddress.Reviewer,
-      //   functionName: "voteOnReview",
-      //   abi: reviewer_abi.abi,
-      //   params: {
-      //     orgId_: selectedOrg.orgId,
-      //     reviewId_: reviewId,
-      //     isUpvote_: isUpvote,
-      //   },
-      //   msgValue: Moralis.Units.ETH(0),
-      // };
+      const appraiserOrganization = new ethers.Contract(
+        selectedOrg.AppraiserOrganization,
+        appraiserOrganization_abi.abi,
+        signer
+      );
 
-      // await contractProcessor.fetch({
-      //   params: options,
-      //   onSuccess: () => {
-      //     console.log("success");
-      //   },
-      // });
+      await appraiserOrganization.voteOnReview(account, reviewId, isUpvote);
 
-      // const web3Provider = await Moralis.enableWeb3();
-      // const ethers = Moralis.web3Library;
-
-      // const appraiserOrganization = new ethers.Contract(
-      //   selectedOrg.AppraiserOrganization,
-      //   appraiserOrganization_abi.abi,
-      //   web3Provider
-      // );
-
-      // const review = await appraiserOrganization.s_reviews(reviewId);
-
-      // const uv = await appraiserOrganization.s_upvoteCount(reviewId);
-      // const dv = await appraiserOrganization.s_downvoteCount(reviewId);
-      // console.log(uv.toString(), dv.toString());
-
-      if (isUpvote) {
-        console.log("upvote");
-      } else {
-        console.log("downvote");
-      }
+      const uv = await appraiserOrganization.s_upvoteCount(reviewId);
+      const dv = await appraiserOrganization.s_downvoteCount(reviewId);
+      console.log(uv.toString(), dv.toString());
+      console.log("is upvote", isUpvote);
     }
   };
 
