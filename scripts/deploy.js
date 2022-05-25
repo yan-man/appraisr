@@ -10,7 +10,6 @@ async function main() {
   }
 
   const [deployer] = await ethers.getSigners();
-  // console.log((await ethers.getSigners()).map((e) => e.address));
   console.log(
     "Deploying the contracts with the account:",
     await deployer.getAddress()
@@ -25,7 +24,7 @@ async function main() {
 
   const deployedOrgs = await deployInitialOrganizations(appraiser, reviewer);
 
-  saveFrontendFiles(appraiser, reviewer, deployedOrgs);
+  saveFrontendFiles(appraiser, reviewer);
 }
 
 async function deployReviewerContract() {
@@ -46,7 +45,7 @@ async function deployAppraiserContract(reviewerAddr) {
   return appraiser;
 }
 
-async function saveFrontendFiles(appraiser, reviewer, deployedOrgs) {
+async function saveFrontendFiles(appraiser, reviewer) {
   const fs = require("fs");
   const contractsDir = __dirname + "/../frontend/src/contracts";
 
