@@ -2,14 +2,23 @@ const { ethers } = require("hardhat");
 const orgs = require("../helpers/library.json");
 
 const deployInitialOrganizations = async (appraiser, reviewer) => {
-  const deployedOrgs = await deployOrgs(appraiser, reviewer);
-  await deployReviews(appraiser, reviewer, deployedOrgs);
-};
-
-const deployReviews = async (appraiser, reviewer, deployedOrgs) => {
   const signers = await ethers.getSigners();
   const users = signers.slice(1, -2);
 
+  // 20 hardhat accounts: [index]
+  // 0) - deployer
+  // 19) - admin for org1
+  // 20) - admin for org2
+  // 1)...18) - test users
+  // 1)...5) - test users w/Verifier token
+
+  let deployedOrgs = await deployOrgs(appraiser, reviewer, users);
+  deployedOrgs = await deployReviews(appraiser, reviewer, deployedOrgs, users);
+};
+
+const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
+  const users = [..._users];
+  const updatedOrgs = [];
   await Promise.all(
     orgs.map(async (o, orgInd) => {
       const reviews = [];
@@ -17,7 +26,6 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs) => {
         o.Reviews.map(async (review) => {
           const user = users.pop();
 
-          // console.log(o.orgId);
           const tx = await reviewer
             .connect(user)
             .mintReview(o.orgId, review.Rating, review.Review);
@@ -38,19 +46,24 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs) => {
             `AppraiserOrganization`,
             deployedOrgs[orgInd].AppraiserOrganization
           );
-          console.log(await ao.s_reviews(reviewId));
+          console.log(
+            `Review for ${o.Name} given by ${review.Author} ("${review.Review}", Rating = ${review.Rating})`
+          );
         })
       );
-      // console.log(reviews);
+      o.Reviews = reviews;
+      updatedOrgs.push(o);
     })
   );
+
+  saveOrgsFrontendFiles(updatedOrgs);
+  return updatedOrgs;
 };
 
-const deployOrgs = async (appraiser, reviewer) => {
+const deployOrgs = async (appraiser, reviewer, users) => {
   const signers = await ethers.getSigners();
   const admins = signers.slice("-" + orgs.length);
   const updatedOrgs = [];
-  const deployedOrgs = [];
   await Promise.all(
     orgs.map(async (o, index) => {
       o.Admin = admins[index].address;
@@ -68,20 +81,43 @@ const deployOrgs = async (appraiser, reviewer) => {
       };
       const orgId = emittedId.toNumber();
       const org = await appraiser.s_deployedContracts(orgId);
-      deployedOrgs.push(org);
 
       o.orgId = orgId;
+      o.AppraiserOrganization = org.AppraiserOrganization;
+      o.Verifier = org.Verifier;
       updatedOrgs.push(o);
 
       console.log(`${o.Name} org deployed: `);
       console.log(`     Admin: ${o.Admin}`);
-      console.log(`     AppraiserOrganization: ${org.AppraiserOrganization}`);
-      console.log(`     Verifier: ${org.Verifier}`);
+      console.log(`     AppraiserOrganization: ${o.AppraiserOrganization}`);
+      console.log(`     Verifier: ${o.Verifier}`);
     })
   );
+  console.log(``);
+
+  // transfer a V token to each user 1-5, from admin
+  await Promise.all(
+    updatedOrgs.map(async (o, index) => {
+      const verifier = await ethers.getContractAt(`Verifier`, o.Verifier);
+      await Promise.all(
+        users.map(async (user) => {
+          await verifier
+            .connect(admins[index])
+            .safeTransferFrom(admins[index].address, user.address, 0, 1, []);
+          // const balance = await verifier.balanceOf(user.address, 0);
+          // console.log(
+          //   `User (${user.address}) ${
+          //     o.Name
+          //   } Verifier Tokens: ${balance.toNumber()}`
+          // );
+        })
+      );
+    })
+  );
+  // console.log(``);
 
   saveOrgsFrontendFiles(updatedOrgs);
-  return deployedOrgs;
+  return updatedOrgs;
 };
 
 function saveOrgsFrontendFiles(deployedOrgs) {
