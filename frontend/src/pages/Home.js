@@ -11,16 +11,22 @@ import {
   Modal,
   useNotification,
 } from "web3uikit";
-import { orgs } from "../helpers/library";
+import { savedOrgs } from "../helpers/library";
 import { useState } from "react";
 import { useMoralis } from "react-moralis";
 import { divide } from "mathjs";
+import contractAddress from "../contracts/contract-address.json";
+// import appraiser_abi from "../contracts/Appraiser.json";
+// import reviewer_abi from "../contracts/Reviewer.json";
+import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
-  const { isAuthenticated, Moralis, account } = useMoralis();
+  const { isAuthenticated, Moralis, account, executeFunction } = useMoralis();
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
+  const [orgs, setOrgs] = useState(savedOrgs);
+  const [web3Provider, setWeb3Provider] = useState();
 
   // useEffect(() => {
   //   async function fetchReviews() {
@@ -47,6 +53,41 @@ const Home = () => {
   //   fetchReviews();
   // }, [account]);
 
+  useEffect(() => {
+    async function initWeb3Moralis() {
+      try {
+        const web3Provider = await Moralis.enableWeb3();
+        setWeb3Provider(web3Provider);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    initWeb3Moralis();
+  }, [Moralis]);
+
+  useEffect(() => {
+    async function updateReviewDetails() {
+      if (web3Provider) {
+        const org = selectedOrg ? selectedOrg : orgs[0];
+        const index = orgs.findIndex((object) => {
+          return object.orgId === org.orgId;
+        });
+        const ethers = Moralis.web3Library;
+        const appraiserOrganization = new ethers.Contract(
+          org.AppraiserOrganization,
+          appraiserOrganization_abi.abi,
+          web3Provider
+        );
+        org.NumRatings =
+          (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+
+        setSelectedOrg(org);
+        orgs[index] = org;
+        setOrgs(orgs);
+      }
+    }
+    updateReviewDetails();
+  }, [selectedOrg, orgs, Moralis, web3Provider]);
   const dispatch = useNotification();
 
   const handleNewNotification = () => {
@@ -110,23 +151,30 @@ const Home = () => {
         >
           <Tab tabKey={1} tabName={"Organizations"}>
             <div className="scene">
-              <img src={orgs[0].BgImg} className="sceneImg" alt=""></img>
-              <img className="sceneLogo" src={orgs[0].Logo} alt=""></img>
-              <p className="sceneDesc">{orgs[0].Description}</p>
-              <h2 className="rating">Avg Rating: {orgs[0].AvgRating}</h2>
-              <div className="playButton">
-                <Button
-                  icon="chevronRightX2"
-                  text="See Reviews"
-                  theme="secondary"
-                  type="button"
-                  onClick={() => {
-                    setSelectedOrg(orgs[0]);
-                    setSelectedTab(2);
-                    setVisible(false);
-                  }}
-                />
-              </div>
+              {orgs && (
+                <>
+                  <img src={orgs[0].BgImg} className="sceneImg" alt=""></img>
+                  <img className="sceneLogo" src={orgs[0].Logo} alt=""></img>
+                  <p className="sceneDesc">{orgs[0].Description}</p>
+                  <h2 className="rating">Avg Rating: {orgs[0].AvgRating}</h2>
+                  <p className="sceneDesc">
+                    Total Reviews: {orgs[0].NumRatings}
+                  </p>
+                  <div className="playButton">
+                    <Button
+                      icon="chevronRightX2"
+                      text="See Reviews"
+                      theme="secondary"
+                      type="button"
+                      onClick={() => {
+                        setSelectedOrg(orgs[0]);
+                        setSelectedTab(2);
+                        setVisible(false);
+                      }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="title">Organizations</div>
@@ -289,7 +337,7 @@ const Home = () => {
                     })
                   ) : (
                     <div className="">
-                      You need to select a movie to view reviews
+                      You need to select an organization to view reviews
                     </div>
                   )}
                 </div>
@@ -333,6 +381,9 @@ const Home = () => {
                     style={{ fontSize: "150%", color: "#6795b1" }}
                   >
                     Avg Rating: {selectedOrg.AvgRating}
+                  </div>
+                  <div className="description">
+                    Total Reviews: {selectedOrg.NumRatings}
                   </div>
                 </div>
               </div>

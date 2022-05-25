@@ -7,7 +7,7 @@ import studio54BG from "../img/studio54BG.png";
 
 import importedOrgs from "./library.json";
 
-const orgs = importedOrgs.map((org) => {
+const savedOrgs = importedOrgs.map((org) => {
   if (org.Name === "WacArnold's") {
     org.Img = wacarnolds;
     org.Logo = wacarnoldsLogo;
@@ -20,4 +20,4 @@ const orgs = importedOrgs.map((org) => {
   return org;
 });
 
-export { orgs };
+export { savedOrgs };

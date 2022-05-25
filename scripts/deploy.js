@@ -76,6 +76,18 @@ async function saveFrontendFiles(appraiser, reviewer, deployedOrgs) {
     contractsDir + "/Reviewer.json",
     JSON.stringify(ReviewerArtifact, null, 2)
   );
+  const VerifierArtifact = artifacts.readArtifactSync("Verifier");
+  fs.writeFileSync(
+    contractsDir + "/Verifier.json",
+    JSON.stringify(VerifierArtifact, null, 2)
+  );
+  const AppraiserOrganizationArtifact = artifacts.readArtifactSync(
+    "AppraiserOrganization"
+  );
+  fs.writeFileSync(
+    contractsDir + "/AppraiserOrganization.json",
+    JSON.stringify(AppraiserOrganizationArtifact, null, 2)
+  );
 }
 
 main()
