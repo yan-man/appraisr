@@ -13,7 +13,7 @@ import {
 } from "web3uikit";
 import { savedOrgs } from "../helpers/library";
 import { useState } from "react";
-import { useMoralis } from "react-moralis";
+import { useMoralis, useNativeBalance } from "react-moralis";
 import { divide } from "mathjs";
 import contractAddress from "../contracts/contract-address.json";
 // import appraiser_abi from "../contracts/Appraiser.json";
@@ -22,7 +22,7 @@ import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
-  const { isAuthenticated, Moralis, account } = useMoralis();
+  const { isAuthenticated, Moralis, account, user } = useMoralis();
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
@@ -65,27 +65,28 @@ const Home = () => {
     initWeb3Moralis();
   }, [Moralis]);
 
+  console.log(user);
+  console.log(account);
+
   useEffect(() => {
     async function updateReviewDetails() {
-      const org = selectedOrg ? selectedOrg : orgs[0];
-      const index = orgs.findIndex((object) => {
-        return object.orgId === org.orgId;
-      });
       const ethers = Moralis.web3Library;
-      const appraiserOrganization = new ethers.Contract(
-        org.AppraiserOrganization,
-        appraiserOrganization_abi.abi,
-        web3Provider
+
+      await Promise.all(
+        orgs.map(async (org) => {
+          const appraiserOrganization = new ethers.Contract(
+            org.AppraiserOrganization,
+            appraiserOrganization_abi.abi,
+            ethers.getDefaultProvider("http://localhost:8545")
+          );
+          org.NumRatings =
+            (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+        })
       );
-      org.NumRatings =
-        (await appraiserOrganization.currentReviewId()).toNumber() - 1;
-      // console.log(org.NumRatings);
-      setSelectedOrg(org);
-      orgs[index] = org;
       setOrgs(orgs);
     }
     updateReviewDetails();
-  }, [selectedOrg, orgs, Moralis, web3Provider]);
+  }, [orgs, Moralis, web3Provider]);
   const dispatch = useNotification();
 
   const handleNewNotification = () => {
