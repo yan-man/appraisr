@@ -140,7 +140,7 @@
 
 .modalPlayButton {
   position: fixed;
-  top: 385px;
+  top: calc(100vw * 0.32);
   left: 6%;
   gap: 10px;
 }
@@ -199,10 +199,8 @@
   margin: 0 10px;
 }
 
-.votes > div:hover {
-  cursor: pointer;
-}
-
-.backButton:hover {
+.votes > div:hover,
+.backButton:hover,
+.add-review:hover {
   cursor: pointer;
 }

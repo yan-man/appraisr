@@ -127,16 +127,6 @@ const Home = () => {
       </div>
 
       <div className="connect">
-        <Button
-          color="#6795b1"
-          icon="plus"
-          iconLayout="icon-only"
-          id="test-button-primary-icon-only"
-          onClick={function noRefCheck() {}}
-          radius={20}
-          theme="colored"
-          type="button"
-        />
         <ConnectButton />
       </div>
       <div className="topBanner">
@@ -369,6 +359,18 @@ const Home = () => {
                   />
                 </div>
                 <div className="movieInfo">
+                  <div className="description">
+                    <Button
+                      color="#6795b1"
+                      icon="plus"
+                      iconLayout="icon-only"
+                      id="add-review"
+                      onClick={function noRefCheck() {}}
+                      radius={20}
+                      theme="colored"
+                      type="button"
+                    />
+                  </div>
                   <div className="description" style={{ textAlign: "center" }}>
                     {selectedOrg.Description}
                   </div>
