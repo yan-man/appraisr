@@ -26,7 +26,8 @@ const Home = () => {
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
-  const contractProcessor = useWeb3ExecuteFunction();
+  const [web3Provider, setWeb3Provider] = useState();
+  // const contractProcessor = useWeb3ExecuteFunction();
 
   useEffect(() => {
     async function updateReviewDetails() {
@@ -59,6 +60,64 @@ const Home = () => {
     });
   };
 
+  // const updateVotes = async (reviewId) => {
+  //   const web3Provider = await Moralis.enableWeb3();
+  //   const ethers = Moralis.web3Library;
+
+  //   const org = selectedOrg ? selectedOrg : orgs[0];
+  //   const reviews = org.Reviews;
+
+  //   await Promise.all(
+  //     reviews.map(async (review, index) => {
+  //       const appraiserOrganization = new ethers.Contract(
+  //         org.AppraiserOrganization,
+  //         appraiserOrganization_abi.abi,
+  //         web3Provider
+  //       );
+  //       review.Upvotes = (
+  //         await appraiserOrganization.s_upvoteCount(reviewId)
+  //       ).toString();
+  //       review.Downvotes = (
+  //         await appraiserOrganization.s_downvoteCount(reviewId)
+  //       ).toString();
+  //     })
+  //   );
+  //   org.Reviews = reviews;
+  //   setSelectedOrg(org);
+  // };
+
+  useEffect(() => {
+    async function updateReviewDetails() {
+      if (!web3Provider && selectedOrg) {
+        const web3Provider = await Moralis.enableWeb3();
+        setWeb3Provider(web3Provider);
+        const ethers = Moralis.web3Library;
+
+        const org = selectedOrg;
+        const reviews = org.Reviews;
+
+        await Promise.all(
+          reviews.map(async (review, index) => {
+            const appraiserOrganization = new ethers.Contract(
+              org.AppraiserOrganization,
+              appraiserOrganization_abi.abi,
+              web3Provider
+            );
+            review.Upvotes = (
+              await appraiserOrganization.s_upvoteCount(review.reviewId)
+            ).toString();
+            review.Downvotes = (
+              await appraiserOrganization.s_downvoteCount(review.reviewId)
+            ).toString();
+          })
+        );
+        org.Reviews = reviews;
+        setSelectedOrg(org);
+      }
+    }
+    updateReviewDetails();
+  }, [selectedOrg, web3Provider]);
+
   const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
       handleNewNotification();
@@ -84,20 +143,20 @@ const Home = () => {
       //   },
       // });
 
-      const web3Provider = await Moralis.enableWeb3();
-      const ethers = Moralis.web3Library;
+      // const web3Provider = await Moralis.enableWeb3();
+      // const ethers = Moralis.web3Library;
 
-      const appraiserOrganization = new ethers.Contract(
-        selectedOrg.AppraiserOrganization,
-        appraiserOrganization_abi.abi,
-        web3Provider
-      );
+      // const appraiserOrganization = new ethers.Contract(
+      //   selectedOrg.AppraiserOrganization,
+      //   appraiserOrganization_abi.abi,
+      //   web3Provider
+      // );
 
-      const review = await appraiserOrganization.s_reviews(reviewId);
+      // const review = await appraiserOrganization.s_reviews(reviewId);
 
-      const uv = await appraiserOrganization.s_upvoteCount(reviewId);
-      const dv = await appraiserOrganization.s_downvoteCount(reviewId);
-      console.log(uv.toString(), dv.toString());
+      // const uv = await appraiserOrganization.s_upvoteCount(reviewId);
+      // const dv = await appraiserOrganization.s_downvoteCount(reviewId);
+      // console.log(uv.toString(), dv.toString());
 
       if (isUpvote) {
         console.log("upvote");
@@ -121,9 +180,10 @@ const Home = () => {
           defaultActiveKey={selectedTab}
           tabStyle="bar"
           onChange={(selectedKey) => {
-            if (selectedKey === 2) {
-              setSelectedTab(2);
-            }
+            // console.log("change", selectedKey);
+            // if (selectedKey === 2) {
+            //   setSelectedTab(2);
+            // }
           }}
         >
           <Tab tabKey={1} tabName={"Organizations"}>
@@ -147,6 +207,7 @@ const Home = () => {
                         setSelectedOrg(orgs[0]);
                         setSelectedTab(2);
                         setVisible(false);
+                        // updateVotes(1);
                       }}
                     />
                   </div>
@@ -186,6 +247,7 @@ const Home = () => {
                     setSelectedTab(1);
                     setSelectedOrg(orgs[0]);
                     setVisible(false);
+                    // updateVotes(1);
                   }}
                 />
                 <h1 style={{ color: "#6795b1" }}>
