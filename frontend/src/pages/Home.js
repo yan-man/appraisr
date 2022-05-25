@@ -57,7 +57,7 @@ const Home = () => {
   const handleNewNotification = () => {
     dispatch({
       type: "error",
-      message: "Pleaser Connect Your Crypto Wallet",
+      message: "Please Connect Your Crypto Wallet",
       title: "Not Authenticated",
       position: "topL",
     });
@@ -66,16 +66,16 @@ const Home = () => {
   const handleErrorNotification = (msg) => {
     dispatch({
       type: "error",
-      message: msg,
+      message: " " + msg,
       title: "Error",
       position: "topL",
     });
   };
 
-  const handleAddNotification = () => {
+  const handleUpvotedNotification = () => {
     dispatch({
       type: "success",
-      message: "Movie Added to List",
+      message: " Saved your vote!",
       title: "Success",
       position: "topL",
     });
@@ -130,6 +130,7 @@ const Home = () => {
           })
         );
         org.Reviews = reviews;
+        console.log(orgs);
       }
     }
     updateVotes();
@@ -154,15 +155,22 @@ const Home = () => {
           account,
           reviewId
         );
-        console.log(hasVoted);
+        if (!hasVoted) {
+          const tx = await appraiserOrganization.voteOnReview(
+            account,
+            reviewId,
+            isUpvote
+          );
+          const receipt = await tx.wait();
+          if (receipt.status === 0) {
+            handleErrorNotification("Unknown error");
+          } else {
+            handleUpvotedNotification();
+          }
+        } else {
+          handleErrorNotification("You've already voted on this review");
+        }
       }
-
-      // try {
-      //   await appraiserOrganization.voteOnReview(account, reviewId, isUpvote);
-      // } catch (err) {
-      //   console.log(err);
-      //   handleErrorNotification(err);
-      // }
     }
   };
 
