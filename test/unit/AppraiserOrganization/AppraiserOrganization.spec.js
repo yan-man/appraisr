@@ -155,8 +155,7 @@ const shouldVoteOnReviewNFT = () => {
             expect(
               await this.appraiserOrganization.hasVoted(
                 this.users.dave.address,
-                this.reviewId,
-                this.isUpvote
+                this.reviewId
               )
             ).to.equal(true);
           });
@@ -212,8 +211,7 @@ const shouldVoteOnReviewNFT = () => {
               expect(
                 await this.appraiserOrganization.hasVoted(
                   this.users.rickjames.address,
-                  this.reviewId,
-                  this.isUpvote
+                  this.reviewId
                 )
               ).to.equal(true);
             });

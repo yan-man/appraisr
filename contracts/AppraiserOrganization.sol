@@ -141,16 +141,14 @@ contract AppraiserOrganization is ERC1155, Ownable {
         emit LogNFTReviewVote(reviewId_);
     }
 
-    function hasVoted(
-        address reviewer_,
-        uint256 reviewId_,
-        bool isUpvote_
-    ) external view returns (bool) {
-        if (isUpvote_ == true) {
-            return s_upvotes[reviewId_][reviewer_];
-        } else {
-            return s_downvotes[reviewId_][reviewer_];
-        }
+    function hasVoted(address reviewer_, uint256 reviewId_)
+        external
+        view
+        returns (bool)
+    {
+        return
+            s_upvotes[reviewId_][reviewer_] ||
+            s_downvotes[reviewId_][reviewer_];
     }
 
     function currentReviewId() external view returns (uint256) {

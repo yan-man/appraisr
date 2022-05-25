@@ -22,7 +22,8 @@ import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
-  const { isAuthenticated, Moralis, account, user } = useMoralis();
+  const { isAuthenticated, Moralis, isWeb3Enabled, account, user } =
+    useMoralis();
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
@@ -58,6 +59,15 @@ const Home = () => {
       type: "error",
       message: "Pleaser Connect Your Crypto Wallet",
       title: "Not Authenticated",
+      position: "topL",
+    });
+  };
+
+  const handleErrorNotification = (msg) => {
+    dispatch({
+      type: "error",
+      message: msg,
+      title: "Error",
       position: "topL",
     });
   };
@@ -98,11 +108,10 @@ const Home = () => {
   // };
 
   useEffect(() => {
-    async function updateReviewDetails() {
-      if (selectedOrg) {
+    async function updateVotes() {
+      if (isWeb3Enabled) {
         const ethers = Moralis.web3Library;
-
-        const org = selectedOrg;
+        const org = selectedOrg ? selectedOrg : orgs[0];
         const reviews = org.Reviews;
 
         await Promise.all(
@@ -121,12 +130,10 @@ const Home = () => {
           })
         );
         org.Reviews = reviews;
-        console.log(org);
-        setSelectedOrg(org);
       }
     }
-    updateReviewDetails();
-  }, [selectedTab, orgs, selectedOrg]);
+    updateVotes();
+  }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
 
   const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
@@ -142,12 +149,20 @@ const Home = () => {
         signer
       );
 
-      await appraiserOrganization.voteOnReview(account, reviewId, isUpvote);
+      if (isWeb3Enabled) {
+        const hasVoted = await appraiserOrganization.hasVoted(
+          account,
+          reviewId
+        );
+        console.log(hasVoted);
+      }
 
-      const uv = await appraiserOrganization.s_upvoteCount(reviewId);
-      const dv = await appraiserOrganization.s_downvoteCount(reviewId);
-      console.log(uv.toString(), dv.toString());
-      console.log("is upvote", isUpvote);
+      // try {
+      //   await appraiserOrganization.voteOnReview(account, reviewId, isUpvote);
+      // } catch (err) {
+      //   console.log(err);
+      //   handleErrorNotification(err);
+      // }
     }
   };
 
