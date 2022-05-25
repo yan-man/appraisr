@@ -345,19 +345,21 @@ const Home = () => {
               <div className="modalContent">
                 <img src={selectedOrg.Img} className="modalImg" alt=""></img>
 
-                <div className="modalPlayButton">
-                  <Button
-                    icon="chevronRightX2"
-                    text="See Reviews"
-                    theme="secondary"
-                    type="button"
-                    onClick={() => {
-                      setSelectedTab(2);
-                      setVisible(false);
-                    }}
-                  />
-                </div>
                 <div className="movieInfo">
+                  <div className="description">
+                    <div className="modalPlayButton">
+                      <Button
+                        icon="chevronRightX2"
+                        text="See Reviews"
+                        theme="secondary"
+                        type="button"
+                        onClick={() => {
+                          setSelectedTab(2);
+                          setVisible(false);
+                        }}
+                      />
+                    </div>
+                  </div>
                   <div className="description">
                     <Button
                       color="#6795b1"
