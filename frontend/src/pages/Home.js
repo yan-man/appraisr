@@ -17,36 +17,34 @@ import { useMoralis } from "react-moralis";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
-  const [selectedFilm, setSelectedFilm] = useState();
   const { isAuthenticated, Moralis, account } = useMoralis();
-  const [myReviews, setMyReviews] = useState();
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
 
-  useEffect(() => {
-    async function fetchReviews() {
-      // await Moralis.start({
-      //   serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
-      //   appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
-      // }); //if getting errors add this
+  // useEffect(() => {
+  //   async function fetchReviews() {
+  //     // await Moralis.start({
+  //     //   serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
+  //     //   appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
+  //     // }); //if getting errors add this
 
-      try {
-        //   const theList = await Moralis.Cloud.run("getMyList", {
-        //     addrs: account,
-        //   });
+  //     try {
+  //       //   const theList = await Moralis.Cloud.run("getMyList", {
+  //       //     addrs: account,
+  //       //   });
 
-        // const filterdA = movies.filter(function (e) {
-        //   return theList.indexOf(e.Name) > -1;
-        // });
+  //       // const filterdA = movies.filter(function (e) {
+  //       //   return theList.indexOf(e.Name) > -1;
+  //       // });
 
-        setMyReviews(orgs);
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  //       setMyReviews(orgs);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
 
-    fetchReviews();
-  }, [account]);
+  //   fetchReviews();
+  // }, [account]);
 
   const dispatch = useNotification();
 

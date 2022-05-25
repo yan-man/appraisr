@@ -1,5 +1,6 @@
 const { ethers } = require("hardhat");
-const orgs = require("../helpers/library.json");
+const helpersDir = __dirname + "/../frontend/src/helpers";
+const orgs = require(`${helpersDir}/library.json`);
 
 const deployInitialOrganizations = async (appraiser, reviewer) => {
   const signers = await ethers.getSigners();
@@ -126,20 +127,18 @@ const deployOrgs = async (appraiser, reviewer, users) => {
 
 function saveOrgsFrontendFiles(deployedOrgs) {
   const fs = require("fs");
-  const contractsDir = __dirname + "/../helpers";
 
   fs.writeFileSync(
-    contractsDir + "/library.json",
+    helpersDir + "/library.json",
     JSON.stringify(deployedOrgs, undefined, 2)
   );
 }
 
 function saveReviewsFrontendFiles(deployedOrgs) {
   const fs = require("fs");
-  const contractsDir = __dirname + "/../helpers";
 
   fs.writeFileSync(
-    contractsDir + "/library.json",
+    helpersDir + "/library.json",
     JSON.stringify(deployedOrgs, undefined, 2)
   );
 }
