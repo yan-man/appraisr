@@ -1,4 +1,5 @@
 const { ethers } = require("hardhat");
+const math = require("mathjs");
 const helpersDir = __dirname + "/../frontend/src/helpers";
 const orgs = require(`${helpersDir}/library.json`);
 
@@ -47,7 +48,7 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
 
           review.Author = user.address;
           review.reviewId = reviewId;
-          review.Timestamp = savedReview.unixtime;
+          review.Timestamp = savedReview.unixtime.toNumber();
 
           reviews.push(review);
 
@@ -57,6 +58,10 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
         })
       );
       o.Reviews = reviews;
+      const sum = reviews.reduce((total, next) => {
+        return total + Number(next.Rating);
+      }, 0);
+      o.AvgRating = math.divide(sum, reviews.length);
       updatedOrgs.push(o);
     })
   );

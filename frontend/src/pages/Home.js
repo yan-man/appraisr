@@ -11,9 +11,10 @@ import {
   Modal,
   useNotification,
 } from "web3uikit";
-import { orgs } from "../helpers/libraryOrgs";
+import { orgs } from "../helpers/library";
 import { useState } from "react";
 import { useMoralis } from "react-moralis";
+import { divide } from "mathjs";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
@@ -162,10 +163,13 @@ const Home = () => {
                     setVisible(false);
                   }}
                 />
-                <h1 style={{ color: "white" }}>
+                <h1 style={{ color: "#6795b1" }}>
                   {selectedOrg && selectedOrg.Name}
                 </h1>
-                Reviews
+                <h2 style={{ color: "#6795b1" }}>
+                  <em>{selectedOrg && selectedOrg.Description}</em>
+                </h2>
+                <p style={{ color: "white" }}>Reviews</p>
               </div>
               <>
                 <div className="ownThumbs">
@@ -175,7 +179,81 @@ const Home = () => {
                         <div className="review-card" key={index}>
                           <div className="review" style={{ margin: "0px" }}>
                             <p>Author: {r.Author}</p>
-                            <p>Rating: {r.Rating}</p>
+                            <p>Rating: {divide(r.Rating, 10)}</p>
+                            <p>Review: {r.Review}</p>
+                          </div>
+
+                          <div className="votes" style={{ display: "flex" }}>
+                            <div>
+                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
+                              <p
+                                onClick={() => {
+                                  voteOnReview(true);
+                                }}
+                              >
+                                {r.Upvotes}
+                              </p>
+                            </div>
+
+                            <div>
+                              <Icon
+                                fill="#ffffff"
+                                size={24}
+                                svg="triangleDown"
+                              />
+                              <p
+                                onClick={() => {
+                                  voteOnReview(false);
+                                }}
+                              >
+                                {r.Downvotes}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="">
+                      You need to select an organization to see reviews
+                    </div>
+                  )}
+                </div>
+              </>
+            </div>
+          </Tab>
+
+          <Tab tabKey={3} tabName={"MyReviews"}>
+            <div className="ownListContent">
+              <div className="title">
+                <Button
+                  icon="arrowCircleLeft"
+                  iconLayout="icon-only"
+                  className="backButton"
+                  size={60}
+                  onClick={() => {
+                    setSelectedTab(1);
+                    setSelectedOrg(orgs[0]);
+                    setVisible(false);
+                  }}
+                />
+                <h1 style={{ color: "#6795b1" }}>
+                  {selectedOrg && selectedOrg.Name}
+                </h1>
+                <h2 style={{ color: "#6795b1" }}>
+                  <em>{selectedOrg && selectedOrg.Description}</em>
+                </h2>
+                <p style={{ color: "white" }}>Reviews</p>
+              </div>
+              <>
+                <div className="ownThumbs">
+                  {selectedOrg && selectedOrg.Reviews ? (
+                    selectedOrg.Reviews.map((r, index) => {
+                      return (
+                        <div className="review-card" key={index}>
+                          <div className="review" style={{ margin: "0px" }}>
+                            <p>Author: {r.Author}</p>
+                            <p>Rating: {divide(r.Rating, 10)}</p>
                             <p>Review: {r.Review}</p>
                           </div>
 
@@ -250,7 +328,10 @@ const Home = () => {
                     Category:
                     <span className="deets">{selectedOrg.Category}</span>
                   </div>
-                  <div className="description" style={{ fontSize: "150%" }}>
+                  <div
+                    className="description"
+                    style={{ fontSize: "150%", color: "#6795b1" }}
+                  >
                     Avg Rating: {selectedOrg.AvgRating}
                   </div>
                 </div>

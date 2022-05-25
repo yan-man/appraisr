@@ -1,75 +1,64 @@
 [
   {
-    "URI": "s54URI",
-    "Name": "studio54",
-    "Description": "I'm Rick James.",
-    "Category": "Nightclub",
-    "AvgRating": 80,
-    "Admin": "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
-    "Reviews": [
-      {
-        "Author": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
-        "Rating": 45,
-        "Review": "I got kicked in the chest",
-        "Upvotes": 0,
-        "Downvotes": 0,
-        "reviewId": 1,
-        "Timestamp": {
-          "type": "BigNumber",
-          "hex": "0x628d8883"
-        }
-      },
-      {
-        "Author": "0x2546BcD3c84621e976D8185a91A922aE77ECEc30",
-        "Rating": 98,
-        "Review": "I played basketball with Prince",
-        "Upvotes": 0,
-        "Downvotes": 0,
-        "reviewId": 2,
-        "Timestamp": {
-          "type": "BigNumber",
-          "hex": "0x628d8884"
-        }
-      }
-    ],
-    "orgId": 0,
-    "AppraiserOrganization": "0x3Ca8f9C04c7e3E1624Ac2008F92f6F366A869444",
-    "Verifier": "0x8dAF17A20c9DBA35f005b6324F493785D239719d"
-  },
-  {
     "URI": "wacURI",
     "Name": "WacArnold's",
     "Description": "Big Wacs since 2003. 69,420 sold daily.",
     "Category": "Restaurant",
-    "Admin": "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+    "Admin": "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
     "Reviews": [
       {
-        "Author": "0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097",
+        "Author": "0x2546BcD3c84621e976D8185a91A922aE77ECEc30",
         "Rating": 23,
         "Review": "WacArnolds ruined my life!",
         "Upvotes": 0,
         "Downvotes": 0,
         "reviewId": 2,
-        "Timestamp": {
-          "type": "BigNumber",
-          "hex": "0x628d8886"
-        }
+        "Timestamp": 1653445996
       },
       {
-        "Author": "0xcd3B766CCDd6AE721141F452C550Ca635964ce71",
+        "Author": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
         "Rating": 86,
         "Review": "What are the top 5 restaurants of all time? WacArnolds, WacArnolds, WacArnolds, WacArnolds, and WacArnolds",
         "Upvotes": 0,
         "Downvotes": 0,
         "reviewId": 1,
-        "Timestamp": {
-          "type": "BigNumber",
-          "hex": "0x628d8885"
-        }
+        "Timestamp": 1653445995
+      }
+    ],
+    "orgId": 0,
+    "AppraiserOrganization": "0xFD7F5BeC90f797bfE5A9E73083efee1eb920E0B0",
+    "Verifier": "0xf7B9dc26255f3E15570C30E0d07207Dfcd43646f",
+    "AvgRating": 5.45
+  },
+  {
+    "URI": "s54URI",
+    "Name": "Studio 54",
+    "Description": "Frequented by Rick James.",
+    "Category": "Nightclub",
+    "AvgRating": 7.15,
+    "Admin": "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+    "Reviews": [
+      {
+        "Author": "0xcd3B766CCDd6AE721141F452C550Ca635964ce71",
+        "Rating": 98,
+        "Review": "I played basketball with Prince",
+        "Upvotes": 0,
+        "Downvotes": 0,
+        "reviewId": 1,
+        "Timestamp": 1653445997
+      },
+      {
+        "Author": "0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097",
+        "Rating": 45,
+        "Review": "I got kicked in the chest",
+        "Upvotes": 0,
+        "Downvotes": 0,
+        "reviewId": 2,
+        "Timestamp": 1653445998
       }
     ],
     "orgId": 1,
-    "AppraiserOrganization": "0x35dd738E306d32f2709824B6f744f188DA01D3C5",
-    "Verifier": "0x7e2d5FCC5E02cBF2b9f860052C0226104E23F9c7"
+    "AppraiserOrganization": "0x6D5d3fF7F24128389D77fb90E36bcfc08dA67fA6",
+    "Verifier": "0xF1B8d9714F66739Ad09D87B6Baf5638E6Cec4FF5"
   }
 ]
