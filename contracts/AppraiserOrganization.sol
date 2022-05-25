@@ -21,9 +21,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
     // state vars
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     mapping(uint256 => Reviews.Review) public s_reviews; // reviewId -> Review
-    mapping(uint256 => mapping(address => bool)) s_upvotes; // reviewId -> (voting address -> isVoted)
+    mapping(uint256 => mapping(address => bool)) public s_upvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
-    mapping(uint256 => mapping(address => bool)) s_downvotes; // reviewId -> (voting address -> isVoted)
+    mapping(uint256 => mapping(address => bool)) public s_downvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_downvoteCount; // reviewId -> # downvotes
 
     Counters.Counter private _s_reviewIds;

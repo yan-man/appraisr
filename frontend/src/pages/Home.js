@@ -13,11 +13,11 @@ import {
 } from "web3uikit";
 import { savedOrgs } from "../helpers/library";
 import { useState } from "react";
-import { useMoralis, useNativeBalance } from "react-moralis";
+import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 import { divide } from "mathjs";
 import contractAddress from "../contracts/contract-address.json";
 // import appraiser_abi from "../contracts/Appraiser.json";
-// import reviewer_abi from "../contracts/Reviewer.json";
+import reviewer_abi from "../contracts/Reviewer.json";
 import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 
 const Home = () => {
@@ -26,67 +26,19 @@ const Home = () => {
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
-  const [web3Provider, setWeb3Provider] = useState();
-
-  // useEffect(() => {
-  //   async function fetchReviews() {
-  //     // await Moralis.start({
-  //     //   serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
-  //     //   appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
-  //     // }); //if getting errors add this
-
-  //     try {
-  //       //   const theList = await Moralis.Cloud.run("getMyList", {
-  //       //     addrs: account,
-  //       //   });
-
-  //       // const filterdA = movies.filter(function (e) {
-  //       //   return theList.indexOf(e.Name) > -1;
-  //       // });
-
-  //       setMyReviews(orgs);
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-
-  //   fetchReviews();
-  // }, [account]);
-
-  useEffect(() => {
-    async function initWeb3Moralis() {
-      try {
-        const web3Provider = await Moralis.enableWeb3();
-        setWeb3Provider(web3Provider);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    initWeb3Moralis();
-  }, [Moralis]);
-
-  console.log(user);
-  console.log(account);
+  const contractProcessor = useWeb3ExecuteFunction();
 
   useEffect(() => {
     async function updateReviewDetails() {
-      const ethers = Moralis.web3Library;
-
       await Promise.all(
         orgs.map(async (org) => {
-          const appraiserOrganization = new ethers.Contract(
-            org.AppraiserOrganization,
-            appraiserOrganization_abi.abi,
-            ethers.getDefaultProvider("http://localhost:8545")
-          );
-          org.NumRatings =
-            (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+          org.NumRatings = org.Reviews.length;
         })
       );
       setOrgs(orgs);
     }
     updateReviewDetails();
-  }, [orgs, Moralis, web3Provider]);
+  }, [orgs]);
   const dispatch = useNotification();
 
   const handleNewNotification = () => {
@@ -107,10 +59,46 @@ const Home = () => {
     });
   };
 
-  const voteOnReview = (isUpvote) => {
+  const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
       handleNewNotification();
     } else {
+      console.log(account);
+
+      // let options = {
+      //   contractAddress: contractAddress.Reviewer,
+      //   functionName: "voteOnReview",
+      //   abi: reviewer_abi.abi,
+      //   params: {
+      //     orgId_: selectedOrg.orgId,
+      //     reviewId_: reviewId,
+      //     isUpvote_: isUpvote,
+      //   },
+      //   msgValue: Moralis.Units.ETH(0),
+      // };
+
+      // await contractProcessor.fetch({
+      //   params: options,
+      //   onSuccess: () => {
+      //     console.log("success");
+      //   },
+      // });
+
+      const web3Provider = await Moralis.enableWeb3();
+      const ethers = Moralis.web3Library;
+
+      const appraiserOrganization = new ethers.Contract(
+        selectedOrg.AppraiserOrganization,
+        appraiserOrganization_abi.abi,
+        web3Provider
+      );
+
+      const review = await appraiserOrganization.s_reviews(reviewId);
+
+      const uv = await appraiserOrganization.s_upvoteCount(reviewId);
+      const dv = await appraiserOrganization.s_downvoteCount(reviewId);
+      console.log(uv.toString(), dv.toString());
+
       if (isUpvote) {
         console.log("upvote");
       } else {
@@ -221,30 +209,26 @@ const Home = () => {
                           </div>
 
                           <div className="votes" style={{ display: "flex" }}>
-                            <div>
+                            <div
+                              onClick={async () => {
+                                await voteOnReview(r.reviewId, true);
+                              }}
+                            >
                               <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(true);
-                                }}
-                              >
-                                {r.Upvotes}
-                              </p>
+                              <p>{r.Upvotes}</p>
                             </div>
 
-                            <div>
+                            <div
+                              onClick={async () => {
+                                await voteOnReview(r.reviewId, false);
+                              }}
+                            >
                               <Icon
                                 fill="#ffffff"
                                 size={24}
                                 svg="triangleDown"
                               />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(false);
-                                }}
-                              >
-                                {r.Downvotes}
-                              </p>
+                              <p>{r.Downvotes}</p>
                             </div>
                           </div>
                         </div>
@@ -282,55 +266,6 @@ const Home = () => {
                 </h2>
                 <p style={{ color: "white" }}>Reviews</p>
               </div>
-              <>
-                <div className="ownThumbs">
-                  {selectedOrg && selectedOrg.Reviews ? (
-                    selectedOrg.Reviews.map((r, index) => {
-                      return (
-                        <div className="review-card" key={index}>
-                          <div className="review" style={{ margin: "0px" }}>
-                            <p>Author: {r.Author}</p>
-                            <p>Rating: {divide(r.Rating, 10)}</p>
-                            <p>Review: {r.Review}</p>
-                          </div>
-
-                          <div className="votes" style={{ display: "flex" }}>
-                            <div>
-                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(true);
-                                }}
-                              >
-                                {r.Upvotes}
-                              </p>
-                            </div>
-
-                            <div>
-                              <Icon
-                                fill="#ffffff"
-                                size={24}
-                                svg="triangleDown"
-                              />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(false);
-                                }}
-                              >
-                                {r.Downvotes}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="">
-                      You need to select an organization to view reviews
-                    </div>
-                  )}
-                </div>
-              </>
             </div>
           </Tab>
         </TabList>
