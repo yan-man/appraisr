@@ -8,25 +8,33 @@
     "Admin": "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
     "Reviews": [
       {
-        "Author": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
-        "Rating": 98,
-        "Review": "I played basketball with Prince",
-        "Upvotes": 0,
-        "Downvotes": 0,
-        "reviewId": 1
-      },
-      {
         "Author": "0x2546BcD3c84621e976D8185a91A922aE77ECEc30",
         "Rating": 45,
         "Review": "I got kicked in the chest",
         "Upvotes": 0,
         "Downvotes": 0,
-        "reviewId": 2
+        "reviewId": 2,
+        "Timestamp": {
+          "type": "BigNumber",
+          "hex": "0x628d77d5"
+        }
+      },
+      {
+        "Author": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+        "Rating": 98,
+        "Review": "I played basketball with Prince",
+        "Upvotes": 0,
+        "Downvotes": 0,
+        "reviewId": 1,
+        "Timestamp": {
+          "type": "BigNumber",
+          "hex": "0x628d77d4"
+        }
       }
     ],
     "orgId": 0,
-    "AppraiserOrganization": "0xc55f708C51e9407B09E195085AE3C017F56CD1d3",
-    "Verifier": "0x951ba25F6Afd833B6839DFA70524179ef7A278D3"
+    "AppraiserOrganization": "0xd1f8C3b3C9C63a7a7f0dCFd20ae9053A04182db1",
+    "Verifier": "0xcafCfdF4517F504a473469F3723e674413EE9bce"
   },
   {
     "URI": "wacURI",
@@ -41,7 +49,11 @@
         "Review": "What are the top 5 restaurants of all time? WacArnolds, WacArnolds, WacArnolds, WacArnolds, and WacArnolds",
         "Upvotes": 0,
         "Downvotes": 0,
-        "reviewId": 1
+        "reviewId": 1,
+        "Timestamp": {
+          "type": "BigNumber",
+          "hex": "0x628d77d6"
+        }
       },
       {
         "Author": "0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097",
@@ -49,11 +61,15 @@
         "Review": "WacArnolds ruined my life!",
         "Upvotes": 0,
         "Downvotes": 0,
-        "reviewId": 2
+        "reviewId": 2,
+        "Timestamp": {
+          "type": "BigNumber",
+          "hex": "0x628d77d7"
+        }
       }
     ],
     "orgId": 1,
-    "AppraiserOrganization": "0x829ae9e630219fd88975Bfb81aFe43fA034C49a0",
-    "Verifier": "0xC79b5E0144570a8ec0F6634dbe95769c4521f42D"
+    "AppraiserOrganization": "0x85D5167b09Da44b882103B0CA90153055ffFF06a",
+    "Verifier": "0x738AA5a01c7Df7E2Bc12722252989B5d019Fe24B"
   }
 ]
