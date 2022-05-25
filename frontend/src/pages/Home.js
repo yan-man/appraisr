@@ -22,7 +22,7 @@ import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
-  const { isAuthenticated, Moralis, account, executeFunction } = useMoralis();
+  const { isAuthenticated, Moralis, account } = useMoralis();
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
@@ -67,24 +67,22 @@ const Home = () => {
 
   useEffect(() => {
     async function updateReviewDetails() {
-      if (web3Provider) {
-        const org = selectedOrg ? selectedOrg : orgs[0];
-        const index = orgs.findIndex((object) => {
-          return object.orgId === org.orgId;
-        });
-        const ethers = Moralis.web3Library;
-        const appraiserOrganization = new ethers.Contract(
-          org.AppraiserOrganization,
-          appraiserOrganization_abi.abi,
-          web3Provider
-        );
-        org.NumRatings =
-          (await appraiserOrganization.currentReviewId()).toNumber() - 1;
-
-        setSelectedOrg(org);
-        orgs[index] = org;
-        setOrgs(orgs);
-      }
+      const org = selectedOrg ? selectedOrg : orgs[0];
+      const index = orgs.findIndex((object) => {
+        return object.orgId === org.orgId;
+      });
+      const ethers = Moralis.web3Library;
+      const appraiserOrganization = new ethers.Contract(
+        org.AppraiserOrganization,
+        appraiserOrganization_abi.abi,
+        web3Provider
+      );
+      org.NumRatings =
+        (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+      // console.log(org.NumRatings);
+      setSelectedOrg(org);
+      orgs[index] = org;
+      setOrgs(orgs);
     }
     updateReviewDetails();
   }, [selectedOrg, orgs, Moralis, web3Provider]);
