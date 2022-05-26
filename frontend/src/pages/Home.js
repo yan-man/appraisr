@@ -218,40 +218,47 @@ const Home = () => {
   const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
       handleNewNotification();
-    } else {
-      const ethers = Moralis.web3Library;
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-
-      const appraiserOrganization = new ethers.Contract(
-        orgs[selectedOrgId.id].AppraiserOrganization,
-        appraiserOrganization_abi.abi,
-        signer
-      );
-
-      if (isWeb3Enabled) {
-        const hasVoted = await appraiserOrganization.hasVoted(
-          account,
-          reviewId
-        );
-        if (!hasVoted) {
-          const tx = await appraiserOrganization.voteOnReview(
-            account,
-            reviewId,
-            isUpvote
-          );
-          const receipt = await tx.wait();
-          if (receipt.status === 0) {
-            handleErrorNotification("Unknown error");
-          } else {
-            // handleVoteNotification();
-            await updateReviews();
-          }
-        } else {
-          handleErrorNotification("You've already voted on this review");
-        }
-      }
+      return;
     }
+
+    const ethers = Moralis.web3Library;
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    const appraiserOrganization = new ethers.Contract(
+      orgs[selectedOrgId.id].AppraiserOrganization,
+      appraiserOrganization_abi.abi,
+      signer
+    );
+
+    if (
+      orgs[selectedOrgId.id].Reviews[reviewId - 1].Author.toLowerCase() ===
+      account.toLowerCase()
+    ) {
+      handleErrorNotification(
+        "C'mon bruh, you can't vote on your own review..."
+      );
+      return;
+    }
+
+    const hasVoted = await appraiserOrganization.hasVoted(account, reviewId);
+    if (hasVoted) {
+      handleErrorNotification("You've already voted on this review");
+      return;
+    }
+
+    const tx = await appraiserOrganization.voteOnReview(
+      account,
+      reviewId,
+      isUpvote
+    );
+    const receipt = await tx.wait();
+    if (receipt.status === 0) {
+      handleErrorNotification("Unknown error");
+      return;
+    }
+
+    await updateReviews();
   };
 
   const mintReview = async (data) => {
