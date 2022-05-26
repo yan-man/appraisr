@@ -58,8 +58,15 @@ const Home = () => {
   useEffect(() => {
     async function updateReviewDetails() {
       const newOrgs = [...orgs];
-      await Promise.all(newOrgs.map(async (org) => {}));
-      setMyReviews(newOrgs);
+      await Promise.all(
+        newOrgs.map(async (org) => {
+          org.NumRatings = org.Reviews.length;
+          const sum = org.Reviews.reduce((total, next) => {
+            return total + Number(next.Rating);
+          }, 0);
+          org.AvgRating = round(divide(sum, org.Reviews.length), 1);
+        })
+      );
     }
     updateReviewDetails();
   }, []);
@@ -78,15 +85,15 @@ const Home = () => {
           const reviews = org.Reviews.filter((o) => {
             return o.Author.toLowerCase() === account;
           });
-          myReviews = myReviews.concat(
-            org.Reviews.filter((o) => {
-              return o.Author.toLowerCase() === account;
-            })
-          );
+          reviews.map((r) => {
+            r.org = org;
+            return r;
+          });
+          myReviews = myReviews.concat(reviews);
           return;
         })
       );
-      // console.log(myReviews);
+      console.log(myReviews);
       setMyReviews(myReviews);
     }
     updateMyReviews();
@@ -401,67 +408,127 @@ const Home = () => {
                 </h2>
                 <p style={{ color: "white" }}>Reviews</p>
               </div>
-              <>
-                <div className="ownThumbs">
-                  {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
-                    orgs[selectedOrgId.id].Reviews.map((r, index) => {
-                      return (
-                        <div
-                          className="review-card"
-                          key={index}
-                          style={{ maxWidth: "500px" }}
-                        >
-                          {r.IsVerified && (
-                            <div>
-                              <Icon fill="#21BF96" size={24} svg="check" />
-                            </div>
-                          )}
-
-                          <div className="review" style={{ margin: "0px" }}>
-                            <p style={{ paddingBottom: "20px" }}>
-                              Author: {r.Author}
-                            </p>
-                            <p>Rating: {divide(r.Rating, 10)} / 10</p>
-                            <p>Review: {r.Review}</p>
+              <div className="ownThumbs">
+                {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
+                  orgs[selectedOrgId.id].Reviews.map((r, index) => {
+                    return (
+                      <div
+                        className="review-card"
+                        key={index}
+                        style={{ maxWidth: "500px" }}
+                      >
+                        {r.IsVerified && (
+                          <div>
+                            <Icon fill="#21BF96" size={24} svg="check" />
                           </div>
-                          <div className="votes" style={{ display: "flex" }}>
-                            <div
-                              onClick={async () => {
-                                await voteOnReview(r.reviewId, true);
-                              }}
-                            >
-                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              <p>{r.Upvotes}</p>
-                            </div>
+                        )}
 
-                            <div
-                              onClick={async () => {
-                                await voteOnReview(r.reviewId, false);
-                              }}
-                            >
-                              <Icon
-                                fill="#ffffff"
-                                size={24}
-                                svg="triangleDown"
-                              />
-                              <p>{r.Downvotes}</p>
-                            </div>
+                        <div className="review" style={{ margin: "0px" }}>
+                          <p style={{ paddingBottom: "20px" }}>
+                            Author:{" "}
+                            {account && r.Author.toLowerCase() === account
+                              ? `ME (${r.Author})`
+                              : r.Author}
+                          </p>
+                          <p>Rating: {divide(r.Rating, 10)} / 10</p>
+                          <p>Review: {r.Review}</p>
+                        </div>
+                        <div className="votes" style={{ display: "flex" }}>
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, true);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleUp" />
+                            <p>{r.Upvotes}</p>
+                          </div>
+
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, false);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleDown" />
+                            <p>{r.Downvotes}</p>
                           </div>
                         </div>
-                      );
-                    })
-                  ) : (
-                    <div className="">
-                      You need to select an organization to see reviews
-                    </div>
-                  )}
-                </div>
-              </>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="">
+                    You need to select an organization to see reviews
+                  </div>
+                )}
+              </div>
             </div>
           </Tab>
 
           <Tab tabKey={3} tabName={"MyReviews"} isDisabled={!isAuthenticated}>
-            <div className="ownListContent"></div>
+            <div className="ownListContent">
+              <div className="title">
+                <Button
+                  icon="arrowCircleLeft"
+                  iconLayout="icon-only"
+                  className="backButton"
+                  size={60}
+                  onClick={() => {
+                    setVisible(false);
+                    setFormVisible(false);
+                    setSelectedTab(1);
+                  }}
+                />
+                <h1 style={{ color: "#6795b1" }}>My Reviews</h1>
+              </div>
+              <div className="ownThumbs">
+                {myReviews && myReviews ? (
+                  myReviews.map((r, index) => {
+                    return (
+                      <div
+                        className="review-card"
+                        key={index}
+                        style={{ maxWidth: "500px" }}
+                      >
+                        {r.IsVerified && (
+                          <div>
+                            <Icon fill="#21BF96" size={24} svg="check" />
+                          </div>
+                        )}
+
+                        <div className="review" style={{ margin: "0px" }}>
+                          <p style={{ paddingBottom: "20px" }}>{r.org.Name}</p>
+                          <p>Rating: {divide(r.Rating, 10)} / 10</p>
+                          <p>Review: {r.Review}</p>
+                        </div>
+                        <div className="votes" style={{ display: "flex" }}>
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, true);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleUp" />
+                            <p>{r.Upvotes}</p>
+                          </div>
+
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, false);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleDown" />
+                            <p>{r.Downvotes}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="">
+                    You need to select an organization to see reviews
+                  </div>
+                )}
+              </div>
+            </div>
           </Tab>
         </TabList>
         {selectedOrgId && (
