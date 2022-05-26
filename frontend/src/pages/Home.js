@@ -58,7 +58,6 @@ const Home = () => {
   useEffect(() => {
     async function updateReviewDetails() {
       const newOrgs = [...orgs];
-      console.log(newOrgs, savedOrgs);
       await Promise.all(
         newOrgs.map(async (org) => {
           org.NumRatings = org.Reviews.length;
@@ -68,6 +67,7 @@ const Home = () => {
           org.AvgRating = round(divide(sum, org.Reviews.length), 2);
         })
       );
+
       setOrgs(newOrgs);
     }
     updateReviewDetails();
@@ -133,13 +133,93 @@ const Home = () => {
       position: "topL",
     });
   };
+
+  async function updateOrgs() {
+    console.log("updateOrgs");
+
+    const ethers = Moralis.web3Library;
+    let signer;
+    if (isWeb3Enabled) {
+      signer = Moralis.web3;
+    } else {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+    }
+
+    const newOrgs = [...orgs];
+    await Promise.all(
+      newOrgs.map(async (org, index) => {
+        const reviews = [...org.Reviews];
+
+        const appraiserOrganization = new ethers.Contract(
+          org.AppraiserOrganization,
+          appraiserOrganization_abi.abi,
+          signer
+        );
+
+        const expectedReviews =
+          (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+        const expectedIds = Array.from(
+          { length: expectedReviews },
+          (_, i) => i + 1
+        );
+
+        const reviewIds = reviews.map((r) => r.reviewId);
+        const expectedReviewIds = expectedIds.filter(
+          doesNotContainsExistingIds(reviewIds)
+        );
+
+        // add new reviews
+        if (expectedReviewIds.length !== 0) {
+          expectedReviewIds.map(async (reviewId) => {
+            const { author, id, isVerified, rating, review, unixtime } = {
+              ...(await appraiserOrganization.s_reviews(reviewId)),
+            };
+            reviews.push({
+              Author: author,
+              Rating: rating.toNumber(),
+              Review: review,
+              reviewId: id.toNumber(),
+              Timestamp: unixtime.toNumber(),
+              IsVerified: isVerified,
+            });
+          });
+        }
+
+        await Promise.all(
+          reviews.map(async (review, index) => {
+            review.Upvotes = (
+              await appraiserOrganization.s_upvoteCount(review.reviewId)
+            ).toNumber();
+            review.Downvotes = (
+              await appraiserOrganization.s_downvoteCount(review.reviewId)
+            ).toNumber();
+            return review;
+          })
+        );
+        console.log(reviews, org.orgId);
+        org.Reviews = reviews;
+        org.NumRatings = org.Reviews.length;
+        const sum = reviews.reduce((total, next) => {
+          return total + Number(next.Rating);
+        }, 0);
+        org.AvgRating = round(divide(sum, org.Reviews.length), 2);
+
+        return org;
+      })
+    );
+    console.log(newOrgs[0].Reviews);
+    setOrgs(newOrgs);
+  }
+  useEffect(() => {
+    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
   const updateReviews = async () => {
     console.log("updateReviews");
 
     const ethers = Moralis.web3Library;
     let signer;
     if (isWeb3Enabled) {
-      console.log("isWeb3Enabled");
       signer = Moralis.web3;
     } else {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -173,89 +253,13 @@ const Home = () => {
     }, 0);
     org.AvgRating = round(divide(sum, reviews.length), 2);
 
-    console.log(org.orgId, org.Reviews);
-
     const newOrgs = [...orgs];
-    newOrgs[newOrgs.findIndex((o) => o.orgId === org.orgId)] = org;
-
+    const ind = newOrgs.findIndex((o) => o.orgId === org.orgId);
+    newOrgs[ind] = { ...org };
     setOrgs(newOrgs);
   };
   useEffect(() => {
     updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
-  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
-
-  async function updateOrgs() {
-    console.log("updateOrgs");
-
-    const ethers = Moralis.web3Library;
-    let signer;
-    if (isWeb3Enabled) {
-      console.log("isWeb3Enabled");
-      signer = Moralis.web3;
-    } else {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      signer = provider.getSigner();
-    }
-
-    const newOrgs = [...orgs];
-    Promise.all(
-      newOrgs.map(async (org, index) => {
-        const appraiserOrganization = new ethers.Contract(
-          org.AppraiserOrganization,
-          appraiserOrganization_abi.abi,
-          signer
-        );
-
-        const expectedReviews =
-          (await appraiserOrganization.currentReviewId()).toNumber() - 1;
-        const expectedIds = Array.from(
-          { length: expectedReviews },
-          (_, i) => i + 1
-        );
-
-        const reviewIds = org.Reviews.map((r) => r.reviewId);
-        const expectedReviewIds = expectedIds.filter(
-          doesNotContainsExistingIds(reviewIds)
-        );
-
-        console.log(org.orgId, reviewIds, expectedReviewIds);
-
-        // add new reviews
-        if (expectedReviewIds.length !== 0) {
-          expectedReviewIds.map(async (reviewId) => {
-            const { author, id, isVerified, rating, review, unixtime } = {
-              ...(await appraiserOrganization.s_reviews(reviewId)),
-            };
-
-            org.Reviews.push({
-              Author: author,
-              Rating: rating.toNumber(),
-              Review: review,
-              reviewId: id.toNumber(),
-              Timestamp: unixtime.toNumber(),
-              IsVerified: isVerified,
-            });
-          });
-        }
-
-        Promise.all(
-          org.Reviews.map(async (review, index) => {
-            review.Upvotes = (
-              await appraiserOrganization.s_upvoteCount(review.reviewId)
-            ).toNumber();
-            review.Downvotes = (
-              await appraiserOrganization.s_downvoteCount(review.reviewId)
-            ).toNumber();
-            return review;
-          })
-        );
-        // console.log(org.Reviews);
-      })
-    );
-    setOrgs(newOrgs);
-  }
-  useEffect(() => {
-    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
   }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
 
   function doesNotContainsExistingIds(reviewIds) {
@@ -373,7 +377,7 @@ const Home = () => {
                     Avg Rating: {round(divide(orgs[0].AvgRating, 10), 2)}
                   </h2>
                   <p className="sceneDesc">
-                    Total Reviews: {orgs[0].NumRatings}
+                    Total Reviews: {orgs[0].Reviews.length}
                   </p>
                   <div className="playButton">
                     <Button
