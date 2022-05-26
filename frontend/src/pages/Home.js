@@ -19,6 +19,7 @@ import { divide, round } from "mathjs";
 import contractAddress from "../contracts/contract-address.json";
 // import appraiser_abi from "../contracts/Appraiser.json";
 import reviewer_abi from "../contracts/Reviewer.json";
+import verifier_abi from "../contracts/Verifier.json";
 import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 import { useInterval } from "../helpers/utils";
 
@@ -34,6 +35,7 @@ const Home = () => {
   // const [delay, setDelay] = useState(5000);
   const [myReviews, setMyReviews] = useState();
   // const contractProcessor = useWeb3ExecuteFunction();
+  const [verifierTokens, setVerifierTokens] = useState(0);
 
   // useEffect(() => {
   //   async function updateWeb3Provider() {
@@ -262,6 +264,39 @@ const Home = () => {
     updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
   }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
 
+  const updateMyVerifierTokens = async () => {
+    console.log("updateMyVerifierTokens");
+
+    if (!selectedOrgId || !account) return;
+
+    const ethers = Moralis.web3Library;
+    let signer;
+    if (isWeb3Enabled) {
+      signer = Moralis.web3;
+    } else {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+    }
+
+    const org = orgs[selectedOrgId.id];
+    const verifier = new ethers.Contract(
+      org.Verifier,
+      verifier_abi.abi,
+      signer
+    );
+    const myTokens = (await verifier.balanceOf(account, 0)).toNumber();
+    setVerifierTokens(myTokens);
+  };
+  useEffect(() => {
+    updateMyVerifierTokens(
+      selectedTab,
+      selectedOrgId,
+      Moralis,
+      isWeb3Enabled,
+      visible
+    );
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
+
   function doesNotContainsExistingIds(reviewIds) {
     return (r) => {
       return !reviewIds.includes(r);
@@ -289,7 +324,7 @@ const Home = () => {
       account.toLowerCase()
     ) {
       handleErrorNotification(
-        "C'mon bruh, you can't vote on your own review..."
+        "C'mon bruh, you can't upvote your own review..."
       );
       return;
     }
@@ -439,6 +474,9 @@ const Home = () => {
                   <em>{selectedOrgId && orgs[selectedOrgId.id].Description}</em>
                 </h2>
                 <p style={{ color: "white" }}>Reviews</p>
+                <p style={{ color: "green" }}>
+                  My Verifier Tokens: {verifierTokens}{" "}
+                </p>
               </div>
               <div className="ownThumbs">
                 {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
@@ -528,7 +566,9 @@ const Home = () => {
                         <div className="votes" style={{ display: "flex" }}>
                           <div
                             onClick={async () => {
-                              await voteOnReview(r.reviewId, true);
+                              handleErrorNotification(
+                                "C'mon bruh, you can't vote on your own review..."
+                              );
                             }}
                           >
                             <Icon fill="#ffffff" size={24} svg="triangleUp" />
@@ -537,7 +577,9 @@ const Home = () => {
 
                           <div
                             onClick={async () => {
-                              await voteOnReview(r.reviewId, false);
+                              handleErrorNotification(
+                                "C'mon bruh, you can't upvote your own review..."
+                              );
                             }}
                           >
                             <Icon fill="#ffffff" size={24} svg="triangleDown" />
