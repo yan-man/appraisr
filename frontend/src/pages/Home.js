@@ -197,7 +197,7 @@ const Home = () => {
             return review;
           })
         );
-        console.log(reviews, org.orgId);
+        // console.log(reviews, org.orgId);
         org.Reviews = reviews;
         org.NumRatings = org.Reviews.length;
         const sum = reviews.reduce((total, next) => {
@@ -208,7 +208,7 @@ const Home = () => {
         return org;
       })
     );
-    console.log(newOrgs[0].Reviews);
+    // console.log(newOrgs[0].Reviews);
     setOrgs(newOrgs);
   }
   useEffect(() => {
