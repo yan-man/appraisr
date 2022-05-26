@@ -64,7 +64,7 @@ const Home = () => {
           const sum = org.Reviews.reduce((total, next) => {
             return total + Number(next.Rating);
           }, 0);
-          org.AvgRating = round(divide(sum, org.Reviews.length), 1);
+          org.AvgRating = round(divide(sum, org.Reviews.length), 2);
         })
       );
     }
@@ -93,7 +93,7 @@ const Home = () => {
           return;
         })
       );
-      console.log(myReviews);
+      // console.log(myReviews);
       setMyReviews(myReviews);
     }
     updateMyReviews();
@@ -162,7 +162,7 @@ const Home = () => {
       const sum = reviews.reduce((total, next) => {
         return total + Number(next.Rating);
       }, 0);
-      org.AvgRating = round(divide(sum, reviews.length), 1);
+      org.AvgRating = round(divide(sum, reviews.length), 2);
 
       const newOrgs = [...orgs];
       newOrgs[org.orgId] = org;
@@ -292,6 +292,8 @@ const Home = () => {
   const mintReview = async (data) => {
     console.log("mint review");
 
+    if (data.data.length !== 2) return false;
+
     const ethers = Moralis.web3Library;
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
@@ -307,9 +309,15 @@ const Home = () => {
       data.data[0].inputResult
     );
     const receipt = await tx.wait();
+
+    // console.log(await reviewer.s_reviews(orgs[selectedOrgId.id].orgId, 3));
+    // console.log(await reviewer.s_reviews(orgs[selectedOrgId.id].orgId, 4));
+
     if (receipt.status === 0) {
       handleErrorNotification("Unknown error");
+      return;
     } else {
+      // console.log(receipt.events);
       handleMintReviewNotification();
       await updateOrgs();
       setSelectedOrgId({ id: 0 });
@@ -342,7 +350,7 @@ const Home = () => {
                   <img className="sceneLogo" src={orgs[0].Logo} alt=""></img>
                   <p className="sceneDesc">{orgs[0].Description}</p>
                   <h2 className="rating">
-                    Avg Rating: {round(divide(orgs[0].AvgRating, 10), 1)}
+                    Avg Rating: {round(divide(orgs[0].AvgRating, 10), 2)}
                   </h2>
                   <p className="sceneDesc">
                     Total Reviews: {orgs[0].NumRatings}
@@ -569,9 +577,12 @@ const Home = () => {
                       iconLayout="icon-only"
                       id="add-review"
                       onClick={() => {
+                        if (!isAuthenticated) {
+                          handleNewNotification();
+                          return;
+                        }
                         setFormVisible(true);
                         setVisible(false);
-                        setFormVisible(true);
                       }}
                       radius={20}
                       theme="colored"
@@ -591,7 +602,8 @@ const Home = () => {
                     className="description"
                     style={{ fontSize: "150%", color: "#6795b1" }}
                   >
-                    Avg Rating: {orgs[selectedOrgId.id].AvgRating}
+                    Avg Rating:{" "}
+                    {round(divide(orgs[selectedOrgId.id].AvgRating, 10), 2)}
                   </div>
                   <div className="description">
                     Total Reviews: {orgs[selectedOrgId.id].NumRatings}
