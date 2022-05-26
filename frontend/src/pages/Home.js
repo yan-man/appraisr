@@ -27,7 +27,7 @@ const Home = () => {
   const [formVisible, setFormVisible] = useState(false);
   const { isAuthenticated, Moralis, isWeb3Enabled, account, user } =
     useMoralis();
-  const [selectedOrg, setSelectedOrg] = useState();
+  const [selectedOrgId, setSelectedOrgId] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
   const [web3Provider, setWeb3Provider] = useState();
@@ -104,7 +104,7 @@ const Home = () => {
   const updateVotes = async () => {
     if (isWeb3Enabled) {
       const ethers = Moralis.web3Library;
-      const org = selectedOrg ? selectedOrg : orgs[0];
+      const org = selectedOrgId ? orgs[selectedOrgId.id] : orgs[0];
       const reviews = org.Reviews;
 
       await Promise.all(
@@ -131,8 +131,8 @@ const Home = () => {
     }
   };
   useEffect(() => {
-    updateVotes(selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled);
-  }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
+    updateVotes(selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled);
+  }, [selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled]);
 
   async function updateReviews() {
     if (isWeb3Enabled) {
@@ -191,8 +191,8 @@ const Home = () => {
     }
   }
   useEffect(() => {
-    updateReviews(selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled);
-  }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
+    updateReviews(selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled);
+  }, [selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled]);
 
   function doesNotContainsExistingIds(reviewIds) {
     return (r) => {
@@ -209,7 +209,7 @@ const Home = () => {
       const signer = provider.getSigner();
 
       const appraiserOrganization = new ethers.Contract(
-        selectedOrg.AppraiserOrganization,
+        orgs[selectedOrgId.id].AppraiserOrganization,
         appraiserOrganization_abi.abi,
         signer
       );
@@ -252,7 +252,7 @@ const Home = () => {
       signer
     );
     const tx = await reviewer.mintReview(
-      selectedOrg.orgId,
+      orgs[selectedOrgId.id].orgId,
       data.data[1].inputResult,
       data.data[0].inputResult
     );
@@ -300,7 +300,7 @@ const Home = () => {
                       theme="secondary"
                       type="button"
                       onClick={() => {
-                        setSelectedOrg(orgs[0]);
+                        setSelectedOrgId({ id: 0 });
                         setSelectedTab(2);
                         setVisible(false);
                         setFormVisible(false);
@@ -321,7 +321,7 @@ const Home = () => {
                       src={e.Img}
                       className="thumbnail"
                       onClick={() => {
-                        setSelectedOrg(e);
+                        setSelectedOrgId({ id: e.orgId });
                         setVisible(true);
                       }}
                       key={index}
@@ -348,17 +348,17 @@ const Home = () => {
                   }}
                 />
                 <h1 style={{ color: "#6795b1" }}>
-                  {selectedOrg && selectedOrg.Name}
+                  {selectedOrgId && orgs[selectedOrgId.id].Name}
                 </h1>
                 <h2 style={{ color: "#6795b1" }}>
-                  <em>{selectedOrg && selectedOrg.Description}</em>
+                  <em>{selectedOrgId && orgs[selectedOrgId.id].Description}</em>
                 </h2>
                 <p style={{ color: "white" }}>Reviews</p>
               </div>
               <>
                 <div className="ownThumbs">
-                  {selectedOrg && selectedOrg.Reviews ? (
-                    selectedOrg.Reviews.map((r, index) => {
+                  {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
+                    orgs[selectedOrgId.id].Reviews.map((r, index) => {
                       return (
                         <div className="review-card" key={index}>
                           <div className="review" style={{ margin: "0px" }}>
@@ -407,7 +407,7 @@ const Home = () => {
             <div className="ownListContent"></div>
           </Tab>
         </TabList>
-        {selectedOrg && (
+        {selectedOrgId && (
           <div className="modal">
             <Modal
               onCloseButtonPressed={() => setVisible(false)}
@@ -416,7 +416,11 @@ const Home = () => {
               width="120vh"
             >
               <div className="modalContent">
-                <img src={selectedOrg.Img} className="modalImg" alt=""></img>
+                <img
+                  src={orgs[selectedOrgId.id].Img}
+                  className="modalImg"
+                  alt=""
+                ></img>
 
                 <div className="movieInfo">
                   <div className="description">
@@ -451,20 +455,22 @@ const Home = () => {
                     />
                   </div>
                   <div className="description" style={{ textAlign: "center" }}>
-                    {selectedOrg.Description}
+                    {orgs[selectedOrgId.id].Description}
                   </div>
                   <div className="description">
                     Category:
-                    <span className="deets">{selectedOrg.Category}</span>
+                    <span className="deets">
+                      {orgs[selectedOrgId.id].Category}
+                    </span>
                   </div>
                   <div
                     className="description"
                     style={{ fontSize: "150%", color: "#6795b1" }}
                   >
-                    Avg Rating: {selectedOrg.AvgRating}
+                    Avg Rating: {orgs[selectedOrgId.id].AvgRating}
                   </div>
                   <div className="description">
-                    Total Reviews: {selectedOrg.NumRatings}
+                    Total Reviews: {orgs[selectedOrgId.id].NumRatings}
                   </div>
                 </div>
               </div>
@@ -476,7 +482,11 @@ const Home = () => {
               width="1000px"
             >
               <div className="modalContent">
-                <img src={selectedOrg.Img} className="modalImg" alt=""></img>
+                <img
+                  src={orgs[selectedOrgId.id].Img}
+                  className="modalImg"
+                  alt=""
+                ></img>
 
                 <div className="movieInfo">
                   <div className="description">
