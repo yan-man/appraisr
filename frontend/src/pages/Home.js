@@ -45,24 +45,26 @@ const Home = () => {
   //   updateWeb3Provider();
   // }, [Moralis]);
 
-  const updateReviewInfo = async () => {
-    console.log("poll");
-    await updateVotes();
-    await updateReviews();
-  };
-  useInterval(updateReviewInfo, delay);
+  // const updateReviewInfo = async () => {
+  //   console.log("poll");
+  //   await updateVotes();
+  //   await updateReviews();
+  // };
+  // useInterval(updateReviewInfo, 0);
 
   useEffect(() => {
     async function updateReviewDetails() {
+      const newOrgs = [...orgs];
       await Promise.all(
-        orgs.map(async (org) => {
+        newOrgs.map(async (org) => {
           org.NumRatings = org.Reviews.length;
         })
       );
-      setOrgs(orgs);
+      // console.log(newOrgs);
+      setOrgs(newOrgs);
     }
     updateReviewDetails();
-  }, [orgs]);
+  }, []);
 
   const dispatch = useNotification();
 
@@ -104,7 +106,9 @@ const Home = () => {
   const updateVotes = async () => {
     if (isWeb3Enabled) {
       const ethers = Moralis.web3Library;
-      const org = selectedOrgId ? orgs[selectedOrgId.id] : orgs[0];
+      const org = selectedOrgId
+        ? { ...orgs[selectedOrgId.id] }
+        : { ...orgs[0] };
       const reviews = org.Reviews;
 
       await Promise.all(
@@ -125,20 +129,22 @@ const Home = () => {
       org.NumRatings = org.Reviews.length;
       org.Reviews = reviews;
 
-      // orgs[org.orgId] = org;
-      // setOrgs(orgs);
-      // setSelectedOrg(org);
+      const newOrgs = [...orgs];
+      newOrgs[org.orgId] = org;
+
+      setOrgs(newOrgs);
     }
   };
   useEffect(() => {
-    updateVotes(selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled);
-  }, [selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled]);
+    updateVotes(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
 
   async function updateReviews() {
     if (isWeb3Enabled) {
       const ethers = Moralis.web3Library;
+      const newOrgs = [...orgs];
       Promise.all(
-        orgs.map(async (org, index) => {
+        newOrgs.map(async (org, index) => {
           const appraiserOrganization = new ethers.Contract(
             org.AppraiserOrganization,
             appraiserOrganization_abi.abi,
@@ -187,12 +193,13 @@ const Home = () => {
         })
       );
 
+      // console.log(newOrgs);
       setOrgs(orgs);
     }
   }
   useEffect(() => {
-    updateReviews(selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled);
-  }, [selectedTab, orgs, selectedOrgId, Moralis, isWeb3Enabled]);
+    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
 
   function doesNotContainsExistingIds(reviewIds) {
     return (r) => {
