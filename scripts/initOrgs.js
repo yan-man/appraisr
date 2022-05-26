@@ -55,6 +55,7 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
           console.log(
             `Review for ${o.Name} given by ${review.Author} ("${review.Review}", Rating = ${review.Rating})`
           );
+          return review;
         })
       );
       o.Reviews = reviews;

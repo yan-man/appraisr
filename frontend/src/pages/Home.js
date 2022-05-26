@@ -13,108 +13,163 @@ import {
 } from "web3uikit";
 import { savedOrgs } from "../helpers/library";
 import { useState } from "react";
-import { useMoralis, useNativeBalance } from "react-moralis";
+import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 import { divide } from "mathjs";
 import contractAddress from "../contracts/contract-address.json";
 // import appraiser_abi from "../contracts/Appraiser.json";
-// import reviewer_abi from "../contracts/Reviewer.json";
+import reviewer_abi from "../contracts/Reviewer.json";
 import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
-  const { isAuthenticated, Moralis, account, user } = useMoralis();
+  const { isAuthenticated, Moralis, isWeb3Enabled, account, user } =
+    useMoralis();
   const [selectedOrg, setSelectedOrg] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
   const [web3Provider, setWeb3Provider] = useState();
+  // const contractProcessor = useWeb3ExecuteFunction();
 
   // useEffect(() => {
-  //   async function fetchReviews() {
-  //     // await Moralis.start({
-  //     //   serverUrl: "https://k9yyldx5xvzu.usemoralis.com:2053/server",
-  //     //   appId: "oMKicmpBkHvbWnIGOzzqfHH8Rci6qRu7QXMRNF0f",
-  //     // }); //if getting errors add this
-
-  //     try {
-  //       //   const theList = await Moralis.Cloud.run("getMyList", {
-  //       //     addrs: account,
-  //       //   });
-
-  //       // const filterdA = movies.filter(function (e) {
-  //       //   return theList.indexOf(e.Name) > -1;
-  //       // });
-
-  //       setMyReviews(orgs);
-  //     } catch (error) {
-  //       console.error(error);
+  //   async function updateWeb3Provider() {
+  //     if (!Moralis.web3._isProvider) {
+  //       const web3Provider = await Moralis.enableWeb3();
+  //       console.log(web3Provider);
+  //       // setWeb3Provider();
   //     }
   //   }
-
-  //   fetchReviews();
-  // }, [account]);
-
-  useEffect(() => {
-    async function initWeb3Moralis() {
-      try {
-        const web3Provider = await Moralis.enableWeb3();
-        setWeb3Provider(web3Provider);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    initWeb3Moralis();
-  }, [Moralis]);
-
-  console.log(user);
-  console.log(account);
+  //   updateWeb3Provider();
+  // }, [Moralis]);
 
   useEffect(() => {
     async function updateReviewDetails() {
-      const ethers = Moralis.web3Library;
-
       await Promise.all(
         orgs.map(async (org) => {
-          const appraiserOrganization = new ethers.Contract(
-            org.AppraiserOrganization,
-            appraiserOrganization_abi.abi,
-            ethers.getDefaultProvider("http://localhost:8545")
-          );
-          org.NumRatings =
-            (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+          org.NumRatings = org.Reviews.length;
         })
       );
       setOrgs(orgs);
     }
     updateReviewDetails();
-  }, [orgs, Moralis, web3Provider]);
+  }, [orgs]);
   const dispatch = useNotification();
 
   const handleNewNotification = () => {
     dispatch({
       type: "error",
-      message: "Pleaser Connect Your Crypto Wallet",
+      message: "Please Connect Your Crypto Wallet",
       title: "Not Authenticated",
       position: "topL",
     });
   };
 
-  const handleAddNotification = () => {
+  const handleErrorNotification = (msg) => {
+    dispatch({
+      type: "error",
+      message: " " + msg,
+      title: "Error",
+      position: "topL",
+    });
+  };
+
+  const handleUpvotedNotification = () => {
     dispatch({
       type: "success",
-      message: "Movie Added to List",
+      message: " Saved your vote!",
       title: "Success",
       position: "topL",
     });
   };
 
-  const voteOnReview = (isUpvote) => {
+  // const updateVotes = async (reviewId) => {
+  //   const web3Provider = await Moralis.enableWeb3();
+  //   const ethers = Moralis.web3Library;
+
+  //   const org = selectedOrg ? selectedOrg : orgs[0];
+  //   const reviews = org.Reviews;
+
+  //   await Promise.all(
+  //     reviews.map(async (review, index) => {
+  //       const appraiserOrganization = new ethers.Contract(
+  //         org.AppraiserOrganization,
+  //         appraiserOrganization_abi.abi,
+  //         web3Provider
+  //       );
+  //       review.Upvotes = (
+  //         await appraiserOrganization.s_upvoteCount(reviewId)
+  //       ).toString();
+  //       review.Downvotes = (
+  //         await appraiserOrganization.s_downvoteCount(reviewId)
+  //       ).toString();
+  //     })
+  //   );
+  //   org.Reviews = reviews;
+  //   setSelectedOrg(org);
+  // };
+
+  useEffect(() => {
+    async function updateVotes() {
+      if (isWeb3Enabled) {
+        const ethers = Moralis.web3Library;
+        const org = selectedOrg ? selectedOrg : orgs[0];
+        const reviews = org.Reviews;
+
+        await Promise.all(
+          reviews.map(async (review, index) => {
+            const appraiserOrganization = new ethers.Contract(
+              org.AppraiserOrganization,
+              appraiserOrganization_abi.abi,
+              Moralis.web3
+            );
+            review.Upvotes = (
+              await appraiserOrganization.s_upvoteCount(review.reviewId)
+            ).toString();
+            review.Downvotes = (
+              await appraiserOrganization.s_downvoteCount(review.reviewId)
+            ).toString();
+          })
+        );
+        org.Reviews = reviews;
+        console.log(orgs);
+      }
+    }
+    updateVotes();
+  }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
+
+  const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
       handleNewNotification();
     } else {
-      if (isUpvote) {
-        console.log("upvote");
-      } else {
-        console.log("downvote");
+      const ethers = Moralis.web3Library;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const appraiserOrganization = new ethers.Contract(
+        selectedOrg.AppraiserOrganization,
+        appraiserOrganization_abi.abi,
+        signer
+      );
+
+      if (isWeb3Enabled) {
+        const hasVoted = await appraiserOrganization.hasVoted(
+          account,
+          reviewId
+        );
+        if (!hasVoted) {
+          const tx = await appraiserOrganization.voteOnReview(
+            account,
+            reviewId,
+            isUpvote
+          );
+          const receipt = await tx.wait();
+          if (receipt.status === 0) {
+            handleErrorNotification("Unknown error");
+          } else {
+            handleUpvotedNotification();
+          }
+        } else {
+          handleErrorNotification("You've already voted on this review");
+        }
       }
     }
   };
@@ -133,9 +188,10 @@ const Home = () => {
           defaultActiveKey={selectedTab}
           tabStyle="bar"
           onChange={(selectedKey) => {
-            if (selectedKey === 2) {
-              setSelectedTab(2);
-            }
+            // console.log("change", selectedKey);
+            // if (selectedKey === 2) {
+            //   setSelectedTab(2);
+            // }
           }}
         >
           <Tab tabKey={1} tabName={"Organizations"}>
@@ -159,6 +215,7 @@ const Home = () => {
                         setSelectedOrg(orgs[0]);
                         setSelectedTab(2);
                         setVisible(false);
+                        // updateVotes(1);
                       }}
                     />
                   </div>
@@ -198,6 +255,7 @@ const Home = () => {
                     setSelectedTab(1);
                     setSelectedOrg(orgs[0]);
                     setVisible(false);
+                    // updateVotes(1);
                   }}
                 />
                 <h1 style={{ color: "#6795b1" }}>
@@ -221,30 +279,26 @@ const Home = () => {
                           </div>
 
                           <div className="votes" style={{ display: "flex" }}>
-                            <div>
+                            <div
+                              onClick={async () => {
+                                await voteOnReview(r.reviewId, true);
+                              }}
+                            >
                               <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(true);
-                                }}
-                              >
-                                {r.Upvotes}
-                              </p>
+                              <p>{r.Upvotes}</p>
                             </div>
 
-                            <div>
+                            <div
+                              onClick={async () => {
+                                await voteOnReview(r.reviewId, false);
+                              }}
+                            >
                               <Icon
                                 fill="#ffffff"
                                 size={24}
                                 svg="triangleDown"
                               />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(false);
-                                }}
-                              >
-                                {r.Downvotes}
-                              </p>
+                              <p>{r.Downvotes}</p>
                             </div>
                           </div>
                         </div>
@@ -282,55 +336,6 @@ const Home = () => {
                 </h2>
                 <p style={{ color: "white" }}>Reviews</p>
               </div>
-              <>
-                <div className="ownThumbs">
-                  {selectedOrg && selectedOrg.Reviews ? (
-                    selectedOrg.Reviews.map((r, index) => {
-                      return (
-                        <div className="review-card" key={index}>
-                          <div className="review" style={{ margin: "0px" }}>
-                            <p>Author: {r.Author}</p>
-                            <p>Rating: {divide(r.Rating, 10)}</p>
-                            <p>Review: {r.Review}</p>
-                          </div>
-
-                          <div className="votes" style={{ display: "flex" }}>
-                            <div>
-                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(true);
-                                }}
-                              >
-                                {r.Upvotes}
-                              </p>
-                            </div>
-
-                            <div>
-                              <Icon
-                                fill="#ffffff"
-                                size={24}
-                                svg="triangleDown"
-                              />
-                              <p
-                                onClick={() => {
-                                  voteOnReview(false);
-                                }}
-                              >
-                                {r.Downvotes}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="">
-                      You need to select an organization to view reviews
-                    </div>
-                  )}
-                </div>
-              </>
             </div>
           </Tab>
         </TabList>

@@ -21,9 +21,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
     // state vars
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     mapping(uint256 => Reviews.Review) public s_reviews; // reviewId -> Review
-    mapping(uint256 => mapping(address => bool)) s_upvotes; // reviewId -> (voting address -> isVoted)
+    mapping(uint256 => mapping(address => bool)) public s_upvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
-    mapping(uint256 => mapping(address => bool)) s_downvotes; // reviewId -> (voting address -> isVoted)
+    mapping(uint256 => mapping(address => bool)) public s_downvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_downvoteCount; // reviewId -> # downvotes
 
     Counters.Counter private _s_reviewIds;
@@ -141,16 +141,14 @@ contract AppraiserOrganization is ERC1155, Ownable {
         emit LogNFTReviewVote(reviewId_);
     }
 
-    function hasVoted(
-        address reviewer_,
-        uint256 reviewId_,
-        bool isUpvote_
-    ) external view returns (bool) {
-        if (isUpvote_ == true) {
-            return s_upvotes[reviewId_][reviewer_];
-        } else {
-            return s_downvotes[reviewId_][reviewer_];
-        }
+    function hasVoted(address reviewer_, uint256 reviewId_)
+        external
+        view
+        returns (bool)
+    {
+        return
+            s_upvotes[reviewId_][reviewer_] ||
+            s_downvotes[reviewId_][reviewer_];
     }
 
     function currentReviewId() external view returns (uint256) {
