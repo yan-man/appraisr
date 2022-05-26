@@ -31,7 +31,8 @@ const Home = () => {
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
   const [web3Provider, setWeb3Provider] = useState();
-  const [delay, setDelay] = useState(5000);
+  // const [delay, setDelay] = useState(5000);
+  const [myReviews, setMyReviews] = useState();
   // const contractProcessor = useWeb3ExecuteFunction();
 
   // useEffect(() => {
@@ -52,25 +53,44 @@ const Home = () => {
   // };
   // useInterval(updateReviewInfo, 0);
 
+  const dispatch = useNotification();
+
   useEffect(() => {
     async function updateReviewDetails() {
       const newOrgs = [...orgs];
-      await Promise.all(
-        newOrgs.map(async (org) => {
-          org.NumRatings = org.Reviews.length;
-          const sum = org.Reviews.reduce((total, next) => {
-            return total + Number(next.Rating);
-          }, 0);
-          org.AvgRating = round(divide(sum, org.Reviews.length), 1);
-        })
-      );
-      // console.log(newOrgs);
-      setOrgs(newOrgs);
+      await Promise.all(newOrgs.map(async (org) => {}));
+      setMyReviews(newOrgs);
     }
     updateReviewDetails();
   }, []);
 
-  const dispatch = useNotification();
+  useEffect(() => {
+    async function updateMyReviews() {
+      if (!isAuthenticated) {
+        return;
+      }
+      let myReviews = [];
+      const newOrgs = [...orgs];
+      await Promise.all(
+        newOrgs.map(async (org) => {
+          // console.log(org);
+
+          const reviews = org.Reviews.filter((o) => {
+            return o.Author.toLowerCase() === account;
+          });
+          myReviews = myReviews.concat(
+            org.Reviews.filter((o) => {
+              return o.Author.toLowerCase() === account;
+            })
+          );
+          return;
+        })
+      );
+      // console.log(myReviews);
+      setMyReviews(myReviews);
+    }
+    updateMyReviews();
+  }, [orgs, isAuthenticated]);
 
   const handleNewNotification = () => {
     dispatch({
@@ -183,6 +203,7 @@ const Home = () => {
                 Review: review,
                 reviewId: id.toNumber(),
                 Timestamp: unixtime.toNumber(),
+                IsVerified: isVerified,
               });
             });
           }
@@ -284,6 +305,7 @@ const Home = () => {
     } else {
       handleMintReviewNotification();
       await updateOrgs();
+      setSelectedOrgId({ id: 0 });
     }
     setFormVisible(false);
   };
@@ -312,7 +334,9 @@ const Home = () => {
                   <img src={orgs[0].BgImg} className="sceneImg" alt=""></img>
                   <img className="sceneLogo" src={orgs[0].Logo} alt=""></img>
                   <p className="sceneDesc">{orgs[0].Description}</p>
-                  <h2 className="rating">Avg Rating: {orgs[0].AvgRating}</h2>
+                  <h2 className="rating">
+                    Avg Rating: {round(divide(orgs[0].AvgRating, 10), 1)}
+                  </h2>
                   <p className="sceneDesc">
                     Total Reviews: {orgs[0].NumRatings}
                   </p>
@@ -436,7 +460,7 @@ const Home = () => {
             </div>
           </Tab>
 
-          <Tab tabKey={3} tabName={"MyReviews"}>
+          <Tab tabKey={3} tabName={"MyReviews"} isDisabled={!isAuthenticated}>
             <div className="ownListContent"></div>
           </Tab>
         </TabList>
