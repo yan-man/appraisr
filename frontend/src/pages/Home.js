@@ -31,7 +31,8 @@ const Home = () => {
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
   const [web3Provider, setWeb3Provider] = useState();
-  const [delay, setDelay] = useState(5000);
+  // const [delay, setDelay] = useState(5000);
+  const [myReviews, setMyReviews] = useState();
   // const contractProcessor = useWeb3ExecuteFunction();
 
   // useEffect(() => {
@@ -52,6 +53,8 @@ const Home = () => {
   // };
   // useInterval(updateReviewInfo, 0);
 
+  const dispatch = useNotification();
+
   useEffect(() => {
     async function updateReviewDetails() {
       const newOrgs = [...orgs];
@@ -61,16 +64,39 @@ const Home = () => {
           const sum = org.Reviews.reduce((total, next) => {
             return total + Number(next.Rating);
           }, 0);
-          org.AvgRating = round(divide(sum, org.Reviews.length), 1);
+          org.AvgRating = round(divide(sum, org.Reviews.length), 2);
         })
       );
-      // console.log(newOrgs);
+
       setOrgs(newOrgs);
     }
     updateReviewDetails();
   }, []);
 
-  const dispatch = useNotification();
+  useEffect(() => {
+    async function updateMyReviews() {
+      if (!account) {
+        return;
+      }
+      let myReviews = [];
+      const newOrgs = [...orgs];
+      await Promise.all(
+        newOrgs.map(async (org) => {
+          const reviews = org.Reviews.filter((o) => {
+            return o.Author.toLowerCase() === account.toLowerCase();
+          });
+          reviews.map((r) => {
+            r.org = org;
+            return r;
+          });
+          myReviews = myReviews.concat(reviews);
+          return;
+        })
+      );
+      setMyReviews(myReviews);
+    }
+    updateMyReviews();
+  }, [orgs, isAuthenticated]);
 
   const handleNewNotification = () => {
     dispatch({
@@ -107,107 +133,134 @@ const Home = () => {
       position: "topL",
     });
   };
-  const updateReviews = async () => {
-    if (isWeb3Enabled) {
-      const ethers = Moralis.web3Library;
-      const org = selectedOrgId
-        ? { ...orgs[selectedOrgId.id] }
-        : { ...orgs[0] };
-      const reviews = org.Reviews;
-
-      await Promise.all(
-        reviews.map(async (review, index) => {
-          const appraiserOrganization = new ethers.Contract(
-            org.AppraiserOrganization,
-            appraiserOrganization_abi.abi,
-            Moralis.web3
-          );
-          review.Upvotes = (
-            await appraiserOrganization.s_upvoteCount(review.reviewId)
-          ).toString();
-          review.Downvotes = (
-            await appraiserOrganization.s_downvoteCount(review.reviewId)
-          ).toString();
-        })
-      );
-      org.NumRatings = org.Reviews.length;
-      org.Reviews = reviews;
-      const sum = reviews.reduce((total, next) => {
-        return total + Number(next.Rating);
-      }, 0);
-      org.AvgRating = round(divide(sum, reviews.length), 1);
-
-      const newOrgs = [...orgs];
-      newOrgs[org.orgId] = org;
-
-      setOrgs(newOrgs);
-    }
-  };
-  useEffect(() => {
-    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
-  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
 
   async function updateOrgs() {
+    console.log("updateOrgs");
+
+    const ethers = Moralis.web3Library;
+    let signer;
     if (isWeb3Enabled) {
-      const ethers = Moralis.web3Library;
-      const newOrgs = [...orgs];
-      Promise.all(
-        newOrgs.map(async (org, index) => {
-          const appraiserOrganization = new ethers.Contract(
-            org.AppraiserOrganization,
-            appraiserOrganization_abi.abi,
-            Moralis.web3
-          );
-
-          const expectedReviews =
-            (await appraiserOrganization.currentReviewId()).toNumber() - 1;
-          const expectedIds = Array.from(
-            { length: expectedReviews },
-            (_, i) => i + 1
-          );
-          const reviewIds = org.Reviews.map((r) => r.reviewId);
-          const expectedReviewIds = expectedIds.filter(
-            doesNotContainsExistingIds(reviewIds)
-          );
-
-          // add new reviews
-          if (expectedReviewIds.length !== 0) {
-            expectedReviewIds.map(async (reviewId) => {
-              const { author, id, isVerified, rating, review, unixtime } = {
-                ...(await appraiserOrganization.s_reviews(reviewId)),
-              };
-
-              org.Reviews.push({
-                Author: author,
-                Rating: rating.toNumber(),
-                Review: review,
-                reviewId: id.toNumber(),
-                Timestamp: unixtime.toNumber(),
-              });
-            });
-          }
-
-          Promise.all(
-            org.Reviews.map(async (review, index) => {
-              review.Upvotes = (
-                await appraiserOrganization.s_upvoteCount(review.reviewId)
-              ).toNumber();
-              review.Downvotes = (
-                await appraiserOrganization.s_downvoteCount(review.reviewId)
-              ).toNumber();
-              return review;
-            })
-          );
-        })
-      );
-
-      // console.log(newOrgs);
-      setOrgs(orgs);
+      signer = Moralis.web3;
+    } else {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
     }
+
+    const newOrgs = [...orgs];
+    await Promise.all(
+      newOrgs.map(async (org, index) => {
+        const reviews = [...org.Reviews];
+
+        const appraiserOrganization = new ethers.Contract(
+          org.AppraiserOrganization,
+          appraiserOrganization_abi.abi,
+          signer
+        );
+
+        const expectedReviews =
+          (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+        const expectedIds = Array.from(
+          { length: expectedReviews },
+          (_, i) => i + 1
+        );
+
+        const reviewIds = reviews.map((r) => r.reviewId);
+        const expectedReviewIds = expectedIds.filter(
+          doesNotContainsExistingIds(reviewIds)
+        );
+
+        // add new reviews
+        if (expectedReviewIds.length !== 0) {
+          expectedReviewIds.map(async (reviewId) => {
+            const { author, id, isVerified, rating, review, unixtime } = {
+              ...(await appraiserOrganization.s_reviews(reviewId)),
+            };
+            reviews.push({
+              Author: author,
+              Rating: rating.toNumber(),
+              Review: review,
+              reviewId: id.toNumber(),
+              Timestamp: unixtime.toNumber(),
+              IsVerified: isVerified,
+            });
+          });
+        }
+
+        await Promise.all(
+          reviews.map(async (review, index) => {
+            review.Upvotes = (
+              await appraiserOrganization.s_upvoteCount(review.reviewId)
+            ).toNumber();
+            review.Downvotes = (
+              await appraiserOrganization.s_downvoteCount(review.reviewId)
+            ).toNumber();
+            return review;
+          })
+        );
+        // console.log(reviews, org.orgId);
+        org.Reviews = reviews;
+        org.NumRatings = org.Reviews.length;
+        const sum = reviews.reduce((total, next) => {
+          return total + Number(next.Rating);
+        }, 0);
+        org.AvgRating = round(divide(sum, org.Reviews.length), 2);
+
+        return org;
+      })
+    );
+    // console.log(newOrgs[0].Reviews);
+    setOrgs(newOrgs);
   }
   useEffect(() => {
-    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
-  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
+    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
+  const updateReviews = async () => {
+    console.log("updateReviews");
+
+    const ethers = Moralis.web3Library;
+    let signer;
+    if (isWeb3Enabled) {
+      signer = Moralis.web3;
+    } else {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+    }
+
+    const org = selectedOrgId ? { ...orgs[selectedOrgId.id] } : { ...orgs[0] };
+    const reviews = [...org.Reviews];
+    await Promise.all(
+      reviews.map(async (review, index) => {
+        const appraiserOrganization = new ethers.Contract(
+          org.AppraiserOrganization,
+          appraiserOrganization_abi.abi,
+          signer
+        );
+        review.Upvotes = (
+          await appraiserOrganization.s_upvoteCount(review.reviewId)
+        ).toString();
+        review.Downvotes = (
+          await appraiserOrganization.s_downvoteCount(review.reviewId)
+        ).toString();
+        return review;
+      })
+    );
+
+    org.NumRatings = org.Reviews.length;
+    org.Reviews = reviews;
+
+    const sum = reviews.reduce((total, next) => {
+      return total + Number(next.Rating);
+    }, 0);
+    org.AvgRating = round(divide(sum, reviews.length), 2);
+
+    const newOrgs = [...orgs];
+    const ind = newOrgs.findIndex((o) => o.orgId === org.orgId);
+    newOrgs[ind] = { ...org };
+    setOrgs(newOrgs);
+  };
+  useEffect(() => {
+    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
 
   function doesNotContainsExistingIds(reviewIds) {
     return (r) => {
@@ -264,6 +317,8 @@ const Home = () => {
   const mintReview = async (data) => {
     console.log("mint review");
 
+    if (data.data.length !== 2) return false;
+
     const ethers = Moralis.web3Library;
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
@@ -279,11 +334,17 @@ const Home = () => {
       data.data[0].inputResult
     );
     const receipt = await tx.wait();
+
+    // console.log(await reviewer.s_reviews(orgs[selectedOrgId.id].orgId, 3));
+    // console.log(await reviewer.s_reviews(orgs[selectedOrgId.id].orgId, 4));
+
     if (receipt.status === 0) {
       handleErrorNotification("Unknown error");
+      return;
     } else {
+      // console.log(receipt.events);
       handleMintReviewNotification();
-      await updateOrgs();
+      setSelectedOrgId({ id: 0 });
     }
     setFormVisible(false);
   };
@@ -312,9 +373,11 @@ const Home = () => {
                   <img src={orgs[0].BgImg} className="sceneImg" alt=""></img>
                   <img className="sceneLogo" src={orgs[0].Logo} alt=""></img>
                   <p className="sceneDesc">{orgs[0].Description}</p>
-                  <h2 className="rating">Avg Rating: {orgs[0].AvgRating}</h2>
+                  <h2 className="rating">
+                    Avg Rating: {round(divide(orgs[0].AvgRating, 10), 2)}
+                  </h2>
                   <p className="sceneDesc">
-                    Total Reviews: {orgs[0].NumRatings}
+                    Total Reviews: {orgs[0].Reviews.length}
                   </p>
                   <div className="playButton">
                     <Button
@@ -377,67 +440,125 @@ const Home = () => {
                 </h2>
                 <p style={{ color: "white" }}>Reviews</p>
               </div>
-              <>
-                <div className="ownThumbs">
-                  {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
-                    orgs[selectedOrgId.id].Reviews.map((r, index) => {
-                      return (
-                        <div
-                          className="review-card"
-                          key={index}
-                          style={{ maxWidth: "500px" }}
-                        >
-                          {r.IsVerified && (
-                            <div>
-                              <Icon fill="#21BF96" size={24} svg="check" />
-                            </div>
-                          )}
-
-                          <div className="review" style={{ margin: "0px" }}>
-                            <p style={{ paddingBottom: "20px" }}>
-                              Author: {r.Author}
-                            </p>
-                            <p>Rating: {divide(r.Rating, 10)} / 10</p>
-                            <p>Review: {r.Review}</p>
+              <div className="ownThumbs">
+                {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
+                  orgs[selectedOrgId.id].Reviews.map((r, index) => {
+                    return (
+                      <div
+                        className="review-card"
+                        key={index}
+                        style={{ maxWidth: "500px" }}
+                      >
+                        <div className="review" style={{ margin: "0px" }}>
+                          <p style={{ paddingBottom: "20px" }}>
+                            Author:{" "}
+                            {account && r.Author.toLowerCase() === account
+                              ? `ME (${r.Author})`
+                              : r.Author}
+                          </p>
+                          <p>Rating: {divide(r.Rating, 10)} / 10</p>
+                          <p>Review: {r.Review}</p>
+                        </div>
+                        <div className="votes" style={{ display: "flex" }}>
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, true);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleUp" />
+                            <p>{r.Upvotes}</p>
                           </div>
-                          <div className="votes" style={{ display: "flex" }}>
-                            <div
-                              onClick={async () => {
-                                await voteOnReview(r.reviewId, true);
-                              }}
-                            >
-                              <Icon fill="#ffffff" size={24} svg="triangleUp" />
-                              <p>{r.Upvotes}</p>
-                            </div>
 
-                            <div
-                              onClick={async () => {
-                                await voteOnReview(r.reviewId, false);
-                              }}
-                            >
-                              <Icon
-                                fill="#ffffff"
-                                size={24}
-                                svg="triangleDown"
-                              />
-                              <p>{r.Downvotes}</p>
-                            </div>
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, false);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleDown" />
+                            <p>{r.Downvotes}</p>
                           </div>
                         </div>
-                      );
-                    })
-                  ) : (
-                    <div className="">
-                      You need to select an organization to see reviews
-                    </div>
-                  )}
-                </div>
-              </>
+                        {r.IsVerified && (
+                          <div>
+                            <Icon fill="#21BF96" size={24} svg="check" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="">
+                    You need to select an organization to see reviews
+                  </div>
+                )}
+              </div>
             </div>
           </Tab>
 
-          <Tab tabKey={3} tabName={"MyReviews"}>
-            <div className="ownListContent"></div>
+          <Tab tabKey={3} tabName={"MyReviews"} isDisabled={!isAuthenticated}>
+            <div className="ownListContent">
+              <div className="title">
+                <Button
+                  icon="arrowCircleLeft"
+                  iconLayout="icon-only"
+                  className="backButton"
+                  size={60}
+                  onClick={() => {
+                    setVisible(false);
+                    setFormVisible(false);
+                    setSelectedTab(1);
+                  }}
+                />
+                <h1 style={{ color: "#6795b1" }}>My Reviews</h1>
+              </div>
+              <div className="ownThumbs">
+                {myReviews && myReviews ? (
+                  myReviews.map((r, index) => {
+                    return (
+                      <div
+                        className="review-card"
+                        key={index}
+                        style={{ maxWidth: "500px" }}
+                      >
+                        <div className="review" style={{ margin: "0px" }}>
+                          <p style={{ paddingBottom: "20px" }}>{r.org.Name}</p>
+                          <p>Rating: {divide(r.Rating, 10)} / 10</p>
+                          <p>Review: {r.Review}</p>
+                        </div>
+                        <div className="votes" style={{ display: "flex" }}>
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, true);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleUp" />
+                            <p>{r.Upvotes}</p>
+                          </div>
+
+                          <div
+                            onClick={async () => {
+                              await voteOnReview(r.reviewId, false);
+                            }}
+                          >
+                            <Icon fill="#ffffff" size={24} svg="triangleDown" />
+                            <p>{r.Downvotes}</p>
+                          </div>
+                        </div>
+                        {r.IsVerified && (
+                          <div>
+                            <Icon fill="#21BF96" size={24} svg="check" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="">
+                    You need to select an organization to see reviews
+                  </div>
+                )}
+              </div>
+            </div>
           </Tab>
         </TabList>
         {selectedOrgId && (
@@ -478,9 +599,12 @@ const Home = () => {
                       iconLayout="icon-only"
                       id="add-review"
                       onClick={() => {
+                        if (!isAuthenticated) {
+                          handleNewNotification();
+                          return;
+                        }
                         setFormVisible(true);
                         setVisible(false);
-                        setFormVisible(true);
                       }}
                       radius={20}
                       theme="colored"
@@ -500,7 +624,8 @@ const Home = () => {
                     className="description"
                     style={{ fontSize: "150%", color: "#6795b1" }}
                   >
-                    Avg Rating: {orgs[selectedOrgId.id].AvgRating}
+                    Avg Rating:{" "}
+                    {round(divide(orgs[selectedOrgId.id].AvgRating, 10), 2)}
                   </div>
                   <div className="description">
                     Total Reviews: {orgs[selectedOrgId.id].NumRatings}
