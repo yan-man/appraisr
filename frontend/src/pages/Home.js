@@ -10,24 +10,28 @@ import {
   Button,
   Modal,
   useNotification,
+  Form,
 } from "web3uikit";
 import { savedOrgs } from "../helpers/library";
 import { useState } from "react";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
-import { divide } from "mathjs";
+import { divide, round } from "mathjs";
 import contractAddress from "../contracts/contract-address.json";
 // import appraiser_abi from "../contracts/Appraiser.json";
 import reviewer_abi from "../contracts/Reviewer.json";
 import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
+import { useInterval } from "../helpers/utils";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
   const { isAuthenticated, Moralis, isWeb3Enabled, account, user } =
     useMoralis();
-  const [selectedOrg, setSelectedOrg] = useState();
+  const [selectedOrgId, setSelectedOrgId] = useState();
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
   const [web3Provider, setWeb3Provider] = useState();
+  const [delay, setDelay] = useState(5000);
   // const contractProcessor = useWeb3ExecuteFunction();
 
   // useEffect(() => {
@@ -41,17 +45,31 @@ const Home = () => {
   //   updateWeb3Provider();
   // }, [Moralis]);
 
+  // const updateReviewInfo = async () => {
+  //   console.log("poll");
+  //   await updateVotes();
+  //   await updateOrgs();
+  // };
+  // useInterval(updateReviewInfo, 0);
+
   useEffect(() => {
     async function updateReviewDetails() {
+      const newOrgs = [...orgs];
       await Promise.all(
-        orgs.map(async (org) => {
+        newOrgs.map(async (org) => {
           org.NumRatings = org.Reviews.length;
+          const sum = org.Reviews.reduce((total, next) => {
+            return total + Number(next.Rating);
+          }, 0);
+          org.AvgRating = round(divide(sum, org.Reviews.length), 1);
         })
       );
-      setOrgs(orgs);
+      // console.log(newOrgs);
+      setOrgs(newOrgs);
     }
     updateReviewDetails();
-  }, [orgs]);
+  }, []);
+
   const dispatch = useNotification();
 
   const handleNewNotification = () => {
@@ -72,7 +90,7 @@ const Home = () => {
     });
   };
 
-  const handleUpvotedNotification = () => {
+  const handleVoteNotification = () => {
     dispatch({
       type: "success",
       message: " Saved your vote!",
@@ -81,60 +99,121 @@ const Home = () => {
     });
   };
 
-  // const updateVotes = async (reviewId) => {
-  //   const web3Provider = await Moralis.enableWeb3();
-  //   const ethers = Moralis.web3Library;
+  const handleMintReviewNotification = () => {
+    dispatch({
+      type: "success",
+      message: " Successfully saved your review!",
+      title: "Success",
+      position: "topL",
+    });
+  };
+  const updateReviews = async () => {
+    if (isWeb3Enabled) {
+      const ethers = Moralis.web3Library;
+      const org = selectedOrgId
+        ? { ...orgs[selectedOrgId.id] }
+        : { ...orgs[0] };
+      const reviews = org.Reviews;
 
-  //   const org = selectedOrg ? selectedOrg : orgs[0];
-  //   const reviews = org.Reviews;
+      await Promise.all(
+        reviews.map(async (review, index) => {
+          const appraiserOrganization = new ethers.Contract(
+            org.AppraiserOrganization,
+            appraiserOrganization_abi.abi,
+            Moralis.web3
+          );
+          review.Upvotes = (
+            await appraiserOrganization.s_upvoteCount(review.reviewId)
+          ).toString();
+          review.Downvotes = (
+            await appraiserOrganization.s_downvoteCount(review.reviewId)
+          ).toString();
+        })
+      );
+      org.NumRatings = org.Reviews.length;
+      org.Reviews = reviews;
+      const sum = reviews.reduce((total, next) => {
+        return total + Number(next.Rating);
+      }, 0);
+      org.AvgRating = round(divide(sum, reviews.length), 1);
 
-  //   await Promise.all(
-  //     reviews.map(async (review, index) => {
-  //       const appraiserOrganization = new ethers.Contract(
-  //         org.AppraiserOrganization,
-  //         appraiserOrganization_abi.abi,
-  //         web3Provider
-  //       );
-  //       review.Upvotes = (
-  //         await appraiserOrganization.s_upvoteCount(reviewId)
-  //       ).toString();
-  //       review.Downvotes = (
-  //         await appraiserOrganization.s_downvoteCount(reviewId)
-  //       ).toString();
-  //     })
-  //   );
-  //   org.Reviews = reviews;
-  //   setSelectedOrg(org);
-  // };
+      const newOrgs = [...orgs];
+      newOrgs[org.orgId] = org;
 
-  useEffect(() => {
-    async function updateVotes() {
-      if (isWeb3Enabled) {
-        const ethers = Moralis.web3Library;
-        const org = selectedOrg ? selectedOrg : orgs[0];
-        const reviews = org.Reviews;
-
-        await Promise.all(
-          reviews.map(async (review, index) => {
-            const appraiserOrganization = new ethers.Contract(
-              org.AppraiserOrganization,
-              appraiserOrganization_abi.abi,
-              Moralis.web3
-            );
-            review.Upvotes = (
-              await appraiserOrganization.s_upvoteCount(review.reviewId)
-            ).toString();
-            review.Downvotes = (
-              await appraiserOrganization.s_downvoteCount(review.reviewId)
-            ).toString();
-          })
-        );
-        org.Reviews = reviews;
-        console.log(orgs);
-      }
+      setOrgs(newOrgs);
     }
-    updateVotes();
-  }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
+  };
+  useEffect(() => {
+    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
+
+  async function updateOrgs() {
+    if (isWeb3Enabled) {
+      const ethers = Moralis.web3Library;
+      const newOrgs = [...orgs];
+      Promise.all(
+        newOrgs.map(async (org, index) => {
+          const appraiserOrganization = new ethers.Contract(
+            org.AppraiserOrganization,
+            appraiserOrganization_abi.abi,
+            Moralis.web3
+          );
+
+          const expectedReviews =
+            (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+          const expectedIds = Array.from(
+            { length: expectedReviews },
+            (_, i) => i + 1
+          );
+          const reviewIds = org.Reviews.map((r) => r.reviewId);
+          const expectedReviewIds = expectedIds.filter(
+            doesNotContainsExistingIds(reviewIds)
+          );
+
+          // add new reviews
+          if (expectedReviewIds.length !== 0) {
+            expectedReviewIds.map(async (reviewId) => {
+              const { author, id, isVerified, rating, review, unixtime } = {
+                ...(await appraiserOrganization.s_reviews(reviewId)),
+              };
+
+              org.Reviews.push({
+                Author: author,
+                Rating: rating.toNumber(),
+                Review: review,
+                reviewId: id.toNumber(),
+                Timestamp: unixtime.toNumber(),
+              });
+            });
+          }
+
+          Promise.all(
+            org.Reviews.map(async (review, index) => {
+              review.Upvotes = (
+                await appraiserOrganization.s_upvoteCount(review.reviewId)
+              ).toNumber();
+              review.Downvotes = (
+                await appraiserOrganization.s_downvoteCount(review.reviewId)
+              ).toNumber();
+              return review;
+            })
+          );
+        })
+      );
+
+      // console.log(newOrgs);
+      setOrgs(orgs);
+    }
+  }
+  useEffect(() => {
+    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
+
+  function doesNotContainsExistingIds(reviewIds) {
+    return (r) => {
+      return !reviewIds.includes(r);
+    };
+  }
 
   const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
@@ -145,7 +224,7 @@ const Home = () => {
       const signer = provider.getSigner();
 
       const appraiserOrganization = new ethers.Contract(
-        selectedOrg.AppraiserOrganization,
+        orgs[selectedOrgId.id].AppraiserOrganization,
         appraiserOrganization_abi.abi,
         signer
       );
@@ -165,13 +244,41 @@ const Home = () => {
           if (receipt.status === 0) {
             handleErrorNotification("Unknown error");
           } else {
-            handleUpvotedNotification();
+            // handleVoteNotification();
+            await updateReviews();
           }
         } else {
           handleErrorNotification("You've already voted on this review");
         }
       }
     }
+  };
+
+  const mintReview = async (data) => {
+    console.log("mint review");
+
+    const ethers = Moralis.web3Library;
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    const reviewer = new ethers.Contract(
+      contractAddress.Reviewer,
+      reviewer_abi.abi,
+      signer
+    );
+    const tx = await reviewer.mintReview(
+      orgs[selectedOrgId.id].orgId,
+      data.data[1].inputResult,
+      data.data[0].inputResult
+    );
+    const receipt = await tx.wait();
+    if (receipt.status === 0) {
+      handleErrorNotification("Unknown error");
+    } else {
+      handleMintReviewNotification();
+      await updateOrgs();
+    }
+    setFormVisible(false);
   };
 
   return (
@@ -188,10 +295,7 @@ const Home = () => {
           defaultActiveKey={selectedTab}
           tabStyle="bar"
           onChange={(selectedKey) => {
-            // console.log("change", selectedKey);
-            // if (selectedKey === 2) {
-            //   setSelectedTab(2);
-            // }
+            setSelectedTab(selectedKey);
           }}
         >
           <Tab tabKey={1} tabName={"Organizations"}>
@@ -212,9 +316,10 @@ const Home = () => {
                       theme="secondary"
                       type="button"
                       onClick={() => {
-                        setSelectedOrg(orgs[0]);
+                        setSelectedOrgId({ id: 0 });
                         setSelectedTab(2);
                         setVisible(false);
+                        setFormVisible(false);
                         // updateVotes(1);
                       }}
                     />
@@ -232,7 +337,7 @@ const Home = () => {
                       src={e.Img}
                       className="thumbnail"
                       onClick={() => {
-                        setSelectedOrg(e);
+                        setSelectedOrgId({ id: e.orgId });
                         setVisible(true);
                       }}
                       key={index}
@@ -252,26 +357,29 @@ const Home = () => {
                   className="backButton"
                   size={60}
                   onClick={() => {
-                    setSelectedTab(1);
-                    setSelectedOrg(orgs[0]);
                     setVisible(false);
-                    // updateVotes(1);
+                    setFormVisible(false);
+                    setSelectedTab(1);
                   }}
                 />
                 <h1 style={{ color: "#6795b1" }}>
-                  {selectedOrg && selectedOrg.Name}
+                  {selectedOrgId && orgs[selectedOrgId.id].Name}
                 </h1>
                 <h2 style={{ color: "#6795b1" }}>
-                  <em>{selectedOrg && selectedOrg.Description}</em>
+                  <em>{selectedOrgId && orgs[selectedOrgId.id].Description}</em>
                 </h2>
                 <p style={{ color: "white" }}>Reviews</p>
               </div>
               <>
                 <div className="ownThumbs">
-                  {selectedOrg && selectedOrg.Reviews ? (
-                    selectedOrg.Reviews.map((r, index) => {
+                  {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
+                    orgs[selectedOrgId.id].Reviews.map((r, index) => {
                       return (
-                        <div className="review-card" key={index}>
+                        <div
+                          className="review-card"
+                          key={index}
+                          style={{ maxWidth: "500px" }}
+                        >
                           <div className="review" style={{ margin: "0px" }}>
                             <p>Author: {r.Author}</p>
                             <p>Rating: {divide(r.Rating, 10)}</p>
@@ -315,40 +423,23 @@ const Home = () => {
           </Tab>
 
           <Tab tabKey={3} tabName={"MyReviews"}>
-            <div className="ownListContent">
-              <div className="title">
-                <Button
-                  icon="arrowCircleLeft"
-                  iconLayout="icon-only"
-                  className="backButton"
-                  size={60}
-                  onClick={() => {
-                    setSelectedTab(1);
-                    setSelectedOrg(orgs[0]);
-                    setVisible(false);
-                  }}
-                />
-                <h1 style={{ color: "#6795b1" }}>
-                  {selectedOrg && selectedOrg.Name}
-                </h1>
-                <h2 style={{ color: "#6795b1" }}>
-                  <em>{selectedOrg && selectedOrg.Description}</em>
-                </h2>
-                <p style={{ color: "white" }}>Reviews</p>
-              </div>
-            </div>
+            <div className="ownListContent"></div>
           </Tab>
         </TabList>
-        {selectedOrg && (
+        {selectedOrgId && (
           <div className="modal">
             <Modal
               onCloseButtonPressed={() => setVisible(false)}
               isVisible={visible}
               hasFooter={false}
-              width="1000px"
+              width="120vh"
             >
               <div className="modalContent">
-                <img src={selectedOrg.Img} className="modalImg" alt=""></img>
+                <img
+                  src={orgs[selectedOrgId.id].Img}
+                  className="modalImg"
+                  alt=""
+                ></img>
 
                 <div className="movieInfo">
                   <div className="description">
@@ -361,6 +452,7 @@ const Home = () => {
                         onClick={() => {
                           setSelectedTab(2);
                           setVisible(false);
+                          setFormVisible(false);
                         }}
                       />
                     </div>
@@ -371,27 +463,101 @@ const Home = () => {
                       icon="plus"
                       iconLayout="icon-only"
                       id="add-review"
-                      onClick={function noRefCheck() {}}
+                      onClick={() => {
+                        setFormVisible(true);
+                        setVisible(false);
+                        setFormVisible(true);
+                      }}
                       radius={20}
                       theme="colored"
                       type="button"
                     />
                   </div>
                   <div className="description" style={{ textAlign: "center" }}>
-                    {selectedOrg.Description}
+                    {orgs[selectedOrgId.id].Description}
                   </div>
                   <div className="description">
                     Category:
-                    <span className="deets">{selectedOrg.Category}</span>
+                    <span className="deets">
+                      {orgs[selectedOrgId.id].Category}
+                    </span>
                   </div>
                   <div
                     className="description"
                     style={{ fontSize: "150%", color: "#6795b1" }}
                   >
-                    Avg Rating: {selectedOrg.AvgRating}
+                    Avg Rating: {orgs[selectedOrgId.id].AvgRating}
                   </div>
                   <div className="description">
-                    Total Reviews: {selectedOrg.NumRatings}
+                    Total Reviews: {orgs[selectedOrgId.id].NumRatings}
+                  </div>
+                </div>
+              </div>
+            </Modal>
+            <Modal
+              onCloseButtonPressed={() => setFormVisible(false)}
+              isVisible={formVisible}
+              hasFooter={false}
+              width="1000px"
+            >
+              <div className="modalContent">
+                <img
+                  src={orgs[selectedOrgId.id].Img}
+                  className="modalImg"
+                  alt=""
+                ></img>
+
+                <div className="movieInfo">
+                  <div className="description">
+                    <Button
+                      color="#6795b1"
+                      icon="arrowCircleLeft"
+                      iconLayout="icon-only"
+                      id="add-review"
+                      onClick={() => {
+                        setFormVisible(false);
+                        setVisible(true);
+                      }}
+                      radius={20}
+                      theme="colored"
+                      type="button"
+                    />
+                  </div>
+                  <div
+                    className=""
+                    style={{ textAlign: "center", padding: "20px 50px" }}
+                  >
+                    <Form
+                      buttonConfig={{
+                        onClick: function noRefCheck() {},
+                        theme: "primary",
+                        text: "Save",
+                      }}
+                      data={[
+                        {
+                          inputWidth: "100%",
+                          name: "Review",
+                          type: "text",
+                          validation: {
+                            required: true,
+                          },
+                          value: "",
+                        },
+                        {
+                          name: "Rating from 1-100",
+                          type: "number",
+                          validation: {
+                            numberMax: 100,
+                            numberMin: 1,
+                            required: true,
+                          },
+                          value: "",
+                        },
+                      ]}
+                      onSubmit={(data) => {
+                        mintReview(data);
+                      }}
+                    />
                   </div>
                 </div>
               </div>

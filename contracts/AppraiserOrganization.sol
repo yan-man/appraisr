@@ -25,6 +25,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
     mapping(uint256 => mapping(address => bool)) public s_downvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_downvoteCount; // reviewId -> # downvotes
+    mapping(address => uint256[]) public s_userReviews; // author address -> [reviewIds]
 
     Counters.Counter private _s_reviewIds;
     Organizations.Organization private _s_organization;
@@ -118,6 +119,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
             isVerified: _isVerified
         });
         s_reviews[_reviewId] = review;
+        s_userReviews[reviewerAddr_].push(_reviewId);
         _s_reviewIds.increment();
 
         emit LogNFTReviewMinted(_reviewId);
