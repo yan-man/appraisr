@@ -164,4 +164,8 @@ contract AppraiserOrganization is ERC1155, Ownable {
     {
         return _s_organization;
     }
+
+    function numUserReviews(address author_) external view returns (uint256) {
+        return s_userReviews[author_].length;
+    }
 }
