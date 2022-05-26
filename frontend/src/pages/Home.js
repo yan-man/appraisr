@@ -15,7 +15,7 @@ import {
 import { savedOrgs } from "../helpers/library";
 import { useState } from "react";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
-import { divide } from "mathjs";
+import { divide, round } from "mathjs";
 import contractAddress from "../contracts/contract-address.json";
 // import appraiser_abi from "../contracts/Appraiser.json";
 import reviewer_abi from "../contracts/Reviewer.json";
@@ -48,7 +48,7 @@ const Home = () => {
   // const updateReviewInfo = async () => {
   //   console.log("poll");
   //   await updateVotes();
-  //   await updateReviews();
+  //   await updateOrgs();
   // };
   // useInterval(updateReviewInfo, 0);
 
@@ -58,6 +58,10 @@ const Home = () => {
       await Promise.all(
         newOrgs.map(async (org) => {
           org.NumRatings = org.Reviews.length;
+          const sum = org.Reviews.reduce((total, next) => {
+            return total + Number(next.Rating);
+          }, 0);
+          org.AvgRating = round(divide(sum, org.Reviews.length), 1);
         })
       );
       // console.log(newOrgs);
@@ -103,7 +107,7 @@ const Home = () => {
       position: "topL",
     });
   };
-  const updateVotes = async () => {
+  const updateReviews = async () => {
     if (isWeb3Enabled) {
       const ethers = Moralis.web3Library;
       const org = selectedOrgId
@@ -128,6 +132,10 @@ const Home = () => {
       );
       org.NumRatings = org.Reviews.length;
       org.Reviews = reviews;
+      const sum = reviews.reduce((total, next) => {
+        return total + Number(next.Rating);
+      }, 0);
+      org.AvgRating = round(divide(sum, reviews.length), 1);
 
       const newOrgs = [...orgs];
       newOrgs[org.orgId] = org;
@@ -136,10 +144,10 @@ const Home = () => {
     }
   };
   useEffect(() => {
-    updateVotes(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
+    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
   }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
 
-  async function updateReviews() {
+  async function updateOrgs() {
     if (isWeb3Enabled) {
       const ethers = Moralis.web3Library;
       const newOrgs = [...orgs];
@@ -171,10 +179,10 @@ const Home = () => {
 
               org.Reviews.push({
                 Author: author,
-                Rating: rating,
+                Rating: rating.toNumber(),
                 Review: review,
-                reviewId: id,
-                Timestamp: unixtime,
+                reviewId: id.toNumber(),
+                Timestamp: unixtime.toNumber(),
               });
             });
           }
@@ -198,7 +206,7 @@ const Home = () => {
     }
   }
   useEffect(() => {
-    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
+    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
   }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
 
   function doesNotContainsExistingIds(reviewIds) {
@@ -236,8 +244,8 @@ const Home = () => {
           if (receipt.status === 0) {
             handleErrorNotification("Unknown error");
           } else {
-            handleVoteNotification();
-            await updateVotes();
+            // handleVoteNotification();
+            await updateReviews();
           }
         } else {
           handleErrorNotification("You've already voted on this review");
@@ -268,6 +276,7 @@ const Home = () => {
       handleErrorNotification("Unknown error");
     } else {
       handleMintReviewNotification();
+      await updateOrgs();
     }
     setFormVisible(false);
   };
@@ -351,7 +360,6 @@ const Home = () => {
                     setVisible(false);
                     setFormVisible(false);
                     setSelectedTab(1);
-                    console.log("back");
                   }}
                 />
                 <h1 style={{ color: "#6795b1" }}>
@@ -367,7 +375,11 @@ const Home = () => {
                   {selectedOrgId && orgs[selectedOrgId.id].Reviews ? (
                     orgs[selectedOrgId.id].Reviews.map((r, index) => {
                       return (
-                        <div className="review-card" key={index}>
+                        <div
+                          className="review-card"
+                          key={index}
+                          style={{ maxWidth: "500px" }}
+                        >
                           <div className="review" style={{ margin: "0px" }}>
                             <p>Author: {r.Author}</p>
                             <p>Rating: {divide(r.Rating, 10)}</p>
