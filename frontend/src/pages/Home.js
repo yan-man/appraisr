@@ -58,6 +58,7 @@ const Home = () => {
   useEffect(() => {
     async function updateReviewDetails() {
       const newOrgs = [...orgs];
+      console.log(newOrgs, savedOrgs);
       await Promise.all(
         newOrgs.map(async (org) => {
           org.NumRatings = org.Reviews.length;
@@ -67,23 +68,22 @@ const Home = () => {
           org.AvgRating = round(divide(sum, org.Reviews.length), 2);
         })
       );
+      setOrgs(newOrgs);
     }
     updateReviewDetails();
   }, []);
 
   useEffect(() => {
     async function updateMyReviews() {
-      if (!isAuthenticated) {
+      if (!account) {
         return;
       }
       let myReviews = [];
       const newOrgs = [...orgs];
       await Promise.all(
         newOrgs.map(async (org) => {
-          // console.log(org);
-
           const reviews = org.Reviews.filter((o) => {
-            return o.Author.toLowerCase() === account;
+            return o.Author.toLowerCase() === account.toLowerCase();
           });
           reviews.map((r) => {
             r.org = org;
@@ -93,7 +93,6 @@ const Home = () => {
           return;
         })
       );
-      // console.log(myReviews);
       setMyReviews(myReviews);
     }
     updateMyReviews();
@@ -135,107 +134,129 @@ const Home = () => {
     });
   };
   const updateReviews = async () => {
+    console.log("updateReviews");
+
+    const ethers = Moralis.web3Library;
+    let signer;
     if (isWeb3Enabled) {
-      const ethers = Moralis.web3Library;
-      const org = selectedOrgId
-        ? { ...orgs[selectedOrgId.id] }
-        : { ...orgs[0] };
-      const reviews = org.Reviews;
-
-      await Promise.all(
-        reviews.map(async (review, index) => {
-          const appraiserOrganization = new ethers.Contract(
-            org.AppraiserOrganization,
-            appraiserOrganization_abi.abi,
-            Moralis.web3
-          );
-          review.Upvotes = (
-            await appraiserOrganization.s_upvoteCount(review.reviewId)
-          ).toString();
-          review.Downvotes = (
-            await appraiserOrganization.s_downvoteCount(review.reviewId)
-          ).toString();
-        })
-      );
-      org.NumRatings = org.Reviews.length;
-      org.Reviews = reviews;
-      const sum = reviews.reduce((total, next) => {
-        return total + Number(next.Rating);
-      }, 0);
-      org.AvgRating = round(divide(sum, reviews.length), 2);
-
-      const newOrgs = [...orgs];
-      newOrgs[org.orgId] = org;
-
-      setOrgs(newOrgs);
+      console.log("isWeb3Enabled");
+      signer = Moralis.web3;
+    } else {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
     }
+
+    const org = selectedOrgId ? { ...orgs[selectedOrgId.id] } : { ...orgs[0] };
+    const reviews = [...org.Reviews];
+    await Promise.all(
+      reviews.map(async (review, index) => {
+        const appraiserOrganization = new ethers.Contract(
+          org.AppraiserOrganization,
+          appraiserOrganization_abi.abi,
+          signer
+        );
+        review.Upvotes = (
+          await appraiserOrganization.s_upvoteCount(review.reviewId)
+        ).toString();
+        review.Downvotes = (
+          await appraiserOrganization.s_downvoteCount(review.reviewId)
+        ).toString();
+        return review;
+      })
+    );
+
+    org.NumRatings = org.Reviews.length;
+    org.Reviews = reviews;
+
+    const sum = reviews.reduce((total, next) => {
+      return total + Number(next.Rating);
+    }, 0);
+    org.AvgRating = round(divide(sum, reviews.length), 2);
+
+    console.log(org.orgId, org.Reviews);
+
+    const newOrgs = [...orgs];
+    newOrgs[newOrgs.findIndex((o) => o.orgId === org.orgId)] = org;
+
+    setOrgs(newOrgs);
   };
   useEffect(() => {
-    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
-  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
+    updateReviews(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
 
   async function updateOrgs() {
+    console.log("updateOrgs");
+
+    const ethers = Moralis.web3Library;
+    let signer;
     if (isWeb3Enabled) {
-      const ethers = Moralis.web3Library;
-      const newOrgs = [...orgs];
-      Promise.all(
-        newOrgs.map(async (org, index) => {
-          const appraiserOrganization = new ethers.Contract(
-            org.AppraiserOrganization,
-            appraiserOrganization_abi.abi,
-            Moralis.web3
-          );
-
-          const expectedReviews =
-            (await appraiserOrganization.currentReviewId()).toNumber() - 1;
-          const expectedIds = Array.from(
-            { length: expectedReviews },
-            (_, i) => i + 1
-          );
-          const reviewIds = org.Reviews.map((r) => r.reviewId);
-          const expectedReviewIds = expectedIds.filter(
-            doesNotContainsExistingIds(reviewIds)
-          );
-
-          // add new reviews
-          if (expectedReviewIds.length !== 0) {
-            expectedReviewIds.map(async (reviewId) => {
-              const { author, id, isVerified, rating, review, unixtime } = {
-                ...(await appraiserOrganization.s_reviews(reviewId)),
-              };
-
-              org.Reviews.push({
-                Author: author,
-                Rating: rating.toNumber(),
-                Review: review,
-                reviewId: id.toNumber(),
-                Timestamp: unixtime.toNumber(),
-                IsVerified: isVerified,
-              });
-            });
-          }
-
-          Promise.all(
-            org.Reviews.map(async (review, index) => {
-              review.Upvotes = (
-                await appraiserOrganization.s_upvoteCount(review.reviewId)
-              ).toNumber();
-              review.Downvotes = (
-                await appraiserOrganization.s_downvoteCount(review.reviewId)
-              ).toNumber();
-              return review;
-            })
-          );
-        })
-      );
-
-      // console.log(newOrgs);
-      setOrgs(orgs);
+      console.log("isWeb3Enabled");
+      signer = Moralis.web3;
+    } else {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
     }
+
+    const newOrgs = [...orgs];
+    Promise.all(
+      newOrgs.map(async (org, index) => {
+        const appraiserOrganization = new ethers.Contract(
+          org.AppraiserOrganization,
+          appraiserOrganization_abi.abi,
+          signer
+        );
+
+        const expectedReviews =
+          (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+        const expectedIds = Array.from(
+          { length: expectedReviews },
+          (_, i) => i + 1
+        );
+
+        const reviewIds = org.Reviews.map((r) => r.reviewId);
+        const expectedReviewIds = expectedIds.filter(
+          doesNotContainsExistingIds(reviewIds)
+        );
+
+        console.log(org.orgId, reviewIds, expectedReviewIds);
+
+        // add new reviews
+        if (expectedReviewIds.length !== 0) {
+          expectedReviewIds.map(async (reviewId) => {
+            const { author, id, isVerified, rating, review, unixtime } = {
+              ...(await appraiserOrganization.s_reviews(reviewId)),
+            };
+
+            org.Reviews.push({
+              Author: author,
+              Rating: rating.toNumber(),
+              Review: review,
+              reviewId: id.toNumber(),
+              Timestamp: unixtime.toNumber(),
+              IsVerified: isVerified,
+            });
+          });
+        }
+
+        Promise.all(
+          org.Reviews.map(async (review, index) => {
+            review.Upvotes = (
+              await appraiserOrganization.s_upvoteCount(review.reviewId)
+            ).toNumber();
+            review.Downvotes = (
+              await appraiserOrganization.s_downvoteCount(review.reviewId)
+            ).toNumber();
+            return review;
+          })
+        );
+        // console.log(org.Reviews);
+      })
+    );
+    setOrgs(newOrgs);
   }
   useEffect(() => {
-    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled);
-  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled]);
+    updateOrgs(selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible);
+  }, [selectedTab, selectedOrgId, Moralis, isWeb3Enabled, visible]);
 
   function doesNotContainsExistingIds(reviewIds) {
     return (r) => {
@@ -319,7 +340,6 @@ const Home = () => {
     } else {
       // console.log(receipt.events);
       handleMintReviewNotification();
-      await updateOrgs();
       setSelectedOrgId({ id: 0 });
     }
     setFormVisible(false);
@@ -425,12 +445,6 @@ const Home = () => {
                         key={index}
                         style={{ maxWidth: "500px" }}
                       >
-                        {r.IsVerified && (
-                          <div>
-                            <Icon fill="#21BF96" size={24} svg="check" />
-                          </div>
-                        )}
-
                         <div className="review" style={{ margin: "0px" }}>
                           <p style={{ paddingBottom: "20px" }}>
                             Author:{" "}
@@ -460,6 +474,11 @@ const Home = () => {
                             <p>{r.Downvotes}</p>
                           </div>
                         </div>
+                        {r.IsVerified && (
+                          <div>
+                            <Icon fill="#21BF96" size={24} svg="check" />
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -497,12 +516,6 @@ const Home = () => {
                         key={index}
                         style={{ maxWidth: "500px" }}
                       >
-                        {r.IsVerified && (
-                          <div>
-                            <Icon fill="#21BF96" size={24} svg="check" />
-                          </div>
-                        )}
-
                         <div className="review" style={{ margin: "0px" }}>
                           <p style={{ paddingBottom: "20px" }}>{r.org.Name}</p>
                           <p>Rating: {divide(r.Rating, 10)} / 10</p>
@@ -527,6 +540,11 @@ const Home = () => {
                             <p>{r.Downvotes}</p>
                           </div>
                         </div>
+                        {r.IsVerified && (
+                          <div>
+                            <Icon fill="#21BF96" size={24} svg="check" />
+                          </div>
+                        )}
                       </div>
                     );
                   })
