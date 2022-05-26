@@ -387,12 +387,19 @@ const Home = () => {
                           key={index}
                           style={{ maxWidth: "500px" }}
                         >
+                          {r.IsVerified && (
+                            <div>
+                              <Icon fill="#21BF96" size={24} svg="check" />
+                            </div>
+                          )}
+
                           <div className="review" style={{ margin: "0px" }}>
-                            <p>Author: {r.Author}</p>
-                            <p>Rating: {divide(r.Rating, 10)}</p>
+                            <p style={{ paddingBottom: "20px" }}>
+                              Author: {r.Author}
+                            </p>
+                            <p>Rating: {divide(r.Rating, 10)} / 10</p>
                             <p>Review: {r.Review}</p>
                           </div>
-
                           <div className="votes" style={{ display: "flex" }}>
                             <div
                               onClick={async () => {

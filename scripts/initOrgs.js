@@ -48,6 +48,7 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
           review.Author = user.address;
           review.reviewId = reviewId;
           review.Timestamp = savedReview.unixtime.toNumber();
+          review.IsVerified = savedReview.isVerified;
 
           reviews.push(review);
 
