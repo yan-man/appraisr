@@ -148,6 +148,44 @@ const Home = () => {
     updateVotes();
   }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
 
+  useEffect(() => {
+    async function updateReviews() {
+      if (isWeb3Enabled) {
+        const ethers = Moralis.web3Library;
+        Promise.all(
+          orgs.map(async (org, index) => {
+            const appraiserOrganization = new ethers.Contract(
+              org.AppraiserOrganization,
+              appraiserOrganization_abi.abi,
+              Moralis.web3
+            );
+
+            const expectedReviews =
+              (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+            const expectedIds = Array.from(
+              { length: expectedReviews },
+              (_, i) => i + 1
+            );
+            const reviewIds = org.Reviews.map((r) => r.reviewId);
+            const requiredIds = expectedIds.filter(
+              doesNotContainsExistingIds(reviewIds)
+            );
+            if (requiredIds.length !== 0) {
+              console.log(org.orgId, requiredIds);
+            }
+          })
+        );
+      }
+    }
+    updateReviews();
+  }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
+
+  function doesNotContainsExistingIds(reviewIds) {
+    return (r) => {
+      return !reviewIds.includes(r);
+    };
+  }
+
   const voteOnReview = async (reviewId, isUpvote) => {
     if (!isAuthenticated) {
       handleNewNotification();
@@ -198,15 +236,12 @@ const Home = () => {
       reviewer_abi.abi,
       signer
     );
-
-    console.log(data);
     const tx = await reviewer.mintReview(
       selectedOrg.orgId,
       data.data[1].inputResult,
       data.data[0].inputResult
     );
     const receipt = await tx.wait();
-    // console.log(receipt.events);
     if (receipt.status === 0) {
       handleErrorNotification("Unknown error");
     } else {
