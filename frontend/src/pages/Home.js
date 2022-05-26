@@ -20,6 +20,7 @@ import contractAddress from "../contracts/contract-address.json";
 // import appraiser_abi from "../contracts/Appraiser.json";
 import reviewer_abi from "../contracts/Reviewer.json";
 import appraiserOrganization_abi from "../contracts/AppraiserOrganization.json";
+import { useInterval } from "../helpers/utils";
 
 const Home = () => {
   const [visible, setVisible] = useState(false);
@@ -30,6 +31,7 @@ const Home = () => {
   const [selectedTab, setSelectedTab] = useState(1);
   const [orgs, setOrgs] = useState(savedOrgs);
   const [web3Provider, setWeb3Provider] = useState();
+  const [delay, setDelay] = useState(5000);
   // const contractProcessor = useWeb3ExecuteFunction();
 
   // useEffect(() => {
@@ -42,6 +44,13 @@ const Home = () => {
   //   }
   //   updateWeb3Provider();
   // }, [Moralis]);
+
+  const updateReviewInfo = async () => {
+    console.log("poll");
+    await updateVotes();
+    await updateReviews();
+  };
+  useInterval(updateReviewInfo, delay);
 
   useEffect(() => {
     async function updateReviewDetails() {
@@ -75,7 +84,7 @@ const Home = () => {
     });
   };
 
-  const handleUpvotedNotification = () => {
+  const handleVoteNotification = () => {
     dispatch({
       type: "success",
       message: " Saved your vote!",
@@ -92,92 +101,97 @@ const Home = () => {
       position: "topL",
     });
   };
+  const updateVotes = async () => {
+    if (isWeb3Enabled) {
+      const ethers = Moralis.web3Library;
+      const org = selectedOrg ? selectedOrg : orgs[0];
+      const reviews = org.Reviews;
 
-  // const updateVotes = async (reviewId) => {
-  //   const web3Provider = await Moralis.enableWeb3();
-  //   const ethers = Moralis.web3Library;
+      await Promise.all(
+        reviews.map(async (review, index) => {
+          const appraiserOrganization = new ethers.Contract(
+            org.AppraiserOrganization,
+            appraiserOrganization_abi.abi,
+            Moralis.web3
+          );
+          review.Upvotes = (
+            await appraiserOrganization.s_upvoteCount(review.reviewId)
+          ).toString();
+          review.Downvotes = (
+            await appraiserOrganization.s_downvoteCount(review.reviewId)
+          ).toString();
+        })
+      );
+      org.NumRatings = org.Reviews.length;
+      org.Reviews = reviews;
 
-  //   const org = selectedOrg ? selectedOrg : orgs[0];
-  //   const reviews = org.Reviews;
-
-  //   await Promise.all(
-  //     reviews.map(async (review, index) => {
-  //       const appraiserOrganization = new ethers.Contract(
-  //         org.AppraiserOrganization,
-  //         appraiserOrganization_abi.abi,
-  //         web3Provider
-  //       );
-  //       review.Upvotes = (
-  //         await appraiserOrganization.s_upvoteCount(reviewId)
-  //       ).toString();
-  //       review.Downvotes = (
-  //         await appraiserOrganization.s_downvoteCount(reviewId)
-  //       ).toString();
-  //     })
-  //   );
-  //   org.Reviews = reviews;
-  //   setSelectedOrg(org);
-  // };
-
-  useEffect(() => {
-    async function updateVotes() {
-      if (isWeb3Enabled) {
-        const ethers = Moralis.web3Library;
-        const org = selectedOrg ? selectedOrg : orgs[0];
-        const reviews = org.Reviews;
-
-        await Promise.all(
-          reviews.map(async (review, index) => {
-            const appraiserOrganization = new ethers.Contract(
-              org.AppraiserOrganization,
-              appraiserOrganization_abi.abi,
-              Moralis.web3
-            );
-            review.Upvotes = (
-              await appraiserOrganization.s_upvoteCount(review.reviewId)
-            ).toString();
-            review.Downvotes = (
-              await appraiserOrganization.s_downvoteCount(review.reviewId)
-            ).toString();
-          })
-        );
-        org.NumRatings = org.Reviews.length;
-        org.Reviews = reviews;
-      }
+      // orgs[org.orgId] = org;
+      // setOrgs(orgs);
+      // setSelectedOrg(org);
     }
-    updateVotes();
+  };
+  useEffect(() => {
+    updateVotes(selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled);
   }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
 
-  useEffect(() => {
-    async function updateReviews() {
-      if (isWeb3Enabled) {
-        const ethers = Moralis.web3Library;
-        Promise.all(
-          orgs.map(async (org, index) => {
-            const appraiserOrganization = new ethers.Contract(
-              org.AppraiserOrganization,
-              appraiserOrganization_abi.abi,
-              Moralis.web3
-            );
+  async function updateReviews() {
+    if (isWeb3Enabled) {
+      const ethers = Moralis.web3Library;
+      Promise.all(
+        orgs.map(async (org, index) => {
+          const appraiserOrganization = new ethers.Contract(
+            org.AppraiserOrganization,
+            appraiserOrganization_abi.abi,
+            Moralis.web3
+          );
 
-            const expectedReviews =
-              (await appraiserOrganization.currentReviewId()).toNumber() - 1;
-            const expectedIds = Array.from(
-              { length: expectedReviews },
-              (_, i) => i + 1
-            );
-            const reviewIds = org.Reviews.map((r) => r.reviewId);
-            const requiredIds = expectedIds.filter(
-              doesNotContainsExistingIds(reviewIds)
-            );
-            if (requiredIds.length !== 0) {
-              console.log(org.orgId, requiredIds);
-            }
-          })
-        );
-      }
+          const expectedReviews =
+            (await appraiserOrganization.currentReviewId()).toNumber() - 1;
+          const expectedIds = Array.from(
+            { length: expectedReviews },
+            (_, i) => i + 1
+          );
+          const reviewIds = org.Reviews.map((r) => r.reviewId);
+          const expectedReviewIds = expectedIds.filter(
+            doesNotContainsExistingIds(reviewIds)
+          );
+
+          // add new reviews
+          if (expectedReviewIds.length !== 0) {
+            expectedReviewIds.map(async (reviewId) => {
+              const { author, id, isVerified, rating, review, unixtime } = {
+                ...(await appraiserOrganization.s_reviews(reviewId)),
+              };
+
+              org.Reviews.push({
+                Author: author,
+                Rating: rating,
+                Review: review,
+                reviewId: id,
+                Timestamp: unixtime,
+              });
+            });
+          }
+
+          Promise.all(
+            org.Reviews.map(async (review, index) => {
+              review.Upvotes = (
+                await appraiserOrganization.s_upvoteCount(review.reviewId)
+              ).toNumber();
+              review.Downvotes = (
+                await appraiserOrganization.s_downvoteCount(review.reviewId)
+              ).toNumber();
+              return review;
+            })
+          );
+        })
+      );
+
+      setOrgs(orgs);
     }
-    updateReviews();
+  }
+  useEffect(() => {
+    updateReviews(selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled);
   }, [selectedTab, orgs, selectedOrg, Moralis, isWeb3Enabled]);
 
   function doesNotContainsExistingIds(reviewIds) {
@@ -215,7 +229,8 @@ const Home = () => {
           if (receipt.status === 0) {
             handleErrorNotification("Unknown error");
           } else {
-            handleUpvotedNotification();
+            handleVoteNotification();
+            await updateVotes();
           }
         } else {
           handleErrorNotification("You've already voted on this review");
@@ -398,7 +413,7 @@ const Home = () => {
               onCloseButtonPressed={() => setVisible(false)}
               isVisible={visible}
               hasFooter={false}
-              width="1000px"
+              width="120vh"
             >
               <div className="modalContent">
                 <img src={selectedOrg.Img} className="modalImg" alt=""></img>
