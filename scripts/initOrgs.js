@@ -20,7 +20,6 @@ const deployInitialOrganizations = async (appraiser, reviewer) => {
 
 const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
   const users = [..._users];
-  const updatedOrgs = [];
   await Promise.all(
     orgs.map(async (o, orgInd) => {
       const reviews = [];
@@ -63,12 +62,11 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
         return total + Number(next.Rating);
       }, 0);
       o.AvgRating = math.divide(sum, reviews.length);
-      updatedOrgs.push(o);
+      return o;
     })
   );
-
-  saveOrgsFrontendFiles(updatedOrgs);
-  return updatedOrgs;
+  saveOrgsFrontendFiles(orgs);
+  return orgs;
 };
 
 const deployOrgs = async (appraiser, reviewer, users) => {
