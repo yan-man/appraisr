@@ -8,26 +8,28 @@
     "Reviews": [
       {
         "Author": "0x2546BcD3c84621e976D8185a91A922aE77ECEc30",
-        "Rating": 86,
-        "Review": "What are the top 5 restaurants of all time? WacArnolds, WacArnolds, WacArnolds, WacArnolds, and WacArnolds",
-        "Upvotes": 0,
-        "Downvotes": 0,
-        "reviewId": 2,
-        "Timestamp": 1653582578
-      },
-      {
-        "Author": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
         "Rating": 23,
         "Review": "WacArnolds ruined my life!",
         "Upvotes": 0,
         "Downvotes": 0,
+        "reviewId": 2,
+        "Timestamp": 1653589177,
+        "IsVerified": true
+      },
+      {
+        "Author": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+        "Rating": 86,
+        "Review": "What are the top 5 restaurants of all time? WacArnolds, WacArnolds, WacArnolds, WacArnolds, and WacArnolds",
+        "Upvotes": 0,
+        "Downvotes": 0,
         "reviewId": 1,
-        "Timestamp": 1653582577
+        "Timestamp": 1653589176,
+        "IsVerified": true
       }
     ],
     "orgId": 0,
-    "AppraiserOrganization": "0x9f1ac54BEF0DD2f6f3462EA0fa94fC62300d3a8e",
-    "Verifier": "0xCafac3dD18aC6c6e92c921884f9E4176737C052c",
+    "AppraiserOrganization": "0x3Ca8f9C04c7e3E1624Ac2008F92f6F366A869444",
+    "Verifier": "0x8dAF17A20c9DBA35f005b6324F493785D239719d",
     "AvgRating": 54.5
   },
   {
@@ -39,26 +41,28 @@
     "Admin": "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
     "Reviews": [
       {
-        "Author": "0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097",
+        "Author": "0xcd3B766CCDd6AE721141F452C550Ca635964ce71",
         "Rating": 45,
         "Review": "I got kicked in the chest",
         "Upvotes": 0,
         "Downvotes": 0,
-        "reviewId": 2,
-        "Timestamp": 1653582580
+        "reviewId": 1,
+        "Timestamp": 1653589178,
+        "IsVerified": true
       },
       {
-        "Author": "0xcd3B766CCDd6AE721141F452C550Ca635964ce71",
+        "Author": "0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097",
         "Rating": 98,
         "Review": "I played basketball with Prince",
         "Upvotes": 0,
         "Downvotes": 0,
-        "reviewId": 1,
-        "Timestamp": 1653582579
+        "reviewId": 2,
+        "Timestamp": 1653589179,
+        "IsVerified": true
       }
     ],
     "orgId": 1,
-    "AppraiserOrganization": "0x93b6BDa6a0813D808d75aA42e900664Ceb868bcF",
-    "Verifier": "0xbf9fBFf01664500A33080Da5d437028b07DFcC55"
+    "AppraiserOrganization": "0x35dd738E306d32f2709824B6f744f188DA01D3C5",
+    "Verifier": "0x7e2d5FCC5E02cBF2b9f860052C0226104E23F9c7"
   }
 ]
