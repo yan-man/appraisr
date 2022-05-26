@@ -77,7 +77,14 @@ const shouldMintReviewNFT = () => {
           await this.tx.wait();
           this.VERIFIER = (await this.verifier.VERIFIER()).toNumber();
         });
-        it(`should mint review NFT to ashy larry`, async function () {
+        it(`should return # of reviews for given user`, async function () {
+          expect(
+            await this.appraiserOrganization.numUserReviews(
+              this.users.ashylarry.address
+            )
+          ).to.equal(1);
+        });
+        it(`should send review NFT to ashy larry`, async function () {
           expect(
             await this.appraiserOrganization.balanceOf(
               this.users.ashylarry.address,
@@ -257,6 +264,13 @@ const shouldVoteOnReviewNFT = () => {
                   this.review.review
                 );
                 await this.tx.wait();
+              });
+              it(`should return # of reviews for prince`, async function () {
+                expect(
+                  await this.appraiserOrganization.numUserReviews(
+                    this.users.ashylarry.address
+                  )
+                ).to.equal(1);
               });
               it("should mint review NFT to prince", async function () {
                 expect(
