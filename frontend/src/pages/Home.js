@@ -10,6 +10,7 @@ import {
   Button,
   Modal,
   useNotification,
+  Form,
 } from "web3uikit";
 import { savedOrgs } from "../helpers/library";
 import { useState } from "react";
@@ -53,6 +54,7 @@ const Home = () => {
     }
     updateReviewDetails();
   }, [orgs]);
+
   const dispatch = useNotification();
 
   const handleNewNotification = () => {
@@ -77,6 +79,15 @@ const Home = () => {
     dispatch({
       type: "success",
       message: " Saved your vote!",
+      title: "Success",
+      position: "topL",
+    });
+  };
+
+  const handleMintReviewNotification = () => {
+    dispatch({
+      type: "success",
+      message: " Successfully saved your review!",
       title: "Success",
       position: "topL",
     });
@@ -130,8 +141,8 @@ const Home = () => {
             ).toString();
           })
         );
+        org.NumRatings = org.Reviews.length;
         org.Reviews = reviews;
-        // console.log(orgs);
       }
     }
     updateVotes();
@@ -175,8 +186,33 @@ const Home = () => {
     }
   };
 
-  const openReviewModal = () => {
-    console.log("open review");
+  const mintReview = async (data) => {
+    console.log("mint review");
+
+    const ethers = Moralis.web3Library;
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    const reviewer = new ethers.Contract(
+      contractAddress.Reviewer,
+      reviewer_abi.abi,
+      signer
+    );
+
+    console.log(data);
+    const tx = await reviewer.mintReview(
+      selectedOrg.orgId,
+      data.data[1].inputResult,
+      data.data[0].inputResult
+    );
+    const receipt = await tx.wait();
+    // console.log(receipt.events);
+    if (receipt.status === 0) {
+      handleErrorNotification("Unknown error");
+    } else {
+      handleMintReviewNotification();
+    }
+    setFormVisible(false);
   };
 
   return (
@@ -396,19 +432,53 @@ const Home = () => {
                   <div className="description">
                     <Button
                       color="#6795b1"
-                      icon="plus"
+                      icon="arrowCircleLeft"
                       iconLayout="icon-only"
                       id="add-review"
                       onClick={() => {
-                        openReviewModal();
+                        setFormVisible(false);
+                        setVisible(true);
                       }}
                       radius={20}
                       theme="colored"
                       type="button"
                     />
                   </div>
-                  <div className="description" style={{ textAlign: "center" }}>
-                    <p></p>
+                  <div
+                    className=""
+                    style={{ textAlign: "center", padding: "20px 50px" }}
+                  >
+                    <Form
+                      buttonConfig={{
+                        onClick: function noRefCheck() {},
+                        theme: "primary",
+                        text: "Save",
+                      }}
+                      data={[
+                        {
+                          inputWidth: "100%",
+                          name: "Review",
+                          type: "text",
+                          validation: {
+                            required: true,
+                          },
+                          value: "",
+                        },
+                        {
+                          name: "Rating from 1-100",
+                          type: "number",
+                          validation: {
+                            numberMax: 100,
+                            numberMin: 1,
+                            required: true,
+                          },
+                          value: "",
+                        },
+                      ]}
+                      onSubmit={(data) => {
+                        mintReview(data);
+                      }}
+                    />
                   </div>
                 </div>
               </div>
