@@ -21,7 +21,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  */
 module.exports = {
   solidity: {
-    version: "0.8.4",
+    version: "0.8.9",
     settings: {
       optimizer: {
         enabled: true,
@@ -34,6 +34,16 @@ module.exports = {
       chainId: 31337,
       allowUnlimitedContractSize: true,
     },
+    // rinkeby: {
+    // url: "https://eth-rinkeby.alchemyapi.io/v2/123abc123abc123abc123abc123abcde",
+    // accounts: [privateKey1, privateKey2, ...]
+    // },
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts",
   },
   contractSizer: {
     alphaSort: true,

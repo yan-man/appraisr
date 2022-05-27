@@ -77,7 +77,14 @@ const shouldMintReviewNFT = () => {
           await this.tx.wait();
           this.VERIFIER = (await this.verifier.VERIFIER()).toNumber();
         });
-        it(`should mint review NFT to ashy larry`, async function () {
+        it(`should return # of reviews for given user`, async function () {
+          expect(
+            await this.appraiserOrganization.numUserReviews(
+              this.users.ashylarry.address
+            )
+          ).to.equal(1);
+        });
+        it(`should send review NFT to ashy larry`, async function () {
           expect(
             await this.appraiserOrganization.balanceOf(
               this.users.ashylarry.address,
@@ -99,6 +106,43 @@ const shouldMintReviewNFT = () => {
           await expect(this.tx)
             .to.emit(this.appraiserOrganization, `LogNFTReviewMinted`)
             .withArgs(this.reviewId);
+        });
+        it(`should revert if updating review group Id via incorrect address`, async function () {
+          await expect(
+            this.appraiserOrganization
+              .connect(this.users.ashylarry)
+              .updateReviewGroupId(this.reviewId, 3)
+          ).to.be.reverted;
+        });
+        it(`should revert with custom error if updating review group Id via incorrect address`, async function () {
+          await expect(
+            this.appraiserOrganization
+              .connect(this.users.ashylarry)
+              .updateReviewGroupId(this.reviewId, 3)
+          ).to.be.revertedWith(
+            `AppraiserOrganization__OnlyReviewerContractCanCall`
+          );
+        });
+        it(`should update review group Id after it has been created`, async function () {
+          const tx = await this.appraiserOrganization.updateReviewGroupId(
+            this.reviewId,
+            3
+          );
+          const receipt = await tx.wait();
+          const { groupId } = await this.appraiserOrganization.s_reviews(
+            this.reviewId
+          );
+          expect(groupId).to.equal(3);
+        });
+        it(`should update review group Id after it has been created`, async function () {
+          const tx = await this.appraiserOrganization.updateReviewGroupId(
+            this.reviewId,
+            3
+          );
+          const receipt = await tx.wait();
+          await expect(
+            this.appraiserOrganization.updateReviewGroupId(this.reviewId, 3)
+          ).to.be.revertedWith(`AppraiserOrganization__GroupIdAlreadySet`);
         });
       });
     });
@@ -155,8 +199,7 @@ const shouldVoteOnReviewNFT = () => {
             expect(
               await this.appraiserOrganization.hasVoted(
                 this.users.dave.address,
-                this.reviewId,
-                this.isUpvote
+                this.reviewId
               )
             ).to.equal(true);
           });
@@ -212,8 +255,7 @@ const shouldVoteOnReviewNFT = () => {
               expect(
                 await this.appraiserOrganization.hasVoted(
                   this.users.rickjames.address,
-                  this.reviewId,
-                  this.isUpvote
+                  this.reviewId
                 )
               ).to.equal(true);
             });
@@ -259,6 +301,13 @@ const shouldVoteOnReviewNFT = () => {
                   this.review.review
                 );
                 await this.tx.wait();
+              });
+              it(`should return # of reviews for prince`, async function () {
+                expect(
+                  await this.appraiserOrganization.numUserReviews(
+                    this.users.ashylarry.address
+                  )
+                ).to.equal(1);
               });
               it("should mint review NFT to prince", async function () {
                 expect(

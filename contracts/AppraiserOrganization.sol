@@ -21,10 +21,11 @@ contract AppraiserOrganization is ERC1155, Ownable {
     // state vars
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     mapping(uint256 => Reviews.Review) public s_reviews; // reviewId -> Review
-    mapping(uint256 => mapping(address => bool)) s_upvotes; // reviewId -> (voting address -> isVoted)
+    mapping(uint256 => mapping(address => bool)) public s_upvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_upvoteCount; // reviewId -> # upvotes
-    mapping(uint256 => mapping(address => bool)) s_downvotes; // reviewId -> (voting address -> isVoted)
+    mapping(uint256 => mapping(address => bool)) public s_downvotes; // reviewId -> (voting address -> isVoted)
     mapping(uint256 => uint256) public s_downvoteCount; // reviewId -> # downvotes
+    mapping(address => uint256[]) public s_userReviews; // author address -> [reviewIds]
 
     Counters.Counter private _s_reviewIds;
     Organizations.Organization private _s_organization;
@@ -41,6 +42,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     error AppraiserOrganization__OneVoteAllowedPerReview();
     error AppraiserOrganization__CannotVoteOnOwnReview();
     error AppraiserOrganization__OnlyReviewerContractCanCall();
+    error AppraiserOrganization__GroupIdAlreadySet();
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
@@ -115,13 +117,25 @@ contract AppraiserOrganization is ERC1155, Ownable {
             rating: rating_,
             review: review_,
             unixtime: block.timestamp,
-            isVerified: _isVerified
+            isVerified: _isVerified,
+            groupId: 0
         });
         s_reviews[_reviewId] = review;
+        s_userReviews[reviewerAddr_].push(_reviewId);
         _s_reviewIds.increment();
 
         emit LogNFTReviewMinted(_reviewId);
         return _reviewId;
+    }
+
+    function updateReviewGroupId(uint256 reviewId_, uint256 groupId_)
+        public
+        onlyReviewerContract
+    {
+        if (s_reviews[reviewId_].groupId != 0) {
+            revert AppraiserOrganization__GroupIdAlreadySet();
+        }
+        s_reviews[reviewId_].groupId = groupId_;
     }
 
     function voteOnReview(
@@ -141,16 +155,14 @@ contract AppraiserOrganization is ERC1155, Ownable {
         emit LogNFTReviewVote(reviewId_);
     }
 
-    function hasVoted(
-        address reviewer_,
-        uint256 reviewId_,
-        bool isUpvote_
-    ) external view returns (bool) {
-        if (isUpvote_ == true) {
-            return s_upvotes[reviewId_][reviewer_];
-        } else {
-            return s_downvotes[reviewId_][reviewer_];
-        }
+    function hasVoted(address reviewer_, uint256 reviewId_)
+        external
+        view
+        returns (bool)
+    {
+        return
+            s_upvotes[reviewId_][reviewer_] ||
+            s_downvotes[reviewId_][reviewer_];
     }
 
     function currentReviewId() external view returns (uint256) {
@@ -163,5 +175,9 @@ contract AppraiserOrganization is ERC1155, Ownable {
         returns (Organizations.Organization memory)
     {
         return _s_organization;
+    }
+
+    function numUserReviews(address author_) external view returns (uint256) {
+        return s_userReviews[author_].length;
     }
 }

@@ -1,5 +1,7 @@
 const { ethers } = require("hardhat");
-const orgs = require("../helpers/library.json");
+const math = require("mathjs");
+const helpersDir = __dirname + "/../frontend/src/helpers";
+const orgs = require(`${helpersDir}/library.json`);
 
 const deployInitialOrganizations = async (appraiser, reviewer) => {
   const signers = await ethers.getSigners();
@@ -18,7 +20,6 @@ const deployInitialOrganizations = async (appraiser, reviewer) => {
 
 const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
   const users = [..._users];
-  const updatedOrgs = [];
   await Promise.all(
     orgs.map(async (o, orgInd) => {
       const reviews = [];
@@ -46,22 +47,27 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
 
           review.Author = user.address;
           review.reviewId = reviewId;
-          review.Timestamp = savedReview.unixtime;
+          review.Timestamp = savedReview.unixtime.toNumber();
+          review.IsVerified = savedReview.isVerified;
 
           reviews.push(review);
 
           console.log(
             `Review for ${o.Name} given by ${review.Author} ("${review.Review}", Rating = ${review.Rating})`
           );
+          return review;
         })
       );
       o.Reviews = reviews;
-      updatedOrgs.push(o);
+      const sum = reviews.reduce((total, next) => {
+        return total + Number(next.Rating);
+      }, 0);
+      o.AvgRating = math.divide(sum, reviews.length);
+      return o;
     })
   );
-
-  saveOrgsFrontendFiles(updatedOrgs);
-  return updatedOrgs;
+  saveOrgsFrontendFiles(orgs);
+  return orgs;
 };
 
 const deployOrgs = async (appraiser, reviewer, users) => {
@@ -126,20 +132,18 @@ const deployOrgs = async (appraiser, reviewer, users) => {
 
 function saveOrgsFrontendFiles(deployedOrgs) {
   const fs = require("fs");
-  const contractsDir = __dirname + "/../helpers";
 
   fs.writeFileSync(
-    contractsDir + "/library.json",
+    helpersDir + "/library.json",
     JSON.stringify(deployedOrgs, undefined, 2)
   );
 }
 
 function saveReviewsFrontendFiles(deployedOrgs) {
   const fs = require("fs");
-  const contractsDir = __dirname + "/../helpers";
 
   fs.writeFileSync(
-    contractsDir + "/library.json",
+    helpersDir + "/library.json",
     JSON.stringify(deployedOrgs, undefined, 2)
   );
 }

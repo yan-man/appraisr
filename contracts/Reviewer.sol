@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Reviews.sol";
 import "./AppraiserOrganization.sol";
 import "./Users.sol";
+import "./VRFv2Consumer.sol";
 
 contract Reviewer is Ownable {
     using Counters for Counters.Counter;
@@ -18,6 +19,7 @@ contract Reviewer is Ownable {
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
     mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
+    address private s_VRFv2ConsumerContractAddr;
 
     // events
     event LogMintReview(uint256 reviewId);
@@ -25,9 +27,10 @@ contract Reviewer is Ownable {
     event LogVoteOnReview(address voter, uint256 orgId, uint256 reviewId);
 
     // errors
-    error Appraiser__InvalidOrgId();
-    error Appraiser__VoterMatchesAuthor();
-    error Appraiser__InvalidReview();
+    error Reviewer__InvalidOrgId();
+    error Reviewer__VoterMatchesAuthor();
+    error Reviewer__InvalidReview();
+    error Reviewer__OnlyVRFv2ConsumerContractAddr();
 
     // modifiers
     modifier isValidOrgId(uint256 orgId_) {
@@ -43,15 +46,12 @@ contract Reviewer is Ownable {
         uint256 _reviewId = AppraiserOrganization(s_aoContracts[orgId_])
             .mintReviewNFT(_msgSender(), rating_, review_);
         s_reviews[orgId_][_reviewId] = _msgSender();
+        VRFv2Consumer(s_VRFv2ConsumerContractAddr).requestRandomWords(
+            orgId_,
+            _reviewId
+        );
         addUser(_msgSender());
         emit LogMintReview(_reviewId);
-    }
-
-    function setAppraiserOrganizationContractAddress(
-        uint256 orgId_,
-        address contractAddr_
-    ) external onlyOwner {
-        s_aoContracts[orgId_] = contractAddr_;
     }
 
     function voteOnReview(
@@ -61,10 +61,10 @@ contract Reviewer is Ownable {
     ) external isValidOrgId(orgId_) {
         address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
         if (_reviewAuthorAddr == address(0)) {
-            revert Appraiser__InvalidReview();
+            revert Reviewer__InvalidReview();
         }
         if (_msgSender() == _reviewAuthorAddr) {
-            revert Appraiser__VoterMatchesAuthor();
+            revert Reviewer__VoterMatchesAuthor();
         }
 
         Users.User storage _reviewUser = s_users[s_reviews[orgId_][reviewId_]];
@@ -82,10 +82,32 @@ contract Reviewer is Ownable {
         emit LogVoteOnReview(_msgSender(), orgId_, reviewId_);
     }
 
-    function _isValidOrgId(uint256 orgId_) private view {
-        if (address(s_aoContracts[orgId_]) == address(0)) {
-            revert Appraiser__InvalidOrgId();
+    function updateReviewGroupId(
+        uint256 orgId_,
+        uint256 reviewId_,
+        uint256 groupId_
+    ) external {
+        if (s_VRFv2ConsumerContractAddr != _msgSender()) {
+            revert Reviewer__OnlyVRFv2ConsumerContractAddr();
         }
+        AppraiserOrganization(s_aoContracts[orgId_]).updateReviewGroupId(
+            reviewId_,
+            groupId_
+        );
+    }
+
+    function setVRFv2ConsumerContractAddress(address VRFv2ConsumerContractAddr_)
+        external
+        onlyOwner
+    {
+        s_VRFv2ConsumerContractAddr = VRFv2ConsumerContractAddr_;
+    }
+
+    function setAppraiserOrganizationContractAddress(
+        uint256 orgId_,
+        address contractAddr_
+    ) external onlyOwner {
+        s_aoContracts[orgId_] = contractAddr_;
     }
 
     function addUser(address addr_) private {
@@ -97,6 +119,12 @@ contract Reviewer is Ownable {
             });
 
             emit LogNewUser(addr_);
+        }
+    }
+
+    function _isValidOrgId(uint256 orgId_) private view {
+        if (address(s_aoContracts[orgId_]) == address(0)) {
+            revert Reviewer__InvalidOrgId();
         }
     }
 }
