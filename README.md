@@ -95,7 +95,11 @@ You should see the Appraisr home page at http://localhost:3000
 
 ### Read Reviews
 
-Users can read existing reviews by clicking the "See Reviews" button on the home page or on the organizations modal. This can be accessed either with or without wallet connection.
+Users can read existing reviews by clicking the "See Reviews" button on the home page or on the organization selection modal. This can be accessed either with or without wallet connection.
+
+Verified reviews are denoted with a green check mark.
+
+![verified-review](./README/verified-review.png)
 
 ### Vote on Reviews
 
@@ -103,11 +107,15 @@ Users must connect with their wallet.
 
 Users can upvote or downvote reviews by pressing the up/down icons on the reviews page.
 
+Confirm the transaction request.
+
 ### Write a Review
 
 Users must connect with their wallet.
 
-Users can write their own reviews for organizations by pressing the "+" button on the organizations modal and submitting the form with a rating and review. Confirm the transaction request.
+Users can write their own reviews for organizations by pressing the "+" button on the organizations modal and submitting the form with a rating (1-100) and review (as text).
+
+Confirm the transaction request.
 
 ### See My Reviews
 
@@ -115,23 +123,9 @@ Users must connect with their wallet.
 
 Users can see the reviews they've written by navigating to the MyReviews tab. This tab is disabled for unconnected users.
 
-## Initial Configuration Settings:
-
-Deployment scripts access helper file [library.json](./frontend/src/helpers/library.json) (a backup sample file is found [here](./config/library.json)).
-
-- 2 initial sample organizations will be created (WacArnold's and Studio54)
-- 2 sample review NFTs are minted for each organization by a total of 4 separate sample test accounts
-
-Hardhat test accounts:
-
-- index `[0]` is the contract deployer for the main `Appraiser.sol`, `Reviewer.sol`, and `VRFv2Consumer.sol` contracts. Can also double as a test user.
-- indexes `[1]...[18]` are primary test users.
-- 1 Verifier token is transferred to each of 5 test accounts (indexes `[1]...[5]`)
-- index `[18]` is organization admin account for Organization 1 (WacArnold's) and index `[19]` is organization admin account for Organization 1 (Studio54)
-
 ### Moralis Integration
 
-[web3uikit](https://github.com/web3ui/web3uikit) is integrated for UI. This allows Moralis to connect user wallets to the dApp. \*This has only been tested with Metamask wallet.
+[web3uikit](https://github.com/web3ui/web3uikit) is integrated for the UI. This allows Moralis to connect user wallets to the dApp. \*This demo has only been tested with Metamask wallet.
 
 ## Smart Contracts & Mechanics
 
@@ -139,6 +133,12 @@ Hardhat test accounts:
 
 1. `Reviewer.sol` contract must be deployed first. Its contract address is required for the following contract deployments.
 2. Deploy the `Appraiser.sol` and `VRFv2Consumer.sol` contracts next, accepting the `Reviewer.sol` contract in its constructor.
+
+### Local Hardhat Node
+
+In local Hardhat Node deployment, the `VRFv2Consumer.sol` utilizes a mocked VRF Coordinator ([`MockVRFCoordinator.sol`](./contracts/__mocks__/MockVRFCoordinator.sol)) in its implementation.
+
+Therefore group ID values are not random in this scenario.
 
 ### Creating Organizations
 
@@ -166,24 +166,80 @@ In theory, organizations should desire more verified reviews, as they are more t
 
 ### Chainlink VRF
 
+Each time a review is minted, it is assigned a random group ID (1-5) via [Chainlink VRF (Verifiable Random Function)](https://docs.chain.link/docs/chainlink-vrf/).
+
+These groups serve as random samples to average across when determining an Organization's average rating.
+
+With multiple randomized groups, it further prevents gaming the system from Organizations' point of view. It requires 5x the amount of "faked" reviews to maliciously influence an organization's average rating.
+
+## Initial Configuration Settings:
+
+Deployment scripts access helper file [library.json](./frontend/src/helpers/library.json) (a backup sample file is found [here](./config/library.json)).
+
+- 2 initial sample organizations will be created (WacArnold's and Studio54)
+- 2 sample review NFTs are minted for each organization by a total of 4 separate sample test accounts
+
+Hardhat test user accounts:
+
+- index `[0]` is the contract deployer for the main `Appraiser.sol`, `Reviewer.sol`, and `VRFv2Consumer.sol` contracts. Can also double as a test user.
+- indexes `[1]...[18]` are primary test users.
+- 1 Verifier token is transferred to each of 5 test accounts (indexes `[1]...[5]`)
+- index `[18]` is organization admin account for Organization 1 (WacArnold's) and index `[19]` is organization admin account for Organization 1 (Studio54)
+
 ## Testing
+
+See [Hardhat](https://hardhat.org/tutorial/testing-contracts.html) for more details.
+
+Navigate to root directory, then start tests.
+
+```sh
+$ npx hardhat test
+```
+
+For test coverage:
+
+```sh
+$ npx hardhat coverage
+```
 
 ## Design Patterns
 
+- import libraries to reduce contract byte size
+- revert errors over `require` to save gas
+
 ## Troubleshooting
 
-## Further
+As described in the [Hardhat Github](https://github.com/NomicFoundation/hardhat-hackathon-boilerplate), you may see the following bug in your console. Simply reset your account and try again: `Metamask -> Settings -> Advanced -> Reset Account`.
 
-- split Appraiser contract into separate smaller contracts for bytesize
-- rewrite tests, add more integration testing
-- more front end functionality:
-- flesh out JSON metadata pin to IPFS for minted review NFTs
-- show Verifier tokens owned by user
-- tokenomics
+![nonce](./README/nonce.png)
+
+If you encounter the following error make sure you're on npm v16: `nvm use 16`
+
+![nvm16](./README/nvm16.png)
+
+## Further / Next Steps
+
+### Contract Byte Size
+
+Currently `Appraiser.sol` contract is too large to deploy on mainnet. It exceeds 25KB and must be split into smaller contracts.
+
+- create a separate contract solely to deploy `AppraiserOrganization.sol` and `Verifier.sol` contracts during Organization creation.
+
+### Testing
+
+- Incorporate forking from mainnet.
+- Deploy on testnet to test non-mock VRF functionality.
+- Add more integration tests, particularly around contract access control.
+
+### Front End / UX
+
+- create JSON metadata files and pin to IPFS with IPFS-based images during review minting.
+- refine tokenomics around fees for Verifier Tokens.
+- incorporate randomized Group IDs for airdrops.
 
 ## What's Included?
 
-- [Frontend/Dapp](./frontend): A [Create React App](https://github.com/facebook/create-react-app) dApp which interacts with the `*.sol` smart contract.
+- [Frontend/dApp](./frontend): A [Create React App](https://github.com/facebook/create-react-app) dApp which interacts with the `*.sol` smart contract.
 - [Hardhat](https://hardhat.org/): An Ethereum development task runner and testing network.
 - [Mocha](https://mochajs.org/): A JavaScript test runner.
 - [Chai](https://www.chaijs.com/): A JavaScript assertion library.
