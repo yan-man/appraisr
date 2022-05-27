@@ -114,6 +114,8 @@ You should see the Appraisr home page at http://localhost:3000
 
 Users can read existing reviews by clicking the "See Reviews" button on the home page or on the organization selection modal. This can be accessed either with or without a wallet connection.
 
+![see-reviews](./README/see-reviews.gif)
+
 Verified reviews are denoted with a green check mark.
 
 ![verified-review](./README/verified-review.png)
