@@ -8,7 +8,7 @@ const shouldDeploy = () => {
         this.users.deployer.address
       );
     });
-    it("should revert on requestRandomWords from non owner", async function () {
+    it.only("should revert on requestRandomWords from non owner", async function () {
       await expect(
         this.VRFv2Consumer.connect(this.users.ashylarry).requestRandomWords(
           0,

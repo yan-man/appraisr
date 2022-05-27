@@ -53,8 +53,6 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
 
     // Assumes the subscription is funded sufficiently.
     function requestRandomWords(uint256 orgId_, uint256 reviewId_) external {
-        console.log(_msgSender());
-        console.log(s_reviewerAddr);
         if (_msgSender() != s_reviewerAddr) {
             revert VRFv2Consumer__OnlyReviewerContract();
         }

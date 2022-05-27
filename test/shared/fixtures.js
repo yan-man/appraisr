@@ -124,7 +124,7 @@ const unitVRFv2ConsumerFixture = async (signers) => {
   );
 
   const VRFCoordinatorFactory = await ethers.getContractFactory(
-    MockVRFCoordinator
+    `MockVRFCoordinator`
   );
   const mockVRFCoordinator = await VRFCoordinatorFactory.connect(
     deployer
