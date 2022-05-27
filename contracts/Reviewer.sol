@@ -93,12 +93,6 @@ contract Reviewer is Ownable {
         s_aoContracts[orgId_] = contractAddr_;
     }
 
-    function _isValidOrgId(uint256 orgId_) private view {
-        if (address(s_aoContracts[orgId_]) == address(0)) {
-            revert Appraiser__InvalidOrgId();
-        }
-    }
-
     function addUser(address addr_) private {
         if (s_users[addr_].isRegistered == false) {
             s_users[addr_] = Users.User({

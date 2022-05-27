@@ -42,6 +42,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     error AppraiserOrganization__OneVoteAllowedPerReview();
     error AppraiserOrganization__CannotVoteOnOwnReview();
     error AppraiserOrganization__OnlyReviewerContractCanCall();
+    error AppraiserOrganization__GroupIdAlreadySet();
 
     // modifiers
     modifier isValidRating(uint256 rating_) {
@@ -131,10 +132,10 @@ contract AppraiserOrganization is ERC1155, Ownable {
         public
         onlyReviewerContract
     {
-        if (s_reviews[_reviewId].groupId != 0) {
+        if (s_reviews[reviewId_].groupId != 0) {
             revert AppraiserOrganization__GroupIdAlreadySet();
         }
-        s_reviews[reviewId_].groupId_ = groupId_;
+        s_reviews[reviewId_].groupId = groupId_;
     }
 
     function voteOnReview(

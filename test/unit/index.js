@@ -33,6 +33,34 @@ describe("Unit tests", async () => {
     this.orgs.WacArnolds = this.signers[10];
     this.orgs.studio54 = this.signers[11];
   });
+  describe(`Reviewer`, async () => {
+    beforeEach(async function () {
+      const {
+        reviewer,
+        mockAppraiserOrganization,
+        mockAppraiserOrganization2,
+      } = await this.loadFixture(unitReviewerFixture);
+      this.reviewer = reviewer;
+      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+      this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
+
+      this.mockedResponses = {
+        mintReviewNFT: 100,
+        mintReviewNFT2: 5,
+      };
+      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT
+      );
+      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
+      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT2
+      );
+      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
+    });
+    Reviewer.shouldDeploy();
+    Reviewer.shouldManageReviews();
+    Reviewer.shouldManageReviewsRatings();
+  });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
       const { appraiser, mockAppraiserOrganization, mockVerifier } =
@@ -82,33 +110,5 @@ describe("Unit tests", async () => {
     Verifier.shouldSetContractAddress();
     Verifier.shouldMintAndTransferAndBurnNFT();
     Verifier.shouldSupportInterface();
-  });
-  describe(`Reviewer`, async () => {
-    beforeEach(async function () {
-      const {
-        reviewer,
-        mockAppraiserOrganization,
-        mockAppraiserOrganization2,
-      } = await this.loadFixture(unitReviewerFixture);
-      this.reviewer = reviewer;
-      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
-      this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
-
-      this.mockedResponses = {
-        mintReviewNFT: 100,
-        mintReviewNFT2: 5,
-      };
-      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
-        this.mockedResponses.mintReviewNFT
-      );
-      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
-      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
-        this.mockedResponses.mintReviewNFT2
-      );
-      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
-    });
-    Reviewer.shouldDeploy();
-    Reviewer.shouldManageReviews();
-    Reviewer.shouldManageReviewsRatings();
   });
 });
