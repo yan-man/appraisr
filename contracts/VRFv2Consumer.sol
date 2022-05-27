@@ -22,10 +22,11 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
     }
 
     address private s_reviewerAddr;
-    uint64 s_subscriptionId;
+    uint64 private _s_subscriptionId;
 
     // Rinkeby coordinator
-    address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
+    address private _vrfCoordinator =
+        0x6168499c0cFfCaCD319c818142124B7A15E857ab;
 
     // The gas lane to use
     bytes32 keyHash =
@@ -37,23 +38,26 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
     mapping(uint256 => uint256) public s_assignedGroup; // requestId -> groupId
     mapping(uint256 => Request) public s_requests; // requestId -> [orgId, reviewId]
 
+    // errors
+    error VRFv2Consumer__OnlyReviewerContract();
+
     constructor(uint64 subscriptionId, address reviewerAddr_)
-        VRFConsumerBaseV2(vrfCoordinator)
+        VRFConsumerBaseV2(_vrfCoordinator)
     {
-        COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-        s_subscriptionId = subscriptionId;
+        COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
+        _s_subscriptionId = subscriptionId;
         s_reviewerAddr = reviewerAddr_;
     }
 
     // Assumes the subscription is funded sufficiently.
-    function requestRandomWords(uint256 orgId_, uint256 reviewId_)
-        external
-        onlyOwner
-    {
+    function requestRandomWords(uint256 orgId_, uint256 reviewId_) external {
+        if (_msgSender() != s_reviewerAddr) {
+            revert VRFv2Consumer__OnlyReviewerContract();
+        }
         // Will revert if subscription is not set and funded.
         uint256 _requestId = COORDINATOR.requestRandomWords(
             keyHash,
-            s_subscriptionId,
+            _s_subscriptionId,
             requestConfirmations,
             callbackGasLimit,
             numWords
@@ -67,6 +71,10 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
             isConsumed: false
         });
         s_requests[_requestId] = _request;
+    }
+
+    function setReviewerAddr(address reviewerAddr_) public {
+        s_reviewerAddr = reviewerAddr_;
     }
 
     function fulfillRandomWords(

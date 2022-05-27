@@ -47,6 +47,7 @@ describe("Unit tests", async () => {
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
       this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
       this.mocks.mockVRFv2Consumer = mockVRFv2Consumer;
+      this.users.sampleVRFv2Consumer = this.signers[6];
 
       this.mockedResponses = {
         mintReviewNFT: 100,
@@ -124,7 +125,7 @@ describe("Unit tests", async () => {
       this.VRFv2Consumer = VRFv2Consumer;
       this.mocks.mockReviewer = mockReviewer;
     });
-    VRFv2ConsumerSpec.shouldDeploy();
+    // VRFv2ConsumerSpec.shouldDeploy();
     // Verifier.shouldSetContractAddress();
     // Verifier.shouldMintAndTransferAndBurnNFT();
     // Verifier.shouldSupportInterface();

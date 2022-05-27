@@ -52,7 +52,7 @@ const shouldManageReviews = () => {
           this.mocks.mockAppraiserOrganization.address
         );
         await this.reviewer.setVRFv2ConsumerContractAddress(
-          this.users.deployer.address
+          this.mocks.mockVRFv2Consumer.address
         );
       });
       it(`should revert to mint review for non-valid org`, async function () {
@@ -120,16 +120,20 @@ const shouldManageReviews = () => {
           });
 
           it(`should updateReviewGroupId`, async function () {
+            await this.reviewer.setVRFv2ConsumerContractAddress(
+              this.users.sampleVRFv2Consumer.address
+            );
             await expect(
-              this.reviewer.updateReviewGroupId(
-                this.WacArnolds.orgId,
-                this.reviewId,
-                2
-              )
+              this.reviewer
+                .connect(this.users.sampleVRFv2Consumer)
+                .updateReviewGroupId(this.WacArnolds.orgId, this.reviewId, 2)
             ).to.not.be.reverted;
           });
 
           it(`should revert on updateReviewGroupId as non VRF consumer`, async function () {
+            await this.reviewer.setVRFv2ConsumerContractAddress(
+              this.users.sampleVRFv2Consumer.address
+            );
             await expect(
               this.reviewer
                 .connect(this.users.ashylarry)
@@ -193,6 +197,9 @@ const shouldManageReviewsRatings = () => {
         await this.reviewer.setAppraiserOrganizationContractAddress(
           this.WacArnolds.orgId,
           this.mocks.mockAppraiserOrganization.address
+        );
+        await this.reviewer.setVRFv2ConsumerContractAddress(
+          this.mocks.mockVRFv2Consumer.address
         );
 
         const mintReviewTx = await this.reviewer

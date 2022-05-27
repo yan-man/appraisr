@@ -101,11 +101,9 @@ const unitReviewerFixture = async (signers) => {
   await reviewer.deployed();
 
   const mockVRFv2Consumer = await deployMockVRFv2Consumer(deployer);
-
   const mockAppraiserOrganization = await deployMockAppraiserOrganization(
     deployer
   );
-
   const mockAppraiserOrganization2 = await deployMockAppraiserOrganization(
     deployer
   );

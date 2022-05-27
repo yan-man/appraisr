@@ -10,6 +10,7 @@ async function deployMockVRFv2Consumer(deployer) {
     deployer,
     VRFv2Consumer_ABI.abi
   );
+  await VRFv2Consumer.mock.requestRandomWords.returns();
 
   return VRFv2Consumer;
 }

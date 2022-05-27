@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Reviews.sol";
 import "./AppraiserOrganization.sol";
 import "./Users.sol";
+import "./VRFv2Consumer.sol";
 
 contract Reviewer is Ownable {
     using Counters for Counters.Counter;
@@ -45,6 +46,10 @@ contract Reviewer is Ownable {
         uint256 _reviewId = AppraiserOrganization(s_aoContracts[orgId_])
             .mintReviewNFT(_msgSender(), rating_, review_);
         s_reviews[orgId_][_reviewId] = _msgSender();
+        VRFv2Consumer(s_VRFv2ConsumerContractAddr).requestRandomWords(
+            orgId_,
+            _reviewId
+        );
         addUser(_msgSender());
         emit LogMintReview(_reviewId);
     }
