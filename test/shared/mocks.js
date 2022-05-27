@@ -4,7 +4,6 @@ const Verifier_ABI = require("../../artifacts/contracts/Verifier.sol/Verifier.js
 const Reviewer_ABI = require("../../artifacts/contracts/Reviewer.sol/Reviewer.json");
 const Appraiser_ABI = require("../../artifacts/contracts/Appraiser.sol/Appraiser.json");
 const VRFv2Consumer_ABI = require("../../artifacts/contracts/VRFv2Consumer.sol/VRFv2Consumer.json");
-// const VRFCoordinatorV2Interface_ABI = require("../../artifacts/@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.json");
 
 async function deployMockVRFv2Consumer(deployer) {
   const VRFv2Consumer = await waffle.deployMockContract(

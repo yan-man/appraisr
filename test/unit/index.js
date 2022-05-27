@@ -119,11 +119,11 @@ describe("Unit tests", async () => {
   });
   describe(`VRFv2Consumer`, async () => {
     beforeEach(async function () {
-      const { VRFv2Consumer, mockReviewer, mockVRFCoordinatorV2Interface } =
+      const { VRFv2Consumer, mockReviewer, mockVRFCoordinator } =
         await this.loadFixture(unitVRFv2ConsumerFixture);
       this.VRFv2Consumer = VRFv2Consumer;
       this.mocks.mockReviewer = mockReviewer;
-      this.mocks.mockVRFCoordinatorV2Interface = mockVRFCoordinatorV2Interface;
+      this.mocks.mockVRFCoordinator = mockVRFCoordinator;
       this.users.sampleReviewer = this.signers[6];
     });
     // VRFv2ConsumerSpec.shouldDeploy();

@@ -122,16 +122,25 @@ const unitVRFv2ConsumerFixture = async (signers) => {
   const VRFv2ConsumerContract = await ethers.getContractFactory(
     `VRFv2Consumer`
   );
+
+  const VRFCoordinatorFactory = await ethers.getContractFactory(
+    MockVRFCoordinator
+  );
+  const mockVRFCoordinator = await VRFCoordinatorFactory.connect(
+    deployer
+  ).deploy();
+
   const VRFv2Consumer = await VRFv2ConsumerContract.connect(deployer).deploy(
     1,
-    mockReviewer.address
+    mockReviewer.address,
+    mockVRFCoordinator.address
   );
   await VRFv2Consumer.deployed();
 
   return {
     VRFv2Consumer,
     mockReviewer,
-    // mockVRFCoordinatorV2Interface,
+    mockVRFCoordinator,
   };
 };
 
