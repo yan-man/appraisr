@@ -17,6 +17,12 @@ async function main() {
 
   const reviewer = await deployReviewerContract();
   const appraiser = await deployAppraiserContract(reviewer.address);
+  const VRFv2Consumer = await deployVRFv2ConsumerContract(reviewer.address);
+
+  const VRFtx = await reviewer.setVRFv2ConsumerContractAddress(
+    VRFv2Consumer.address
+  );
+  await VRFtx.wait();
 
   // must set reviewer owner to appraiser, to access reviewer functions
   const tx = await reviewer.transferOwnership(appraiser.address);
@@ -24,7 +30,7 @@ async function main() {
 
   const deployedOrgs = await deployInitialOrganizations(appraiser, reviewer);
 
-  saveFrontendFiles(appraiser, reviewer);
+  saveFrontendFiles(appraiser, reviewer, VRFv2Consumer);
 }
 
 async function deployReviewerContract() {
@@ -46,17 +52,27 @@ async function deployAppraiserContract(reviewerAddr) {
 }
 
 async function deployVRFv2ConsumerContract(reviewerAddr) {
+  const VRFCoordinatorFactory = await ethers.getContractFactory(
+    `MockVRFCoordinator`
+  );
+  const mockVRFCoordinator = await VRFCoordinatorFactory.deploy();
+  await mockVRFCoordinator.deployed();
+
   const VRFv2ConsumerContract = await ethers.getContractFactory(
     "VRFv2Consumer"
   );
-  const VRFv2Consumer = await VRFv2ConsumerContract.deploy(1, reviewerAddr);
+  const VRFv2Consumer = await VRFv2ConsumerContract.deploy(
+    1,
+    reviewerAddr,
+    mockVRFCoordinator.address
+  );
   await VRFv2Consumer.deployed();
 
   console.log("VRFv2Consumer deployed to:", VRFv2Consumer.address);
   return VRFv2Consumer;
 }
 
-async function saveFrontendFiles(appraiser, reviewer) {
+async function saveFrontendFiles(appraiser, reviewer, VRFv2Consumer) {
   const fs = require("fs");
   const contractsDir = __dirname + "/../frontend/src/contracts";
 
@@ -70,12 +86,18 @@ async function saveFrontendFiles(appraiser, reviewer) {
       {
         Appraiser: appraiser.address,
         Reviewer: reviewer.address,
+        VRFv2Consumer: VRFv2Consumer.address,
       },
       undefined,
       2
     )
   );
 
+  const VRFv2ConsumerArtifact = artifacts.readArtifactSync("VRFv2Consumer");
+  fs.writeFileSync(
+    contractsDir + "/VRFv2Consumer.json",
+    JSON.stringify(VRFv2ConsumerArtifact, null, 2)
+  );
   const AppraiserArtifact = artifacts.readArtifactSync("Appraiser");
   fs.writeFileSync(
     contractsDir + "/Appraiser.json",
