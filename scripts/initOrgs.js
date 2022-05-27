@@ -9,10 +9,10 @@ const deployInitialOrganizations = async (appraiser, reviewer) => {
 
   // 20 hardhat accounts: [index]
   // 0) - deployer
-  // 19) - admin for org1
-  // 20) - admin for org2
   // 1)...18) - test users
   // 1)...5) - test users w/Verifier token
+  // 18) - admin for org1
+  // 19) - admin for org2
 
   let deployedOrgs = await deployOrgs(appraiser, reviewer, users);
   deployedOrgs = await deployReviews(appraiser, reviewer, deployedOrgs, users);

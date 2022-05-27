@@ -46,16 +46,7 @@ Successful response:
 
 ![FRPC start](./README/frpc-start.png)
 
-On a new terminal (Terminal 3), go to the repository's root folder and run the script to
-deploy the collection of smart contracts and configure initial settings.
-
-Initial Config Settings:
-
-See helper file [library.json](./frontend/src/helpers/library.json)
-
-- 2 initial sample Organizations will be created
-- 2 sample reviews given for each Organization by a total of 4 separate sample test accounts
-- 1 Verifier token given to each of the 20
+On a new terminal (Terminal 3), go to the repository's root folder and run the script to deploy the collection of smart contracts and configure initial settings.
 
 ```sh
 $ npx hardhat run scripts/deploy.js --network localhost
@@ -65,13 +56,35 @@ Successful response:
 
 ![deploy-scripts](./README/deploy-scripts.png)
 
-1. start npx node
-2. run deployment scripts
-3. start frpc
-4. add moralis details to index
-5. npm run start
+On a new terminal (Terminal 4), start the front end. Install dependencies and run the React app with:
+
+```sh
+$ cd frontend
+$ npm install
+$ npm run start
+```
+
+You should see the Appraisr homepage at http://localhost:3000
+
+![homepage](./README/homepage.png)
+
+### Initial Configuration Settings:
+
+Deployment scripts access helper file [library.json](./frontend/src/helpers/library.json) (a backup sample file is found [here](./config/library.json)).
+
+- 2 initial sample organizations will be created (WacArnold's and Studio54)
+- 2 sample review NFTs are minted for each organization by a total of 4 separate sample test accounts
+
+Hardhat test accounts:
+
+- index `[0]` is the contract deployer for the main `Appraiser.sol`, `Reviewer.sol`, and `VRFv2Consumer.sol` contracts. Can also double as a test user.
+- indexes `[1]...[18]` are primary test users.
+- 1 Verifier token is transferred to each of 5 test accounts (indexes `[1]...[5]`)
+- index `[18]` is organization admin account for Organization 1 (WacArnold's) and index `[19]` is organization admin account for Organization 1 (Studio54)
 
 ## User Guide
+
+###
 
 ### Moralis
 
@@ -94,6 +107,7 @@ Successful response:
 - more front end functionality:
 - flesh out JSON metadata pin to IPFS for minted review NFTs
 - show Verifier tokens owned by user
+- tokenomics
 
 ## What's Included?
 
