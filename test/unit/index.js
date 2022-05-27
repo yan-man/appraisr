@@ -6,11 +6,13 @@ const {
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
   unitReviewerFixture,
+  unitVRFv2ConsumerFixture,
 } = require("../shared/fixtures");
 const Appraiser = require("./Appraiser/Appraiser.spec");
 const AppraiserOrganization = require("./AppraiserOrganization/AppraiserOrganization.spec");
 const Verifier = require("./Verifier/Verifier.spec");
 const Reviewer = require("./Reviewer/Reviewer.spec");
+const VRFv2ConsumerSpec = require("./VRFv2Consumer/VRFv2Consumer.spec");
 
 describe("Unit tests", async () => {
   before(async function () {
@@ -113,5 +115,18 @@ describe("Unit tests", async () => {
     Verifier.shouldSetContractAddress();
     Verifier.shouldMintAndTransferAndBurnNFT();
     Verifier.shouldSupportInterface();
+  });
+  describe(`VRFv2Consumer`, async () => {
+    beforeEach(async function () {
+      const { VRFv2Consumer, mockReviewer } = await this.loadFixture(
+        unitVRFv2ConsumerFixture
+      );
+      this.VRFv2Consumer = VRFv2Consumer;
+      this.mocks.mockReviewer = mockReviewer;
+    });
+    VRFv2ConsumerSpec.shouldDeploy();
+    // Verifier.shouldSetContractAddress();
+    // Verifier.shouldMintAndTransferAndBurnNFT();
+    // Verifier.shouldSupportInterface();
   });
 });

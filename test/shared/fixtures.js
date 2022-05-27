@@ -118,9 +118,28 @@ const unitReviewerFixture = async (signers) => {
   };
 };
 
+const unitVRFv2ConsumerFixture = async (signers) => {
+  const deployer = signers[0];
+  const mockReviewer = await deployMockReviewer(deployer);
+  const VRFv2ConsumerContract = await ethers.getContractFactory(
+    `VRFv2Consumer`
+  );
+  const VRFv2Consumer = await VRFv2ConsumerContract.connect(deployer).deploy(
+    1,
+    mockReviewer.address
+  );
+  await VRFv2Consumer.deployed();
+
+  return {
+    VRFv2Consumer,
+    mockReviewer,
+  };
+};
+
 module.exports = {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
   unitReviewerFixture,
+  unitVRFv2ConsumerFixture,
 };

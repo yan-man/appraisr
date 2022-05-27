@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "hardhat/console.sol";
+
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Reviewer.sol";
 
-contract VRFv2Consumer is VRFConsumerBaseV2 {
+contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
     VRFCoordinatorV2Interface COORDINATOR;
 
     struct Request {
@@ -33,13 +36,11 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
 
     mapping(uint256 => uint256) public s_assignedGroup; // requestId -> groupId
     mapping(uint256 => Request) public s_requests; // requestId -> [orgId, reviewId]
-    address s_owner;
 
     constructor(uint64 subscriptionId, address reviewerAddr_)
         VRFConsumerBaseV2(vrfCoordinator)
     {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-        s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
         s_reviewerAddr = reviewerAddr_;
     }
@@ -95,10 +96,5 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     {
         uint256 _randomRange = (randomWord_ % 5) + 1;
         return _randomRange;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == s_owner);
-        _;
     }
 }
