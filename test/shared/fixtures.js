@@ -131,6 +131,7 @@ const unitVRFv2ConsumerFixture = async (signers) => {
   return {
     VRFv2Consumer,
     mockReviewer,
+    // mockVRFCoordinatorV2Interface,
   };
 };
 

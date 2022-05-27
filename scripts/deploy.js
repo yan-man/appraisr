@@ -45,6 +45,17 @@ async function deployAppraiserContract(reviewerAddr) {
   return appraiser;
 }
 
+async function deployVRFv2ConsumerContract(reviewerAddr) {
+  const VRFv2ConsumerContract = await ethers.getContractFactory(
+    "VRFv2Consumer"
+  );
+  const VRFv2Consumer = await VRFv2ConsumerContract.deploy(1, reviewerAddr);
+  await VRFv2Consumer.deployed();
+
+  console.log("VRFv2Consumer deployed to:", VRFv2Consumer.address);
+  return VRFv2Consumer;
+}
+
 async function saveFrontendFiles(appraiser, reviewer) {
   const fs = require("fs");
   const contractsDir = __dirname + "/../frontend/src/contracts";

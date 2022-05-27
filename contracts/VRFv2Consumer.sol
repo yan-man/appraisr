@@ -25,8 +25,8 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
     uint64 private _s_subscriptionId;
 
     // Rinkeby coordinator
-    address private _vrfCoordinator =
-        0x6168499c0cFfCaCD319c818142124B7A15E857ab;
+    // address private _vrfCoordinator =
+    //     0x6168499c0cFfCaCD319c818142124B7A15E857ab;
 
     // The gas lane to use
     bytes32 keyHash =
@@ -41,16 +41,20 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
     // errors
     error VRFv2Consumer__OnlyReviewerContract();
 
-    constructor(uint64 subscriptionId, address reviewerAddr_)
-        VRFConsumerBaseV2(_vrfCoordinator)
-    {
-        COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
+    constructor(
+        uint64 subscriptionId,
+        address reviewerAddr_,
+        address vrfCoordinator_
+    ) VRFConsumerBaseV2(vrfCoordinator_) {
+        COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator_);
         _s_subscriptionId = subscriptionId;
         s_reviewerAddr = reviewerAddr_;
     }
 
     // Assumes the subscription is funded sufficiently.
     function requestRandomWords(uint256 orgId_, uint256 reviewId_) external {
+        console.log(_msgSender());
+        console.log(s_reviewerAddr);
         if (_msgSender() != s_reviewerAddr) {
             revert VRFv2Consumer__OnlyReviewerContract();
         }
