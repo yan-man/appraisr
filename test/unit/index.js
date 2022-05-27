@@ -124,7 +124,6 @@ describe("Unit tests", async () => {
       this.VRFv2Consumer = VRFv2Consumer;
       this.mocks.mockReviewer = mockReviewer;
       this.mocks.mockVRFCoordinator = mockVRFCoordinator;
-      this.users.sampleReviewer = this.signers[6];
     });
     VRFv2ConsumerSpec.shouldDeploy();
     // Verifier.shouldSetContractAddress();

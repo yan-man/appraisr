@@ -53,7 +53,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
 
     // Assumes the subscription is funded sufficiently.
     function requestRandomWords(uint256 orgId_, uint256 reviewId_) external {
-        if (_msgSender() != s_reviewerAddr) {
+        if (_msgSender() != s_reviewerAddr && _msgSender() != owner()) {
             revert VRFv2Consumer__OnlyReviewerContract();
         }
         // Will revert if subscription is not set and funded.
@@ -75,7 +75,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2, Ownable {
         s_requests[_requestId] = _request;
     }
 
-    function setReviewerAddr(address reviewerAddr_) public {
+    function setReviewerAddr(address reviewerAddr_) external onlyOwner {
         s_reviewerAddr = reviewerAddr_;
     }
 
