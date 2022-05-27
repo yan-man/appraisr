@@ -107,6 +107,43 @@ const shouldMintReviewNFT = () => {
             .to.emit(this.appraiserOrganization, `LogNFTReviewMinted`)
             .withArgs(this.reviewId);
         });
+        it(`should revert if updating review group Id via incorrect address`, async function () {
+          await expect(
+            this.appraiserOrganization
+              .connect(this.users.ashylarry)
+              .updateReviewGroupId(this.reviewId, 3)
+          ).to.be.reverted;
+        });
+        it(`should revert with custom error if updating review group Id via incorrect address`, async function () {
+          await expect(
+            this.appraiserOrganization
+              .connect(this.users.ashylarry)
+              .updateReviewGroupId(this.reviewId, 3)
+          ).to.be.revertedWith(
+            `AppraiserOrganization__OnlyReviewerContractCanCall`
+          );
+        });
+        it(`should update review group Id after it has been created`, async function () {
+          const tx = await this.appraiserOrganization.updateReviewGroupId(
+            this.reviewId,
+            3
+          );
+          const receipt = await tx.wait();
+          const { groupId } = await this.appraiserOrganization.s_reviews(
+            this.reviewId
+          );
+          expect(groupId).to.equal(3);
+        });
+        it(`should update review group Id after it has been created`, async function () {
+          const tx = await this.appraiserOrganization.updateReviewGroupId(
+            this.reviewId,
+            3
+          );
+          const receipt = await tx.wait();
+          await expect(
+            this.appraiserOrganization.updateReviewGroupId(this.reviewId, 3)
+          ).to.be.revertedWith(`AppraiserOrganization__GroupIdAlreadySet`);
+        });
       });
     });
   });

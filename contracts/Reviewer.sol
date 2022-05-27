@@ -18,6 +18,7 @@ contract Reviewer is Ownable {
     mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
     mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
     mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
+    address private s_VRFv2ConsumerContractAddr;
 
     // events
     event LogMintReview(uint256 reviewId);
@@ -28,6 +29,7 @@ contract Reviewer is Ownable {
     error Appraiser__InvalidOrgId();
     error Appraiser__VoterMatchesAuthor();
     error Appraiser__InvalidReview();
+    error Reviewer__OnlyVRFv2ConsumerContractAddr();
 
     // modifiers
     modifier isValidOrgId(uint256 orgId_) {
@@ -80,10 +82,20 @@ contract Reviewer is Ownable {
         uint256 reviewId_,
         uint256 groupId_
     ) external {
+        if (s_VRFv2ConsumerContractAddr != _msgSender()) {
+            revert Reviewer__OnlyVRFv2ConsumerContractAddr();
+        }
         AppraiserOrganization(s_aoContracts[orgId_]).updateReviewGroupId(
             reviewId_,
             groupId_
         );
+    }
+
+    function setVRFv2ConsumerContractAddress(address VRFv2ConsumerContractAddr_)
+        external
+        onlyOwner
+    {
+        s_VRFv2ConsumerContractAddr = VRFv2ConsumerContractAddr_;
     }
 
     function setAppraiserOrganizationContractAddress(
