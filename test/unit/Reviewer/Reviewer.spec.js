@@ -25,17 +25,34 @@ const shouldDeploy = () => {
           )
       ).to.be.reverted;
     });
+    it("should setVRFv2ConsumerContractAddress", async function () {
+      await expect(
+        this.reviewer.setVRFv2ConsumerContractAddress(
+          this.mocks.mockVRFv2Consumer.address
+        )
+      ).to.not.be.reverted;
+    });
+    it("should not allow setVRFv2ConsumerContractAddress for non owner", async function () {
+      await expect(
+        this.reviewer
+          .connect(this.users.ashylarry)
+          .setVRFv2ConsumerContractAddress(this.mocks.mockVRFv2Consumer.address)
+      ).to.be.reverted;
+    });
   });
 };
 
 const shouldManageReviews = () => {
   context(`# manage reviews`, async function () {
-    describe("...After mock AppraiserOrganization contract address is set", async () => {
+    describe("...After mock contract addresses set", async () => {
       beforeEach(async function () {
         this.WacArnolds = { orgId: 0 };
         await this.reviewer.setAppraiserOrganizationContractAddress(
           this.WacArnolds.orgId,
           this.mocks.mockAppraiserOrganization.address
+        );
+        await this.reviewer.setVRFv2ConsumerContractAddress(
+          this.mocks.mockVRFv2Consumer.address
         );
       });
       it(`should revert to mint review for non-valid org`, async function () {
@@ -45,7 +62,7 @@ const shouldManageReviews = () => {
             50,
             "test review"
           )
-        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
+        ).to.be.revertedWith(`Reviewer__InvalidOrgId`);
       });
       it(`should not revert to mint review for valid org`, async function () {
         await expect(
@@ -100,6 +117,28 @@ const shouldManageReviews = () => {
             await expect(this.mintReviewTx)
               .to.emit(this.reviewer, `LogNewUser`)
               .withArgs(this.users.ashylarry.address);
+          });
+
+          it(`should updateReviewGroupId`, async function () {
+            await this.reviewer.setVRFv2ConsumerContractAddress(
+              this.users.sampleVRFv2Consumer.address
+            );
+            await expect(
+              this.reviewer
+                .connect(this.users.sampleVRFv2Consumer)
+                .updateReviewGroupId(this.WacArnolds.orgId, this.reviewId, 2)
+            ).to.not.be.reverted;
+          });
+
+          it(`should revert on updateReviewGroupId as non VRF consumer`, async function () {
+            await this.reviewer.setVRFv2ConsumerContractAddress(
+              this.users.sampleVRFv2Consumer.address
+            );
+            await expect(
+              this.reviewer
+                .connect(this.users.ashylarry)
+                .updateReviewGroupId(this.WacArnolds.orgId, this.reviewId, 2)
+            ).to.be.reverted;
           });
 
           it(`should not create a new user if ashylarry leaves 2nd review at WacArnolds`, async function () {
@@ -159,6 +198,9 @@ const shouldManageReviewsRatings = () => {
           this.WacArnolds.orgId,
           this.mocks.mockAppraiserOrganization.address
         );
+        await this.reviewer.setVRFv2ConsumerContractAddress(
+          this.mocks.mockVRFv2Consumer.address
+        );
 
         const mintReviewTx = await this.reviewer
           .connect(this.users.ashylarry)
@@ -169,7 +211,7 @@ const shouldManageReviewsRatings = () => {
       it(`should revert if org doesn't exist`, async function () {
         await expect(
           this.reviewer.connect(this.users.tybiggums).voteOnReview(5, 5, true)
-        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
+        ).to.be.revertedWith(`Reviewer__InvalidOrgId`);
       });
 
       it(`should revert if review doesn't exist`, async function () {
@@ -177,7 +219,7 @@ const shouldManageReviewsRatings = () => {
           this.reviewer
             .connect(this.users.tybiggums)
             .voteOnReview(this.WacArnolds.orgId, 5, true)
-        ).to.be.revertedWith(`Appraiser__InvalidReview`);
+        ).to.be.revertedWith(`Reviewer__InvalidReview`);
       });
 
       it(`should revert if ashylarry tries to upvote own review`, async function () {
@@ -189,7 +231,7 @@ const shouldManageReviewsRatings = () => {
               this.mockedResponses.mintReviewNFT,
               true
             )
-        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
+        ).to.be.revertedWith(`Reviewer__VoterMatchesAuthor`);
       });
 
       it(`should revert if ashylarry tries to downvote own review`, async function () {
@@ -201,7 +243,7 @@ const shouldManageReviewsRatings = () => {
               this.mockedResponses.mintReviewNFT,
               true
             )
-        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
+        ).to.be.revertedWith(`Reviewer__VoterMatchesAuthor`);
       });
 
       it(`should update ashylarry's upvotes when tybiggums upvotes ashylarry's review`, async function () {

@@ -11,6 +11,7 @@ library Reviews {
         uint256 rating;
         string review;
         uint256 unixtime;
+        uint256 groupId;
         bool isVerified;
     }
 }

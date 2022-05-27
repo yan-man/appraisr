@@ -6,11 +6,13 @@ const {
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
   unitReviewerFixture,
+  unitVRFv2ConsumerFixture,
 } = require("../shared/fixtures");
 const Appraiser = require("./Appraiser/Appraiser.spec");
 const AppraiserOrganization = require("./AppraiserOrganization/AppraiserOrganization.spec");
 const Verifier = require("./Verifier/Verifier.spec");
 const Reviewer = require("./Reviewer/Reviewer.spec");
+const VRFv2ConsumerSpec = require("./VRFv2Consumer/VRFv2Consumer.spec");
 
 describe("Unit tests", async () => {
   before(async function () {
@@ -32,6 +34,38 @@ describe("Unit tests", async () => {
 
     this.orgs.WacArnolds = this.signers[10];
     this.orgs.studio54 = this.signers[11];
+  });
+  describe(`Reviewer`, async () => {
+    beforeEach(async function () {
+      const {
+        reviewer,
+        mockAppraiserOrganization,
+        mockAppraiserOrganization2,
+        mockVRFv2Consumer,
+      } = await this.loadFixture(unitReviewerFixture);
+      this.reviewer = reviewer;
+      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+      this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
+      this.mocks.mockVRFv2Consumer = mockVRFv2Consumer;
+      this.users.sampleVRFv2Consumer = this.signers[6];
+
+      this.mockedResponses = {
+        mintReviewNFT: 100,
+        mintReviewNFT2: 5,
+      };
+
+      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT
+      );
+      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
+      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
+        this.mockedResponses.mintReviewNFT2
+      );
+      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
+    });
+    Reviewer.shouldDeploy();
+    Reviewer.shouldManageReviews();
+    Reviewer.shouldManageReviewsRatings();
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
@@ -83,32 +117,17 @@ describe("Unit tests", async () => {
     Verifier.shouldMintAndTransferAndBurnNFT();
     Verifier.shouldSupportInterface();
   });
-  describe(`Reviewer`, async () => {
+  describe(`VRFv2Consumer`, async () => {
     beforeEach(async function () {
-      const {
-        reviewer,
-        mockAppraiserOrganization,
-        mockAppraiserOrganization2,
-      } = await this.loadFixture(unitReviewerFixture);
-      this.reviewer = reviewer;
-      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
-      this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
-
-      this.mockedResponses = {
-        mintReviewNFT: 100,
-        mintReviewNFT2: 5,
-      };
-      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
-        this.mockedResponses.mintReviewNFT
-      );
-      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
-      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
-        this.mockedResponses.mintReviewNFT2
-      );
-      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
+      const { VRFv2Consumer, mockReviewer, mockVRFCoordinator } =
+        await this.loadFixture(unitVRFv2ConsumerFixture);
+      this.VRFv2Consumer = VRFv2Consumer;
+      this.mocks.mockReviewer = mockReviewer;
+      this.mocks.mockVRFCoordinator = mockVRFCoordinator;
     });
-    Reviewer.shouldDeploy();
-    Reviewer.shouldManageReviews();
-    Reviewer.shouldManageReviewsRatings();
+    VRFv2ConsumerSpec.shouldDeploy();
+    // Verifier.shouldSetContractAddress();
+    // Verifier.shouldMintAndTransferAndBurnNFT();
+    // Verifier.shouldSupportInterface();
   });
 });

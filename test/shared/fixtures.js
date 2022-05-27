@@ -5,6 +5,7 @@ const {
   deployMockVerifier,
   deployMockReviewer,
   deployMockAppraiser,
+  deployMockVRFv2Consumer,
 } = require("./mocks");
 
 const unitAppraiserFixture = async (signers) => {
@@ -95,19 +96,52 @@ const unitVerifierFixture = async (signers) => {
 const unitReviewerFixture = async (signers) => {
   const deployer = signers[0];
 
-  const reviewerFactory = await ethers.getContractFactory(`Reviewer`);
-  const reviewer = await reviewerFactory.connect(deployer).deploy();
+  const Reviewer = await ethers.getContractFactory(`Reviewer`);
+  const reviewer = await Reviewer.connect(deployer).deploy();
   await reviewer.deployed();
 
+  const mockVRFv2Consumer = await deployMockVRFv2Consumer(deployer);
   const mockAppraiserOrganization = await deployMockAppraiserOrganization(
     deployer
   );
-
   const mockAppraiserOrganization2 = await deployMockAppraiserOrganization(
     deployer
   );
 
-  return { reviewer, mockAppraiserOrganization, mockAppraiserOrganization2 };
+  return {
+    reviewer,
+    mockAppraiserOrganization,
+    mockAppraiserOrganization2,
+    mockVRFv2Consumer,
+  };
+};
+
+const unitVRFv2ConsumerFixture = async (signers) => {
+  const deployer = signers[0];
+  const mockReviewer = await deployMockReviewer(deployer);
+  const VRFv2ConsumerContract = await ethers.getContractFactory(
+    `VRFv2Consumer`
+  );
+
+  const VRFCoordinatorFactory = await ethers.getContractFactory(
+    `MockVRFCoordinator`
+  );
+  const mockVRFCoordinator = await VRFCoordinatorFactory.connect(
+    deployer
+  ).deploy();
+
+  const VRFv2Consumer = await VRFv2ConsumerContract.connect(deployer).deploy(
+    1,
+    mockReviewer.address,
+    mockVRFCoordinator.address
+  );
+  await VRFv2Consumer.deployed();
+
+  return {
+    VRFv2Consumer,
+    mockReviewer,
+    mockVRFCoordinator,
+  };
 };
 
 module.exports = {
@@ -115,4 +149,5 @@ module.exports = {
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
   unitReviewerFixture,
+  unitVRFv2ConsumerFixture,
 };
