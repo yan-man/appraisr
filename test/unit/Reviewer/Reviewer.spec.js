@@ -25,6 +25,20 @@ const shouldDeploy = () => {
           )
       ).to.be.reverted;
     });
+    it("should setVRFv2ConsumerContractAddress", async function () {
+      await expect(
+        this.reviewer.setVRFv2ConsumerContractAddress(
+          this.mocks.mockVRFv2Consumer.address
+        )
+      ).to.not.be.reverted;
+    });
+    it("should not allow setVRFv2ConsumerContractAddress for non owner", async function () {
+      await expect(
+        this.reviewer
+          .connect(this.users.ashylarry)
+          .setVRFv2ConsumerContractAddress(this.mocks.mockVRFv2Consumer.address)
+      ).to.be.reverted;
+    });
   });
 };
 

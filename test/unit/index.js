@@ -39,15 +39,18 @@ describe("Unit tests", async () => {
         reviewer,
         mockAppraiserOrganization,
         mockAppraiserOrganization2,
+        mockVRFv2Consumer,
       } = await this.loadFixture(unitReviewerFixture);
       this.reviewer = reviewer;
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
       this.mocks.mockAppraiserOrganization2 = mockAppraiserOrganization2;
+      this.mocks.mockVRFv2Consumer = mockVRFv2Consumer;
 
       this.mockedResponses = {
         mintReviewNFT: 100,
         mintReviewNFT2: 5,
       };
+
       await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT
       );

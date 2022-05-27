@@ -3,6 +3,16 @@ const AppraiserOrganization_ABI = require("../../artifacts/contracts/AppraiserOr
 const Verifier_ABI = require("../../artifacts/contracts/Verifier.sol/Verifier.json");
 const Reviewer_ABI = require("../../artifacts/contracts/Reviewer.sol/Reviewer.json");
 const Appraiser_ABI = require("../../artifacts/contracts/Appraiser.sol/Appraiser.json");
+const VRFv2Consumer_ABI = require("../../artifacts/contracts/VRFv2Consumer.sol/VRFv2Consumer.json");
+
+async function deployMockVRFv2Consumer(deployer) {
+  const VRFv2Consumer = await waffle.deployMockContract(
+    deployer,
+    VRFv2Consumer_ABI.abi
+  );
+
+  return VRFv2Consumer;
+}
 
 async function deployMockAppraiserOrganization(deployer) {
   const appraiserOrganization = await waffle.deployMockContract(
@@ -42,4 +52,5 @@ module.exports = {
   deployMockAppraiserOrganization,
   deployMockVerifier,
   deployMockAppraiser,
+  deployMockVRFv2Consumer,
 };
