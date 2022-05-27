@@ -1,4 +1,4 @@
-![Appraisr](./README/Appraisr.png)
+![Appraisr](./README/appraisr.png)
 
 Appraisr is a decentralized, verified ratings system that uses fungible tokens and NFTs to incentivize users to rate and review businesses, and vote on other reviews, in a trustless fashion.
 
