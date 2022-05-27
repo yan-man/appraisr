@@ -69,7 +69,6 @@ const Home = () => {
           org.AvgRating = round(divide(sum, org.Reviews.length), 2);
         })
       );
-
       setOrgs(newOrgs);
     }
     updateReviewDetails();
@@ -174,7 +173,15 @@ const Home = () => {
         // add new reviews
         if (expectedReviewIds.length !== 0) {
           expectedReviewIds.map(async (reviewId) => {
-            const { author, id, isVerified, rating, review, unixtime } = {
+            const {
+              author,
+              id,
+              isVerified,
+              rating,
+              review,
+              unixtime,
+              groupId,
+            } = {
               ...(await appraiserOrganization.s_reviews(reviewId)),
             };
             reviews.push({
@@ -184,12 +191,17 @@ const Home = () => {
               reviewId: id.toNumber(),
               Timestamp: unixtime.toNumber(),
               IsVerified: isVerified,
+              GroupId: groupId.toNumber(),
             });
           });
         }
 
         await Promise.all(
           reviews.map(async (review, index) => {
+            const { groupId } = await appraiserOrganization.s_reviews(
+              review.reviewId
+            );
+            review.GroupId = groupId.toNumber();
             review.Upvotes = (
               await appraiserOrganization.s_upvoteCount(review.reviewId)
             ).toNumber();
@@ -496,6 +508,7 @@ const Home = () => {
                           </p>
                           <p>Rating: {divide(r.Rating, 10)} / 10</p>
                           <p>Review: {r.Review}</p>
+                          {r.GroupId !== 0 && <p>Group #{r.GroupId}</p>}
                         </div>
                         <div className="votes" style={{ display: "flex" }}>
                           <div
