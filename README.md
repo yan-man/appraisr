@@ -1,10 +1,14 @@
 ![Appraisr](./README/Appraisr.png)
 
-Every time
+Appraisr is a decentralized, verified ratings system that uses fungible tokens and NFTs to incentivize users to rate and review businesses, and vote on other reviews, in a trustless fashion.
 
-Appraisr is a decentralized ratings system similar to Yelp or Google Reviews.
+Users can leave reviews for businesses, or vote on reviews that already exist - helping other users build their reputation as a trusted reviewer. Every time a review is created, an NFT is minted to the author, and can be collected or traded on the open market.
 
-trustless, yet trusted ratings system.
+Businesses can also mint and transfer Verifier Tokens to verified patrons, building trust in the review process. Whenever a user is holding a Verifier Token when creating a review, the token is burned and the NFT receives a "verified" attribute. These Verifier Tokens require payment of fees for businesses to mint, providing a revenue stream for Appraisr.
+
+However, users are unable to transfer or trade Verifier tokens, which prevents them from selling "verified" reviews, further reducing potential vectors of fraud or abuse.
+
+Reviews are also randomly divided into 5 separate groups. With multiple randomized groups, it further inhibits gaming the system from an organization's point of view. It requires 5x the amount of "faked" reviews to maliciously influence an organization's average rating across the multiple samples.
 
 ## Table of Contents
 
@@ -92,7 +96,7 @@ Successful response:
 
 ![deploy-scripts](./README/deploy-scripts.png)
 
-On a new terminal (Terminal 4), start the front end. Install dependencies and run the React app with:
+On a new terminal (Terminal 4), start the front end. Install dependencies and run the react.js app with:
 
 ```sh
 $ cd frontend
@@ -108,7 +112,7 @@ You should see the Appraisr home page at http://localhost:3000
 
 ### Read Reviews
 
-Users can read existing reviews by clicking the "See Reviews" button on the home page or on the organization selection modal. This can be accessed either with or without wallet connection.
+Users can read existing reviews by clicking the "See Reviews" button on the home page or on the organization selection modal. This can be accessed either with or without a wallet connection.
 
 Verified reviews are denoted with a green check mark.
 
@@ -118,7 +122,11 @@ Verified reviews are denoted with a green check mark.
 
 Users must connect with their wallet.
 
+![wallet-connect](./README/wallet-connect.gif)
+
 Users can upvote or downvote reviews by pressing the up/down icons on the reviews page.
+
+![vote](./README/vote.gif)
 
 Confirm the transaction request.
 
@@ -130,11 +138,15 @@ Users can write their own reviews for organizations by pressing the "+" button o
 
 Confirm the transaction request.
 
+![mint-review](./README/mint-review.gif)
+
 ### See My Reviews
 
 Users must connect with their wallet.
 
 Users can see the reviews they've written by navigating to the MyReviews tab. This tab is disabled for unconnected users.
+
+![my-review](./README/my-reviews.gif)
 
 ### Moralis Integration
 
