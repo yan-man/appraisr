@@ -74,7 +74,7 @@
 
 .title {
   position: relative;
-  top: -130px;
+  top: calc(-100vw * 0.15);
   padding-left: 4vw;
   color: white;
   font-weight: bold;
@@ -90,7 +90,7 @@
   gap: 2px;
   row-gap: 20px;
   position: relative;
-  top: -120px;
+  top: calc(-100vw * 0.13);
 }
 
 .ownThumbs {
@@ -101,7 +101,7 @@
   gap: 2px;
   row-gap: 20px;
   position: relative;
-  top: -100px;
+  top: calc(-100vw * 0.13);
 }
 
 .thumbnail {
@@ -181,7 +181,7 @@
 .ownListContent {
   background-color: #161616;
   height: 100vh;
-  margin-top: 150px;
+  margin-top: 250px;
 }
 
 .msg {
