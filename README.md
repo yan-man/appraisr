@@ -1,8 +1,10 @@
-# Appraisr
+![Appraisr](./README/Appraisr.png)
 
 Every time
 
 Appraisr is a decentralized ratings system similar to Yelp or Google Reviews.
+
+trustless, yet trusted ratings system.
 
 ## Table of Contents
 
