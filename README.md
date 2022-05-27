@@ -4,7 +4,7 @@ Appraisr is a decentralized, verified ratings system that uses fungible tokens a
 
 Users can leave reviews for businesses, or vote on reviews that already exist - helping other users build their reputation as a trusted reviewer. Every time a review is created, an NFT is minted to the author, and can be collected or traded on the open market.
 
-Businesses can also mint and transfer Verifier Tokens to verified patrons, building trust in the review process. Whenever a user is holding a Verifier Token when creating a review, the token is burned and the NFT receives a "verified" attribute. These Verifier Tokens require payment of fees for businesses to mint, providing a revenue stream for Appraisr.
+Businesses can also mint and transfer Verifier Tokens to verified patrons, building trust in the review process. Whenever a user is holding a Verifier Token when creating a review, the token is burned and the newly created review NFT receives a "verified" attribute. These Verifier Tokens require payment of fees for businesses to mint, providing a revenue stream for Appraisr.
 
 However, users are unable to transfer or trade Verifier tokens, which prevents them from selling "verified" reviews, further reducing potential vectors of fraud or abuse.
 
