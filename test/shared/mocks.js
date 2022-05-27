@@ -19,6 +19,7 @@ async function deployMockAppraiserOrganization(deployer) {
     deployer,
     AppraiserOrganization_ABI.abi
   );
+  await appraiserOrganization.mock.updateReviewGroupId.returns();
 
   return appraiserOrganization;
 }

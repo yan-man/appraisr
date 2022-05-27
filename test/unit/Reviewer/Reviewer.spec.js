@@ -44,12 +44,15 @@ const shouldDeploy = () => {
 
 const shouldManageReviews = () => {
   context(`# manage reviews`, async function () {
-    describe("...After mock AppraiserOrganization contract address is set", async () => {
+    describe("...After mock contract addresses set", async () => {
       beforeEach(async function () {
         this.WacArnolds = { orgId: 0 };
         await this.reviewer.setAppraiserOrganizationContractAddress(
           this.WacArnolds.orgId,
           this.mocks.mockAppraiserOrganization.address
+        );
+        await this.reviewer.setVRFv2ConsumerContractAddress(
+          this.users.deployer.address
         );
       });
       it(`should revert to mint review for non-valid org`, async function () {
@@ -114,6 +117,24 @@ const shouldManageReviews = () => {
             await expect(this.mintReviewTx)
               .to.emit(this.reviewer, `LogNewUser`)
               .withArgs(this.users.ashylarry.address);
+          });
+
+          it(`should updateReviewGroupId`, async function () {
+            await expect(
+              this.reviewer.updateReviewGroupId(
+                this.WacArnolds.orgId,
+                this.reviewId,
+                2
+              )
+            ).to.not.be.reverted;
+          });
+
+          it(`should revert on updateReviewGroupId as non VRF consumer`, async function () {
+            await expect(
+              this.reviewer
+                .connect(this.users.ashylarry)
+                .updateReviewGroupId(this.WacArnolds.orgId, this.reviewId, 2)
+            ).to.be.reverted;
           });
 
           it(`should not create a new user if ashylarry leaves 2nd review at WacArnolds`, async function () {
