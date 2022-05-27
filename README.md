@@ -4,6 +4,21 @@ Every time
 
 Appraisr is a decentralized ratings system similar to Yelp or Google Reviews.
 
+## Table of Contents
+
+- [System Requirements](#system-requirements)
+- [Quick Start](#quick-start)
+- User Guide
+  - Initial Configuration Settings
+  - Moralis
+- Smart Contracts
+  - Mechanics
+  - Chainlink VRF
+- Testing
+- Design Patterns
+- Troubleshooting
+- Further
+
 ## System Requirements
 
 - [Metamask](https://metamask.io/) wallet with [Chrome](https://www.google.com/chrome/) / [Brave](https://brave.com/) browser
@@ -22,6 +37,8 @@ Appraisr is a decentralized ratings system similar to Yelp or Google Reviews.
 
 ## Quick Start
 
+### Initial Setup and Dependencies
+
 On Terminal 1 clone this repository and install its dependencies:
 
 ```sh
@@ -30,11 +47,15 @@ $ cd appraisr
 $ npm install
 ```
 
+### Local Hardhat Node
+
 On the same terminal (Terminal 1), start Hardhat's network node:
 
 ```sh
 $ npx hardhat node
 ```
+
+### Connect Moralis to Ganache Proxy Server
 
 On a new terminal (Terminal 2), connect Moralis to Ganache Proxy Server via FRP, according to Moralis guide:
 
@@ -45,6 +66,8 @@ $ ./frpc -c frpc.ini
 Successful response:
 
 ![FRPC start](./README/frpc-start.png)
+
+### Deploy Smart Contracts
 
 On a new terminal (Terminal 3), go to the repository's root folder and run the script to deploy the collection of smart contracts and configure initial settings.
 
@@ -64,11 +87,35 @@ $ npm install
 $ npm run start
 ```
 
-You should see the Appraisr homepage at http://localhost:3000
+You should see the Appraisr home page at http://localhost:3000
 
-![homepage](./README/homepage.png)
+![homepage](./README/screenshots/homepage.png)
 
-### Initial Configuration Settings:
+## User Guide
+
+### Read Reviews
+
+Users can read existing reviews by clicking the "See Reviews" button on the home page or on the organizations modal. This can be accessed either with or without wallet connection.
+
+### Vote on Reviews
+
+Users must connect with their wallet.
+
+Users can upvote or downvote reviews by pressing the up/down icons on the reviews page.
+
+### Write a Review
+
+Users must connect with their wallet.
+
+Users can write their own reviews for organizations by pressing the "+" button on the organizations modal and submitting the form with a rating and review. Confirm the transaction request.
+
+### See My Reviews
+
+Users must connect with their wallet.
+
+Users can see the reviews they've written by navigating to the MyReviews tab. This tab is disabled for unconnected users.
+
+## Initial Configuration Settings:
 
 Deployment scripts access helper file [library.json](./frontend/src/helpers/library.json) (a backup sample file is found [here](./config/library.json)).
 
@@ -82,15 +129,33 @@ Hardhat test accounts:
 - 1 Verifier token is transferred to each of 5 test accounts (indexes `[1]...[5]`)
 - index `[18]` is organization admin account for Organization 1 (WacArnold's) and index `[19]` is organization admin account for Organization 1 (Studio54)
 
-## User Guide
+### Moralis Integration
 
-###
-
-### Moralis
+[web3uikit](https://github.com/web3ui/web3uikit) is integrated for UI. This allows Moralis to connect user wallets to the dApp. \*This has only been tested with Metamask wallet.
 
 ## Smart Contracts
 
 ## Mechanics
+
+### Contract Deployment
+
+1. `Reviewer.sol` contract must be
+
+### Creating Organizations
+
+Each time an organization is created, two corresponding contracts are deployed - `Verifier.sol` to manage Verifier ERC-1155 fungible tokens, and `AppraiserOrganization.sol` to manage ERC-1155 review NFTs.
+
+An admin for the organization should also be set.
+
+### Minting Review NFTs
+
+Each time a new review is created, a corresponding ERC-1155 NFT is minted to the reviewer. This NFT represents the review and serves as a tradeable asset for users to collect or potentially sell.
+
+For example, early or popular (highly upvoted or downvoted) reviews from well-known reviewers may garner demand.
+
+### Verified Reviews
+
+Each organization
 
 ### Chainlink VRF
 
