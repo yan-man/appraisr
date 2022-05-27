@@ -116,7 +116,8 @@ contract AppraiserOrganization is ERC1155, Ownable {
             rating: rating_,
             review: review_,
             unixtime: block.timestamp,
-            isVerified: _isVerified
+            isVerified: _isVerified,
+            groupId: 0
         });
         s_reviews[_reviewId] = review;
         s_userReviews[reviewerAddr_].push(_reviewId);
@@ -124,6 +125,16 @@ contract AppraiserOrganization is ERC1155, Ownable {
 
         emit LogNFTReviewMinted(_reviewId);
         return _reviewId;
+    }
+
+    function updateReviewGroupId(uint256 reviewId_, uint256 groupId_)
+        public
+        onlyReviewerContract
+    {
+        if (s_reviews[_reviewId].groupId != 0) {
+            revert AppraiserOrganization__GroupIdAlreadySet();
+        }
+        s_reviews[reviewId_].groupId_ = groupId_;
     }
 
     function voteOnReview(

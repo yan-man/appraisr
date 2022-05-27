@@ -47,13 +47,6 @@ contract Reviewer is Ownable {
         emit LogMintReview(_reviewId);
     }
 
-    function setAppraiserOrganizationContractAddress(
-        uint256 orgId_,
-        address contractAddr_
-    ) external onlyOwner {
-        s_aoContracts[orgId_] = contractAddr_;
-    }
-
     function voteOnReview(
         uint256 orgId_,
         uint256 reviewId_,
@@ -82,6 +75,24 @@ contract Reviewer is Ownable {
         emit LogVoteOnReview(_msgSender(), orgId_, reviewId_);
     }
 
+    function updateReviewGroupId(
+        uint256 orgId_,
+        uint256 reviewId_,
+        uint256 groupId_
+    ) external {
+        AppraiserOrganization(s_aoContracts[orgId_]).updateReviewGroupId(
+            reviewId_,
+            groupId_
+        );
+    }
+
+    function setAppraiserOrganizationContractAddress(
+        uint256 orgId_,
+        address contractAddr_
+    ) external onlyOwner {
+        s_aoContracts[orgId_] = contractAddr_;
+    }
+
     function _isValidOrgId(uint256 orgId_) private view {
         if (address(s_aoContracts[orgId_]) == address(0)) {
             revert Appraiser__InvalidOrgId();
@@ -97,6 +108,12 @@ contract Reviewer is Ownable {
             });
 
             emit LogNewUser(addr_);
+        }
+    }
+
+    function _isValidOrgId(uint256 orgId_) private view {
+        if (address(s_aoContracts[orgId_]) == address(0)) {
+            revert Appraiser__InvalidOrgId();
         }
     }
 }
