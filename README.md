@@ -133,29 +133,36 @@ Hardhat test accounts:
 
 [web3uikit](https://github.com/web3ui/web3uikit) is integrated for UI. This allows Moralis to connect user wallets to the dApp. \*This has only been tested with Metamask wallet.
 
-## Smart Contracts
-
-## Mechanics
+## Smart Contracts & Mechanics
 
 ### Contract Deployment
 
-1. `Reviewer.sol` contract must be
+1. `Reviewer.sol` contract must be deployed first. Its contract address is required for the following contract deployments.
+2. Deploy the `Appraiser.sol` and `VRFv2Consumer.sol` contracts next, accepting the `Reviewer.sol` contract in its constructor.
 
 ### Creating Organizations
 
 Each time an organization is created, two corresponding contracts are deployed - `Verifier.sol` to manage Verifier ERC-1155 fungible tokens, and `AppraiserOrganization.sol` to manage ERC-1155 review NFTs.
 
-An admin for the organization should also be set.
+An Organization Admin address should also be set during organization creation. This admin account has the ability to mint more Verifier Tokens or transfer them to Users.
 
 ### Minting Review NFTs
 
-Each time a new review is created, a corresponding ERC-1155 NFT is minted to the reviewer. This NFT represents the review and serves as a tradeable asset for users to collect or potentially sell.
+Each time a new review is created, a corresponding ERC-1155 NFT is minted to the reviewer. This NFT represents the review and serves as a tradeable asset for Users to collect or potentially sell.
 
 For example, early or popular (highly upvoted or downvoted) reviews from well-known reviewers may garner demand.
 
-### Verified Reviews
+### Verifier Tokens & Verified Reviews
 
-Each organization
+Verifier Tokens help to create "verified" reviews. Organizations send Verifier Tokens to Users that are verified patrons. If a User writes a review while holding a Verifier Token, the token is burned, resulting in a special class of NFT that is created, which has "Verified" attributes.
+
+(This mechanism is similar to the Bored Apes Yacht Club "Serum" which mutates a Bored Ape into a Mutant Ape via burning of the ERC-1155 Serum NFT.)
+
+Users cannot transfer Verifier Tokens to anyone else (to prevent Users from selling verified reviews and compromising the integrity of the ratings system). Tokens are not meant to hold monetary value, merely facilitate the process of verifying reviews.
+
+During organization creation, an initial default number (1,000) of Verifier Tokens are minted to the Organization Admin. The Admin can mint more Verifier Tokens at any time (to later be distributed to their customers), by paying fees based on a defined floor price per Verifier Token.
+
+In theory, organizations should desire more verified reviews, as they are more trustworthy and therefore valuable. Thus, organizations should be incentivized to purchase Verifier Tokens. This serves as a revenue stream.
 
 ### Chainlink VRF
 
