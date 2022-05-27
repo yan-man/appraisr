@@ -8,16 +8,27 @@ Appraisr is a decentralized ratings system similar to Yelp or Google Reviews.
 
 - [System Requirements](#system-requirements)
 - [Quick Start](#quick-start)
-- User Guide
-  - Initial Configuration Settings
-  - Moralis
-- Smart Contracts
-  - Mechanics
-  - Chainlink VRF
-- Testing
-- Design Patterns
-- Troubleshooting
-- Further
+  - [Initial Setup and Dependencies](#initial-setup-and-dependencies)
+  - [Local Hardhat Node](#local-hardhat-node)
+  - [Deploy Smart Contracts](#deploy-smart-contracts)
+- [User Guide](#user-guide)
+  - [Read Reviews](#read-reviews)
+  - [Vote on Reviews](#vote-on-reviews)
+  - [Write a Review](#write-a-review)
+  - [See My Reviews](#see-my-reviews)
+  - [Moralis Integration](#moralis-integration)
+- [Smart Contract & Mechanics](#smart-contract--mechanics)
+  - [Contract Deployment](#contract-deployment)
+  - [Local Hardhat Node](#local-hardhat-node)
+  - [Creating Organizations](#creating-organizations)
+  - [Minting Review NFTs](#minting-review-nfts)
+  - [Verifier Tokens & Verified Reviews](#verifier-tokens--verified-reviews)
+  - [Chainlink VRF](#chainlink-vrf)
+- [Initial Configuration Settings](#initial-configuration-settings)
+- [Testing](#testing)
+- [Design Patterns](#design-patterns)
+- [Troubleshooting](#troubleshooting)
+- [Further/Next Steps](#further--next-steps)
 
 ## System Requirements
 
@@ -127,7 +138,7 @@ Users can see the reviews they've written by navigating to the MyReviews tab. Th
 
 [web3uikit](https://github.com/web3ui/web3uikit) is integrated for the UI. This allows Moralis to connect user wallets to the dApp. \*This demo has only been tested with Metamask wallet.
 
-## Smart Contracts & Mechanics
+## Smart Contract & Mechanics
 
 ### Contract Deployment
 
