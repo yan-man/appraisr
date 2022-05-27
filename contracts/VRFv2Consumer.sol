@@ -9,6 +9,15 @@ import "./Reviewer.sol";
 contract VRFv2Consumer is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface COORDINATOR;
 
+    struct Request {
+        uint256 orgId;
+        uint256 reviewId;
+        uint256 requestId;
+        uint256 randomWord;
+        uint256 groupId;
+        bool isConsumed; // has the random word been used?
+    }
+
     address private s_reviewerAddr;
     uint64 s_subscriptionId;
 
@@ -23,7 +32,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     uint32 numWords = 1;
 
     mapping(uint256 => uint256) public s_assignedGroup; // requestId -> groupId
-    mapping(uint256 => uint256[2]) public s_requestIds; // requestId -> [orgId, reviewId]
+    mapping(uint256 => Request) public s_requests; // requestId -> [orgId, reviewId]
     address s_owner;
 
     constructor(uint64 subscriptionId, address reviewerAddr_)
@@ -48,7 +57,15 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
             callbackGasLimit,
             numWords
         );
-        s_requestIds[_requestId] = [orgId_, reviewId_];
+        Request memory _request = Request({
+            orgId: orgId_,
+            reviewId: reviewId_,
+            requestId: _requestId,
+            randomWord: 0,
+            groupId: 0,
+            isConsumed: false
+        });
+        s_requests[_requestId] = _request;
     }
 
     function fulfillRandomWords(
@@ -56,11 +73,10 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
         uint256[] memory randomWords
     ) internal override {
         uint256 _groupId = _convertToGroupId(randomWords[0]);
-        uint256[2] _ids = s_requestIds[requestId_];
-        uint256 _orgId = _ids[0];
-        uint256 _reviewId = _ids[1];
-
-        _updateReviewGroupId(_orgId, _reviewId, _groupId);
+        Request memory _request = s_requests[requestId_]; // storage - to access by reference; memory - to create separate copy. Test gas diff in this case
+        s_requests[requestId_].randomWord = randomWords[0];
+        s_requests[requestId_].groupId = _groupId;
+        _updateReviewGroupId(_request.orgId, _request.reviewId, _groupId);
     }
 
     function _updateReviewGroupId(
@@ -72,8 +88,12 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
         reviewerContract.updateReviewGroupId(orgId_, reviewId_, groupId_);
     }
 
-    function _convertToGroupId(uint256 randomWord_) private {
-        uint256 _randomRange = (randomWord_ % 5);
+    function _convertToGroupId(uint256 randomWord_)
+        private
+        pure
+        returns (uint256)
+    {
+        uint256 _randomRange = (randomWord_ % 5) + 1;
         return _randomRange;
     }
 
