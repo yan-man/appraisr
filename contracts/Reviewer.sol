@@ -1,0 +1,130 @@
+//SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
+
+import "hardhat/console.sol";
+
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+import "./Reviews.sol";
+import "./AppraiserOrganization.sol";
+import "./Users.sol";
+import "./VRFv2Consumer.sol";
+
+contract Reviewer is Ownable {
+    using Counters for Counters.Counter;
+    using Users for Users.User;
+
+    // state vars
+    mapping(uint256 => address) public s_aoContracts; // orgId -> deployed AO contract
+    mapping(uint256 => mapping(uint256 => address)) public s_reviews; // orgId -> reviewId -> reviewer address
+    mapping(address => Users.User) public s_users; // user/reviewer address -> User struct
+    address private s_VRFv2ConsumerContractAddr;
+
+    // events
+    event LogMintReview(uint256 reviewId);
+    event LogNewUser(address addr);
+    event LogVoteOnReview(address voter, uint256 orgId, uint256 reviewId);
+
+    // errors
+    error Reviewer__InvalidOrgId();
+    error Reviewer__VoterMatchesAuthor();
+    error Reviewer__InvalidReview();
+    error Reviewer__OnlyVRFv2ConsumerContractAddr();
+
+    // modifiers
+    modifier isValidOrgId(uint256 orgId_) {
+        _isValidOrgId(orgId_);
+        _;
+    }
+
+    function mintReview(
+        uint256 orgId_,
+        uint256 rating_,
+        string calldata review_
+    ) external isValidOrgId(orgId_) {
+        uint256 _reviewId = AppraiserOrganization(s_aoContracts[orgId_])
+            .mintReviewNFT(_msgSender(), rating_, review_);
+        s_reviews[orgId_][_reviewId] = _msgSender();
+        VRFv2Consumer(s_VRFv2ConsumerContractAddr).requestRandomWords(
+            orgId_,
+            _reviewId
+        );
+        addUser(_msgSender());
+        emit LogMintReview(_reviewId);
+    }
+
+    function voteOnReview(
+        uint256 orgId_,
+        uint256 reviewId_,
+        bool isUpvote_
+    ) external isValidOrgId(orgId_) {
+        address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
+        if (_reviewAuthorAddr == address(0)) {
+            revert Reviewer__InvalidReview();
+        }
+        if (_msgSender() == _reviewAuthorAddr) {
+            revert Reviewer__VoterMatchesAuthor();
+        }
+
+        Users.User storage _reviewUser = s_users[s_reviews[orgId_][reviewId_]];
+        if (isUpvote_ == true) {
+            _reviewUser.upvotes += 1;
+        } else {
+            _reviewUser.downvotes += 1;
+        }
+        AppraiserOrganization(s_aoContracts[orgId_]).voteOnReview(
+            _msgSender(),
+            reviewId_,
+            isUpvote_
+        );
+
+        emit LogVoteOnReview(_msgSender(), orgId_, reviewId_);
+    }
+
+    function updateReviewGroupId(
+        uint256 orgId_,
+        uint256 reviewId_,
+        uint256 groupId_
+    ) external {
+        if (s_VRFv2ConsumerContractAddr != _msgSender()) {
+            revert Reviewer__OnlyVRFv2ConsumerContractAddr();
+        }
+        AppraiserOrganization(s_aoContracts[orgId_]).updateReviewGroupId(
+            reviewId_,
+            groupId_
+        );
+    }
+
+    function setVRFv2ConsumerContractAddress(address VRFv2ConsumerContractAddr_)
+        external
+        onlyOwner
+    {
+        s_VRFv2ConsumerContractAddr = VRFv2ConsumerContractAddr_;
+    }
+
+    function setAppraiserOrganizationContractAddress(
+        uint256 orgId_,
+        address contractAddr_
+    ) external onlyOwner {
+        s_aoContracts[orgId_] = contractAddr_;
+    }
+
+    function addUser(address addr_) private {
+        if (s_users[addr_].isRegistered == false) {
+            s_users[addr_] = Users.User({
+                upvotes: 0,
+                downvotes: 0,
+                isRegistered: true
+            });
+
+            emit LogNewUser(addr_);
+        }
+    }
+
+    function _isValidOrgId(uint256 orgId_) private view {
+        if (address(s_aoContracts[orgId_]) == address(0)) {
+            revert Reviewer__InvalidOrgId();
+        }
+    }
+}

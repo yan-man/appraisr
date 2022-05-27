@@ -1,0 +1,68 @@
+[
+  {
+    "URI": "wacURI",
+    "Name": "WacArnold's",
+    "Description": "Big Wacs since 2003. 69,420 sold daily.",
+    "Category": "Restaurant",
+    "Admin": "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
+    "Reviews": [
+      {
+        "Author": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+        "Rating": 23,
+        "Review": "WacArnolds ruined my life!",
+        "Upvotes": 0,
+        "Downvotes": 0,
+        "reviewId": 1,
+        "Timestamp": 1653685417,
+        "IsVerified": true
+      },
+      {
+        "Author": "0x2546BcD3c84621e976D8185a91A922aE77ECEc30",
+        "Rating": 86,
+        "Review": "What are the top 5 restaurants of all time? WacArnolds, WacArnolds, WacArnolds, WacArnolds, and WacArnolds",
+        "Upvotes": 0,
+        "Downvotes": 0,
+        "reviewId": 2,
+        "Timestamp": 1653685418,
+        "IsVerified": true
+      }
+    ],
+    "orgId": 0,
+    "AppraiserOrganization": "0x532323de74BAb864b7005D910E5bD8562D038b9b",
+    "Verifier": "0x2b961E3959b79326A8e7F64Ef0d2d825707669b5",
+    "AvgRating": 54.5
+  },
+  {
+    "URI": "s54URI",
+    "Name": "Studio 54",
+    "Description": "Frequented by Rick James.",
+    "Category": "Nightclub",
+    "AvgRating": 71.5,
+    "Admin": "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
+    "Reviews": [
+      {
+        "Author": "0xcd3B766CCDd6AE721141F452C550Ca635964ce71",
+        "Rating": 98,
+        "Review": "I played basketball with Prince",
+        "Upvotes": 0,
+        "Downvotes": 0,
+        "reviewId": 1,
+        "Timestamp": 1653685416,
+        "IsVerified": true
+      },
+      {
+        "Author": "0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097",
+        "Rating": 45,
+        "Review": "I got kicked in the chest",
+        "Upvotes": 0,
+        "Downvotes": 0,
+        "reviewId": 2,
+        "Timestamp": 1653685419,
+        "IsVerified": true
+      }
+    ],
+    "orgId": 1,
+    "AppraiserOrganization": "0x9CbA1bd8bfe8F5376d45F0Ba25287c16FDBe0268",
+    "Verifier": "0xD2e813C297f3cf9985bAa5331CEC80778755BF2a"
+  }
+]
