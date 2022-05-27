@@ -8,7 +8,7 @@ const shouldDeploy = () => {
         this.users.deployer.address
       );
     });
-    it.only("should revert on requestRandomWords from non owner", async function () {
+    it("should revert on requestRandomWords from non owner", async function () {
       await expect(
         this.VRFv2Consumer.connect(this.users.ashylarry).requestRandomWords(
           0,
@@ -16,24 +16,29 @@ const shouldDeploy = () => {
         )
       ).to.be.reverted;
     });
-    // it.only("should requestRandomWords from owner", async function () {
-    //   await this.VRFv2Consumer.setReviewerAddr(
-    //     this.users.sampleReviewer.address
-    //   );
-    //   await this.VRFv2Consumer.connect(
-    //     this.users.sampleReviewer
-    //   ).requestRandomWords(0, 0);
-    //   // await expect(
-    //   //   this.VRFv2Consumer.connect(
-    //   //     this.users.sampleReviewer
-    //   //   ).requestRandomWords(0, 0)
-    //   // ).to.be.reverted;
-    // });
+    it("should requestRandomWords from owner", async function () {
+      await expect(
+        this.VRFv2Consumer.connect(this.users.deployer).requestRandomWords(0, 0)
+      ).to.not.be.reverted;
+    });
+    it("should setReviewerAddr from owner", async function () {
+      await expect(
+        this.VRFv2Consumer.connect(this.users.deployer).setReviewerAddr(
+          ethers.constants.AddressZero
+        )
+      ).to.not.be.reverted;
+    });
+
+    it("should revert if setReviewerAddr from non-owner", async function () {
+      await expect(
+        this.VRFv2Consumer.connect(this.users.ashylarry).setReviewerAddr(
+          ethers.constants.AddressZero
+        )
+      ).to.be.reverted;
+    });
   });
 };
 
 module.exports = {
   shouldDeploy,
-  // shouldManageReviews,
-  // shouldManageReviewsRatings,
 };
