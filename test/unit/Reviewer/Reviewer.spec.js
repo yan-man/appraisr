@@ -62,7 +62,7 @@ const shouldManageReviews = () => {
             50,
             "test review"
           )
-        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
+        ).to.be.revertedWith(`Reviewer__InvalidOrgId`);
       });
       it(`should not revert to mint review for valid org`, async function () {
         await expect(
@@ -211,7 +211,7 @@ const shouldManageReviewsRatings = () => {
       it(`should revert if org doesn't exist`, async function () {
         await expect(
           this.reviewer.connect(this.users.tybiggums).voteOnReview(5, 5, true)
-        ).to.be.revertedWith(`Appraiser__InvalidOrgId`);
+        ).to.be.revertedWith(`Reviewer__InvalidOrgId`);
       });
 
       it(`should revert if review doesn't exist`, async function () {
@@ -219,7 +219,7 @@ const shouldManageReviewsRatings = () => {
           this.reviewer
             .connect(this.users.tybiggums)
             .voteOnReview(this.WacArnolds.orgId, 5, true)
-        ).to.be.revertedWith(`Appraiser__InvalidReview`);
+        ).to.be.revertedWith(`Reviewer__InvalidReview`);
       });
 
       it(`should revert if ashylarry tries to upvote own review`, async function () {
@@ -231,7 +231,7 @@ const shouldManageReviewsRatings = () => {
               this.mockedResponses.mintReviewNFT,
               true
             )
-        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
+        ).to.be.revertedWith(`Reviewer__VoterMatchesAuthor`);
       });
 
       it(`should revert if ashylarry tries to downvote own review`, async function () {
@@ -243,7 +243,7 @@ const shouldManageReviewsRatings = () => {
               this.mockedResponses.mintReviewNFT,
               true
             )
-        ).to.be.revertedWith(`Appraiser__VoterMatchesAuthor`);
+        ).to.be.revertedWith(`Reviewer__VoterMatchesAuthor`);
       });
 
       it(`should update ashylarry's upvotes when tybiggums upvotes ashylarry's review`, async function () {

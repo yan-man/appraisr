@@ -27,9 +27,9 @@ contract Reviewer is Ownable {
     event LogVoteOnReview(address voter, uint256 orgId, uint256 reviewId);
 
     // errors
-    error Appraiser__InvalidOrgId();
-    error Appraiser__VoterMatchesAuthor();
-    error Appraiser__InvalidReview();
+    error Reviewer__InvalidOrgId();
+    error Reviewer__VoterMatchesAuthor();
+    error Reviewer__InvalidReview();
     error Reviewer__OnlyVRFv2ConsumerContractAddr();
 
     // modifiers
@@ -61,10 +61,10 @@ contract Reviewer is Ownable {
     ) external isValidOrgId(orgId_) {
         address _reviewAuthorAddr = s_reviews[orgId_][reviewId_];
         if (_reviewAuthorAddr == address(0)) {
-            revert Appraiser__InvalidReview();
+            revert Reviewer__InvalidReview();
         }
         if (_msgSender() == _reviewAuthorAddr) {
-            revert Appraiser__VoterMatchesAuthor();
+            revert Reviewer__VoterMatchesAuthor();
         }
 
         Users.User storage _reviewUser = s_users[s_reviews[orgId_][reviewId_]];
@@ -124,7 +124,7 @@ contract Reviewer is Ownable {
 
     function _isValidOrgId(uint256 orgId_) private view {
         if (address(s_aoContracts[orgId_]) == address(0)) {
-            revert Appraiser__InvalidOrgId();
+            revert Reviewer__InvalidOrgId();
         }
     }
 }
