@@ -48,6 +48,7 @@ jobs:
 workflows:
   test-app:
     jobs:
+      - fetch-code
       - install-node-and-test:
           requires:
             - fetch-code
