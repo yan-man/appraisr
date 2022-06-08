@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/yan-man/appraisr/branch/master/graph/badge.svg?token=YFSBWD2F1Z)](https://codecov.io/gh/yan-man/appraisr)
+
 ![Appraisr](./README/appraisr.png)
 
 Appraisr is a decentralized, verified ratings system that uses fungible tokens and NFTs to incentivize users to rate and review businesses, and vote on other reviews, in a trustless fashion.
