@@ -10,16 +10,17 @@ import "./Verifier.sol";
 import "./Users.sol"; // to use struct
 import "./Reviewer.sol"; // to use struct
 
+/// @author Yan Man
+/// @title Appraiser main contract
 contract Appraiser is Ownable {
     using Counters for Counters.Counter;
 
+    // State Vars
     struct Deployed {
         address AppraiserOrganization;
         address Verifier;
     }
-
-    // State Vars
-    Counters.Counter public s_orgIds;
+    Counters.Counter public s_orgIds; // 0-indexed
     mapping(uint256 => uint256) public s_organizations; // orgId -> intbool isActive
     mapping(uint256 => Deployed) public s_deployedContracts; // orgId -> [AppraiserOrganization address, Verifier address]
     mapping(string => uint256) private s_orgNames; // org name -> intbool exists flag
@@ -36,6 +37,12 @@ contract Appraiser is Ownable {
         s_reviewerContract = reviewerContract_;
     }
 
+    /** 
+    @dev add new organization to be open for reviews
+    @param name_ name of org
+    @param addr_ account representing the org
+    @param URI_ IPFS URL for Verifier token / Review NFT 
+     */
     function addOrganization(
         string calldata name_,
         address addr_,
@@ -50,13 +57,13 @@ contract Appraiser is Ownable {
         s_orgNames[name_] = 1;
         s_orgIds.increment();
 
-        address _verifierAddr = deployVerifierNFTContract(
+        address _verifierAddr = _deployVerifierTokenContract(
             _orgId,
             name_,
             addr_,
             URI_
         );
-        address _aoContract = deployAppraiserOrganizationNFTContract(
+        address _aoContract = _deployAppraiserOrganizationNFTContract(
             _orgId,
             name_,
             addr_,
@@ -76,24 +83,41 @@ contract Appraiser is Ownable {
         emit LogAddOrganization(_orgId);
     }
 
-    function deployVerifierNFTContract(
+    /**
+    @dev deploy Verifier ERC1155 token
+    @param orgId_ id
+    @param name_ match organization name
+    @param addr_ organization admin account address
+    @param URI_ IPFS URL for token
+    @return Verifier contract address
+     */
+    function _deployVerifierTokenContract(
         uint256 orgId_,
         string memory name_,
         address addr_,
         string memory URI_
-    ) internal returns (address) {
+    ) private returns (address) {
         Verifier _verifier = new Verifier(orgId_, name_, addr_, URI_, owner());
 
         return address(_verifier);
     }
 
-    function deployAppraiserOrganizationNFTContract(
+    /**
+    @dev deploy Verifier ERC1155 token
+    @param orgId_ id
+    @param name_ match organization name
+    @param addr_ organization admin account address
+    @param URI_ IPFS URL for token
+    @param verifierAddr_ Verifier contract address
+    @return AppraiserOrganization contract address
+     */
+    function _deployAppraiserOrganizationNFTContract(
         uint256 orgId_,
         string calldata name_,
         address addr_,
         string calldata URI_,
         address verifierAddr_
-    ) internal returns (address) {
+    ) private returns (address) {
         AppraiserOrganization _ao = new AppraiserOrganization(
             orgId_,
             name_,
@@ -105,6 +129,9 @@ contract Appraiser is Ownable {
         return address(_ao);
     }
 
+    /**
+    @return # of orgs deployed
+     */
     function numberOrganizations() external view returns (uint256) {
         return s_orgIds.current();
     }
