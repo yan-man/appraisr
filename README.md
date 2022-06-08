@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/yan-man/appraisr/branch/master/graph/badge.svg?token=YFSBWD2F1Z)](https://codecov.io/gh/yan-man/appraisr)
+[![codecov](https://codecov.io/gh/yan-man/appraisr/branch/master/graph/badge.svg?token=YFSBWD2F1Z)](https://codecov.io/gh/yan-man/appraisr) [![CircleCI](https://circleci.com/gh/yan-man/appraisr/tree/master.svg?style=shield)](https://circleci.com/gh/yan-man/appraisr/tree/master)
 
 ![Appraisr](./README/appraisr.png)
 
