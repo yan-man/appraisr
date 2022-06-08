@@ -37,6 +37,13 @@ contract Appraiser is Ownable {
         s_reviewerContract = reviewerContract_;
     }
 
+    /**
+    @return # of orgs deployed
+     */
+    function numberOrganizations() external view returns (uint256) {
+        return s_orgIds.current();
+    }
+
     /** 
     @dev add new organization to be open for reviews
     @param name_ name of org
@@ -127,12 +134,5 @@ contract Appraiser is Ownable {
             s_reviewerContract
         );
         return address(_ao);
-    }
-
-    /**
-    @return # of orgs deployed
-     */
-    function numberOrganizations() external view returns (uint256) {
-        return s_orgIds.current();
     }
 }
