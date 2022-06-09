@@ -11,6 +11,8 @@ import "./AppraiserOrganization.sol";
 import "./Users.sol";
 import "./VRFv2Consumer.sol";
 
+/// @author Yan Man
+/// @title Reviewer contract for minting reviews. Manage reviews across all orgs
 contract Reviewer is Ownable {
     using Counters for Counters.Counter;
     using Users for Users.User;
@@ -34,10 +36,19 @@ contract Reviewer is Ownable {
 
     // modifiers
     modifier isValidOrgId(uint256 orgId_) {
-        _isValidOrgId(orgId_);
+        if (address(s_aoContracts[orgId_]) == address(0)) {
+            revert Reviewer__InvalidOrgId();
+        }
         _;
     }
 
+    /** 
+    @dev mint reviews. Also creates a user profile if it does not yet exist
+    call VRF to get random group for user
+    @param orgId_ org Id
+    @param rating_ 1-100
+    @param review_ text description of review
+     */
     function mintReview(
         uint256 orgId_,
         uint256 rating_,
@@ -50,10 +61,16 @@ contract Reviewer is Ownable {
             orgId_,
             _reviewId
         );
-        addUser(_msgSender());
+        _addUser(_msgSender());
         emit LogMintReview(_reviewId);
     }
 
+    /** 
+    @dev upvote/downvote existing reviews. Check that orgId is valid first
+    @param orgId_ org Id
+    @param reviewId_ review Id
+    @param isUpvote_ upvote or downvote
+     */
     function voteOnReview(
         uint256 orgId_,
         uint256 reviewId_,
@@ -82,6 +99,12 @@ contract Reviewer is Ownable {
         emit LogVoteOnReview(_msgSender(), orgId_, reviewId_);
     }
 
+    /** 
+    @dev called after VRF filled, and random group number is retrieved 
+    @param orgId_ org Id
+    @param reviewId_ review Id
+    @param groupId_ group Id to set for user
+     */
     function updateReviewGroupId(
         uint256 orgId_,
         uint256 reviewId_,
@@ -96,6 +119,10 @@ contract Reviewer is Ownable {
         );
     }
 
+    /** 
+    @dev set VRF consumer contract address
+    @param VRFv2ConsumerContractAddr_ set contract address
+     */
     function setVRFv2ConsumerContractAddress(address VRFv2ConsumerContractAddr_)
         external
         onlyOwner
@@ -103,6 +130,11 @@ contract Reviewer is Ownable {
         s_VRFv2ConsumerContractAddr = VRFv2ConsumerContractAddr_;
     }
 
+    /** 
+    @dev set AppraiserOrganization contract address
+    @param orgId_ org Id
+    @param contractAddr_ set contract addr for specific org
+     */
     function setAppraiserOrganizationContractAddress(
         uint256 orgId_,
         address contractAddr_
@@ -110,7 +142,11 @@ contract Reviewer is Ownable {
         s_aoContracts[orgId_] = contractAddr_;
     }
 
-    function addUser(address addr_) private {
+    /** 
+    @dev add new user if needed
+    @param addr_ user address
+     */
+    function _addUser(address addr_) private {
         if (s_users[addr_].isRegistered == false) {
             s_users[addr_] = Users.User({
                 upvotes: 0,
@@ -119,12 +155,6 @@ contract Reviewer is Ownable {
             });
 
             emit LogNewUser(addr_);
-        }
-    }
-
-    function _isValidOrgId(uint256 orgId_) private view {
-        if (address(s_aoContracts[orgId_]) == address(0)) {
-            revert Reviewer__InvalidOrgId();
         }
     }
 }

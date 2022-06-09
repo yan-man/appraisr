@@ -11,6 +11,8 @@ import "./Verifier.sol";
 import "./Organizations.sol";
 import "./Reviews.sol";
 
+/// @author Yan Man
+/// @title AppraiserOrganization contract for minting review NFTs. Deploy 1 contract per organization.
 contract AppraiserOrganization is ERC1155, Ownable {
     using Counters for Counters.Counter;
     using Organizations for Organizations.Organization;
@@ -27,7 +29,7 @@ contract AppraiserOrganization is ERC1155, Ownable {
     mapping(uint256 => uint256) public s_downvoteCount; // reviewId -> # downvotes
     mapping(address => uint256[]) public s_userReviews; // author address -> [reviewIds]
 
-    Counters.Counter private _s_reviewIds;
+    Counters.Counter private _s_reviewIds; // 1-indexed
     Organizations.Organization private _s_organization;
     address private _s_verifierContractAddress;
     address private _s_reviewerContractAddress;
@@ -96,6 +98,80 @@ contract AppraiserOrganization is ERC1155, Ownable {
         _s_reviewIds.increment();
     }
 
+    /** 
+    @dev voteOnReview. Upvote or downvote. Invoked by Reviewer contract
+    @param reviewer_ address of reviewer
+    @param reviewId_ review Id
+    @param isUpvote_ upvote or downvote
+     */
+    function voteOnReview(
+        address reviewer_,
+        uint256 reviewId_,
+        bool isUpvote_
+    ) external validateVoter(reviewer_, reviewId_, isUpvote_) {
+        if (isUpvote_ == true) {
+            s_upvotes[reviewId_][reviewer_] = true;
+            uint256 count = s_upvoteCount[reviewId_];
+            s_upvoteCount[reviewId_] = count + 1;
+        } else {
+            s_downvotes[reviewId_][reviewer_] = true;
+            uint256 count = s_downvoteCount[reviewId_];
+            s_downvoteCount[reviewId_] = count + 1;
+        }
+        emit LogNFTReviewVote(reviewId_);
+    }
+
+    /** 
+    @dev check on whether user has voted on current review already. Cannot vote multiple times on same review
+    @param reviewer_ address of reviewer
+    @param reviewId_ review Id
+     */
+    function hasVoted(address reviewer_, uint256 reviewId_)
+        external
+        view
+        returns (bool)
+    {
+        return
+            s_upvotes[reviewId_][reviewer_] ||
+            s_downvotes[reviewId_][reviewer_];
+    }
+
+    /** 
+    @dev get current reviewId
+    @return id
+     */
+    function currentReviewId() external view returns (uint256) {
+        return _s_reviewIds.current();
+    }
+
+    /** 
+    @dev get _s_organization private var Org struct
+    @return Organization struct
+     */
+    function organization()
+        external
+        view
+        returns (Organizations.Organization memory)
+    {
+        return _s_organization;
+    }
+
+    /** 
+    @dev get number of reviews given by author
+    @param author_ author address
+    @return # of reviews 
+     */
+    function numUserReviews(address author_) external view returns (uint256) {
+        return s_userReviews[author_].length;
+    }
+
+    /** 
+    @dev mint review. Burn Verifier token if valid. Invoked by Reviewer contract
+    @param reviewerAddr_ address of reviewer
+    @param rating_ 1-100
+    @param review_ text description of review
+    @return reviewId
+     */
     function mintReviewNFT(
         address reviewerAddr_,
         uint256 rating_,
@@ -128,6 +204,11 @@ contract AppraiserOrganization is ERC1155, Ownable {
         return _reviewId;
     }
 
+    /** 
+    @dev after VRF fulfillment, update groupId for given review. Invoked by Reviewer contract
+    @param reviewId_ review Id
+    @param groupId_ group Id to set for review Id
+     */
     function updateReviewGroupId(uint256 reviewId_, uint256 groupId_)
         public
         onlyReviewerContract
@@ -136,48 +217,5 @@ contract AppraiserOrganization is ERC1155, Ownable {
             revert AppraiserOrganization__GroupIdAlreadySet();
         }
         s_reviews[reviewId_].groupId = groupId_;
-    }
-
-    function voteOnReview(
-        address reviewer_,
-        uint256 reviewId_,
-        bool isUpvote_
-    ) external validateVoter(reviewer_, reviewId_, isUpvote_) {
-        if (isUpvote_ == true) {
-            s_upvotes[reviewId_][reviewer_] = true;
-            uint256 count = s_upvoteCount[reviewId_];
-            s_upvoteCount[reviewId_] = count + 1;
-        } else {
-            s_downvotes[reviewId_][reviewer_] = true;
-            uint256 count = s_downvoteCount[reviewId_];
-            s_downvoteCount[reviewId_] = count + 1;
-        }
-        emit LogNFTReviewVote(reviewId_);
-    }
-
-    function hasVoted(address reviewer_, uint256 reviewId_)
-        external
-        view
-        returns (bool)
-    {
-        return
-            s_upvotes[reviewId_][reviewer_] ||
-            s_downvotes[reviewId_][reviewer_];
-    }
-
-    function currentReviewId() external view returns (uint256) {
-        return _s_reviewIds.current();
-    }
-
-    function organization()
-        external
-        view
-        returns (Organizations.Organization memory)
-    {
-        return _s_organization;
-    }
-
-    function numUserReviews(address author_) external view returns (uint256) {
-        return s_userReviews[author_].length;
     }
 }
