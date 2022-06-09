@@ -12,7 +12,7 @@ import "./Reviews.sol";
 import "./Appraiser.sol";
 
 /// @author Yan Man
-/// @title Verifier fungible token contract
+/// @title Verifier fungible token contract. Each org deploys one of these contracts
 contract Verifier is ERC1155, Ownable, AccessControl {
     using Counters for Counters.Counter;
     using Reviews for Reviews.Review;
