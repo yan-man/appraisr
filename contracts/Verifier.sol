@@ -11,6 +11,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Reviews.sol";
 import "./Appraiser.sol";
 
+/// @author Yan Man
+/// @title Verifier fungible token contract. Each org deploys one of these contracts
 contract Verifier is ERC1155, Ownable, AccessControl {
     using Counters for Counters.Counter;
     using Reviews for Reviews.Review;
@@ -35,6 +37,7 @@ contract Verifier is ERC1155, Ownable, AccessControl {
     error ERC1155__NotOwnerNorApproved();
 
     // modifiers
+
     constructor(
         uint256 orgId_,
         string memory name_,
@@ -52,34 +55,10 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         s_appraiserContract = _msgSender();
     }
 
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public override {
-        if (
-            (from == _msgSender() || isApprovedForAll(from, _msgSender())) ==
-            false
-        ) {
-            revert ERC1155__NotOwnerNorApproved();
-        }
-        if (!_isAdminOrOwner()) {
-            revert Verifier__OnlyAdminCanTransferVerifierNFT();
-        }
-        _safeTransferFrom(from, to, id, amount, data);
-    }
-
-    function adminMintBatch(
-        uint256[] memory ids_,
-        uint256[] memory amounts_,
-        address to_
-    ) external onlyOwner {
-        _mintBatch(to_, ids_, amounts_, "");
-    }
-
-    // check admin role for sender
+    /**
+    @dev only allow admin/owner to mint Verifier tokens
+    @param to_ where Verifier tokens are minted to
+    */
     function mintBatch(address to_) external payable {
         if (!_isAdminOrOwner()) {
             revert Verifier__OnlyAdminCanMintNFT();
@@ -99,6 +78,10 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         _mintBatch(to_, ids_, amounts_, "");
     }
 
+    /**
+    @dev set appraiser contract address post-deployment
+    @param appraiserContractAddress_ contract addr to set
+     */
     function setAppraiserContractAddress(address appraiserContractAddress_)
         external
         onlyOwner
@@ -106,20 +89,75 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         s_appraiserContract = appraiserContractAddress_;
     }
 
-    // only AppraiserOrganization contract can burn tokens, via mintReviewNFT function
-    function burnVerifierForAddress(address burnTokenAddress) external {
+    /**
+    burn token when a "Verified Review" is minted
+    @dev only AppraiserOrganization contract can burn tokens, via mintReviewNFT function
+    @param burnTokenAddress_ burn address of token holder
+     */
+    function burnVerifierForAddress(address burnTokenAddress_) external {
         Appraiser _appraiser = Appraiser(s_appraiserContract);
         (address _ao, ) = _appraiser.s_deployedContracts(s_orgId);
         if (msg.sender != _ao) {
+            // check original end user
             revert Verifier__InvalidBurnerAddress();
         }
-        _burn(burnTokenAddress, VERIFIER, 1);
+        _burn(burnTokenAddress_, VERIFIER, 1);
     }
 
+    /**
+    @dev check whether given address is an admin role
+    @param addr account address to check
+    @return is given address an admin?
+     */
     function isAdmin(address addr) external view returns (bool) {
-        return hasRole(keccak256("ADMIN_ROLE"), addr);
+        return hasRole(ADMIN_ROLE, addr);
     }
 
+    /**
+    @dev mint batches of Verifier tokens (from Owner)
+    @param ids_ array of token Ids
+    @param amounts_ array, correspond to each token id
+    @param to_ address to mint to 
+     */
+    function adminMintBatch(
+        uint256[] memory ids_,
+        uint256[] memory amounts_,
+        address to_
+    ) external onlyOwner {
+        _mintBatch(to_, ids_, amounts_, "");
+    }
+
+    /** 
+    @dev override existing 1155 safeTransferFrom, do not allow non-admin to tarnsfer these tokens
+    @param from transfer from
+    @param to transfer to
+    @param id token Id
+    @param amount number of tokens to transfer
+    @param data optional extra data
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public override {
+        if (
+            (from == _msgSender() || isApprovedForAll(from, _msgSender())) ==
+            false
+        ) {
+            revert ERC1155__NotOwnerNorApproved();
+        }
+        if (!_isAdminOrOwner()) {
+            revert Verifier__OnlyAdminCanTransferVerifierNFT();
+        }
+        _safeTransferFrom(from, to, id, amount, data);
+    }
+
+    /**
+    @dev check if sender is an admin or owner
+    @return bool is sender an admin or owner?
+     */
     function _isAdminOrOwner() private view returns (bool) {
         if (
             hasRole(ADMIN_ROLE, _msgSender()) == false &&
@@ -130,7 +168,9 @@ contract Verifier is ERC1155, Ownable, AccessControl {
         return true;
     }
 
-    // MUST be implemented to override from ERC1155 / AccessControl
+    /**
+    @dev MUST be implemented to override from function clash between ERC1155 / AccessControl
+     */
     function supportsInterface(bytes4 interfaceId)
         public
         view
