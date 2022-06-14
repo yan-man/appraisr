@@ -215,7 +215,7 @@ const unitVRFv2ConsumerFixture: Fixture<UnitVRFv2ConsumerFixtureType> = async (
   };
 };
 
-export default {
+export {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,

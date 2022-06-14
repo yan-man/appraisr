@@ -4,6 +4,8 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-contract-sizer";
 import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-waffle";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
