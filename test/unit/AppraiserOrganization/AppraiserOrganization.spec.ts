@@ -1,7 +1,8 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+import { BigNumber } from "ethers";
 
-const shouldDeploy = () => {
+const shouldDeploy = (): void => {
   context(`# deploy contract`, async function () {
     it(`*Happy Path: Should set the right owner`, async function () {
       expect(await this.appraiserOrganization.owner()).to.equal(
@@ -24,7 +25,7 @@ const shouldDeploy = () => {
   });
 };
 
-const shouldMintReviewNFT = () => {
+const shouldMintReviewNFT = (): void => {
   context(`# mintReviewNFT`, async function () {
     describe(`...After AppraiserOrganization contract is deployed`, async function () {
       describe(`...ashy larry tries to leave a non-verified review1 for WacArnolds`, async function () {
@@ -93,8 +94,19 @@ const shouldMintReviewNFT = () => {
           ).to.equal(1);
         });
         it(`should update state vars. 'isVerified' should be false`, async function () {
-          const { author, rating, review, unixtime, isVerified } =
-            await this.appraiserOrganization.s_reviews(this.reviewId);
+          const {
+            author,
+            rating,
+            review,
+            unixtime,
+            isVerified,
+          }: {
+            author: string;
+            rating: BigNumber;
+            review: string;
+            unixtime: BigNumber;
+            isVerified: boolean;
+          } = await this.appraiserOrganization.s_reviews(this.reviewId);
 
           expect(author).to.equal(this.review.author);
           expect(rating).to.equal(this.review.rating);
@@ -170,7 +182,7 @@ const shouldVoteOnReviewNFT = () => {
           const eventId = [...this.receipt.events.keys()].filter(
             (id) => this.receipt.events[id].event === "LogNFTReviewMinted"
           );
-          const { reviewId } = {
+          const { reviewId }: { reviewId: BigNumber } = {
             ...this.receipt.events[eventId[0]].args,
           };
           this.reviewId = reviewId;
@@ -286,7 +298,7 @@ const shouldVoteOnReviewNFT = () => {
 
             describe(`...After prince leaves a verified review2 for WacArnolds`, async () => {
               beforeEach(async function () {
-                await this.mocks.mockVerifier.mock.balanceOf.returns(1);
+                await this.mocks.mockVerifier?.mock.balanceOf.returns(1);
 
                 this.reviewId =
                   await this.appraiserOrganization.currentReviewId();

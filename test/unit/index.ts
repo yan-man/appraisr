@@ -7,11 +7,20 @@ import {
   unitReviewerFixture,
   unitVRFv2ConsumerFixture,
 } from "../shared/fixtures";
+import {
+  Appraiser,
+  AppraiserOrganization,
+  Verifier,
+  Reviewer,
+  MockVRFCoordinator,
+  VRFv2Consumer as VRFv2ConsumerType,
+} from "../../typechain";
 import { Mocks, Orgs, Users } from "../shared/types";
-// import Appraiser from "./Appraiser/Appraiser.spec");
-// import AppraiserOrganization from "./AppraiserOrganization/AppraiserOrganization.spec");
-// import Verifier from "./Verifier/Verifier.spec");
-import Reviewer from "./Reviewer/Reviewer.spec";
+import AppraiserSpec from "./Appraiser/Appraiser.spec";
+// import AppraiserOrganizationSpec from "./AppraiserOrganization/AppraiserOrganization.spec");
+// import VerifierSpec from "./Verifier/Verifier.spec");
+import ReviewerSpec from "./Reviewer/Reviewer.spec";
+import { MockContract } from "ethereum-waffle";
 // import VRFv2ConsumerSpec from "./VRFv2Consumer/VRFv2Consumer.spec");
 
 describe("Unit tests", async () => {
@@ -41,6 +50,11 @@ describe("Unit tests", async () => {
         mockAppraiserOrganization,
         mockAppraiserOrganization2,
         mockVRFv2Consumer,
+      }: {
+        reviewer: Reviewer;
+        mockAppraiserOrganization: MockContract;
+        mockAppraiserOrganization2: MockContract;
+        mockVRFv2Consumer: MockContract;
       } = await this.loadFixture(unitReviewerFixture);
       this.reviewer = reviewer;
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
@@ -53,39 +67,46 @@ describe("Unit tests", async () => {
         mintReviewNFT2: 5,
       };
 
-      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+      await this.mocks.mockAppraiserOrganization?.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT
       );
-      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
-      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
+      await this.mocks.mockAppraiserOrganization?.mock.voteOnReview.returns();
+      await this.mocks.mockAppraiserOrganization2?.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT2
       );
-      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
+      await this.mocks.mockAppraiserOrganization2?.mock.voteOnReview.returns();
     });
-    Reviewer.shouldDeploy();
-    // Reviewer.shouldManageReviews();
-    // Reviewer.shouldManageReviewsRatings();
+    ReviewerSpec.shouldDeploy();
+    ReviewerSpec.shouldManageReviews();
+    ReviewerSpec.shouldManageReviewsRatings();
   });
-  // describe(`Appraiser`, async () => {
-  //   beforeEach(async function () {
-  //     const { appraiser, mockAppraiserOrganization, mockVerifier } =
-  //       await this.loadFixture(unitAppraiserFixture);
+  describe(`Appraiser`, async () => {
+    beforeEach(async function () {
+      const {
+        appraiser,
+        mockAppraiserOrganization,
+        mockVerifier,
+      }: {
+        appraiser: Appraiser;
+        mockAppraiserOrganization: MockContract;
+        mockVerifier: MockContract;
+      } = await this.loadFixture(unitAppraiserFixture);
 
-  //     this.appraiser = appraiser;
-  //     this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
-  //     this.mocks.mockVerifier = mockVerifier;
+      this.appraiser = appraiser;
+      this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
+      this.mocks.mockVerifier = mockVerifier;
 
-  //     this.orgs.WacArnolds.name = "WacArnolds";
-  //     this.orgs.WacArnolds.addr = this.orgs.WacArnolds.address;
-  //     this.orgs.WacArnolds.URI = "ipfs://WacArnolds/";
+      this.orgs.WacArnolds.name = "WacArnolds";
+      this.orgs.WacArnolds.addr = this.orgs.WacArnolds.address;
+      this.orgs.WacArnolds.URI = "ipfs://WacArnolds/";
 
-  //     this.orgs.studio54.name = "studio54";
-  //     this.orgs.studio54.addr = this.orgs.WacArnolds.address;
-  //     this.orgs.studio54.URI = "ipfs://studio54/";
-  //   });
-  //   Appraiser.shouldDeploy();
-  //   Appraiser.shouldManageOrgs();
-  // });
+      this.orgs.studio54.name = "studio54";
+      this.orgs.studio54.addr = this.orgs.WacArnolds.address;
+      this.orgs.studio54.URI = "ipfs://studio54/";
+    });
+    AppraiserSpec.shouldDeploy();
+    AppraiserSpec.shouldManageOrgs();
+  });
   // describe(`AppraiserOrganization`, async () => {
   //   beforeEach(async function () {
   //     const {

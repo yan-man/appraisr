@@ -15,6 +15,9 @@ declare module "mocha" {
     signers: Wallet[];
     mocks: Mocks;
     appraiser: Appraiser;
+    appraiserOrganization: AppraiserOrganization;
+    verifier: Verifier;
+    mockVRFv2Consumer: MockVRFCoordinator;
   }
 }
 

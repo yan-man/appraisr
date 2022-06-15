@@ -1,7 +1,8 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { ContractReceipt, BigNumber } from "ethers";
+import { expect } from "chai";
+import { ethers } from "hardhat";
 
-const shouldDeploy = () => {
+const shouldDeploy = (): void => {
   context(`# deploy contract`, async function () {
     it("*Happy Path: Should set the right owner", async function () {
       expect(await this.appraiser.owner()).to.equal(
@@ -11,7 +12,7 @@ const shouldDeploy = () => {
   });
 };
 
-const shouldManageOrgs = () => {
+const shouldManageOrgs = (): void => {
   context(`# manage organizations`, async function () {
     describe("...save new orgs", async () => {
       beforeEach(`save new org`, async function () {
@@ -40,7 +41,9 @@ const shouldManageOrgs = () => {
           (id) => this.receipt.events[id].event === "OwnershipTransferred"
         );
         expect(eventId).to.have.lengthOf(3);
-        const { newOwner } = { ...this.receipt.events[eventId[0]].args };
+        const { newOwner }: { newOwner: string } = {
+          ...this.receipt.events[eventId[0]].args,
+        };
         expect(newOwner).to.equal(this.appraiser.address);
       });
 
@@ -69,13 +72,13 @@ const shouldManageOrgs = () => {
             this.orgs.studio54.URI
           );
           const receipt = await tx.wait();
-          const eventId = [...receipt.events.keys()].filter(
-            (id) => receipt.events[id].event === "LogAddOrganization"
+          const eventId = [...receipt.events!.keys()].filter(
+            (id) => receipt.events![id].event === "LogAddOrganization"
           );
-          const { orgId: emittedOrgId } = {
-            ...receipt.events[eventId[0]].args,
+          const emittedOrgId = {
+            ...receipt.events![eventId[0]].args,
           };
-          expect(emittedOrgId).to.equal(
+          expect(emittedOrgId.orgId).to.equal(
             ethers.BigNumber.from(this.orgs.studio54.orgId)
           );
         });
@@ -97,7 +100,7 @@ const shouldManageOrgs = () => {
   });
 };
 
-module.exports = {
+export default {
   shouldDeploy,
   shouldManageOrgs,
 };
