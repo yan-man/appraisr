@@ -1,6 +1,9 @@
-const { deployInitialOrganizations } = require("./initOrgs");
+import { run, ethers, network, artifacts } from "hardhat";
+import { Appraiser, Reviewer, VRFv2Consumer } from "../typechain";
+import { deployInitialOrganizations } from "./initOrgs";
 
 async function main() {
+  await run("compile");
   if (network.name === "hardhat") {
     console.warn(
       "You are trying to deploy a contract to the Hardhat Network, which" +
@@ -42,7 +45,7 @@ async function deployReviewerContract() {
   return reviewer;
 }
 
-async function deployAppraiserContract(reviewerAddr) {
+async function deployAppraiserContract(reviewerAddr: string) {
   const Appraiser = await ethers.getContractFactory("Appraiser");
   const appraiser = await Appraiser.deploy(reviewerAddr);
   await appraiser.deployed();
@@ -51,7 +54,7 @@ async function deployAppraiserContract(reviewerAddr) {
   return appraiser;
 }
 
-async function deployVRFv2ConsumerContract(reviewerAddr) {
+async function deployVRFv2ConsumerContract(reviewerAddr: string) {
   const VRFCoordinatorFactory = await ethers.getContractFactory(
     `MockVRFCoordinator`
   );
@@ -72,7 +75,11 @@ async function deployVRFv2ConsumerContract(reviewerAddr) {
   return VRFv2Consumer;
 }
 
-async function saveFrontendFiles(appraiser, reviewer, VRFv2Consumer) {
+async function saveFrontendFiles(
+  appraiser: Appraiser,
+  reviewer: Reviewer,
+  VRFv2Consumer: VRFv2Consumer
+) {
   const fs = require("fs");
   const contractsDir = __dirname + "/../frontend/src/contracts";
 
