@@ -1,27 +1,35 @@
-const { expect } = require("chai");
-const { ethers, waffle } = require("hardhat");
-
-const {
+import { ethers, waffle } from "hardhat";
+import { Wallet } from "ethers";
+import {
   unitAppraiserFixture,
   unitAppraiserOrganizationFixture,
   unitVerifierFixture,
   unitReviewerFixture,
   unitVRFv2ConsumerFixture,
-} = require("../shared/fixtures");
-const Appraiser = require("./Appraiser/Appraiser.spec");
-const AppraiserOrganization = require("./AppraiserOrganization/AppraiserOrganization.spec");
-const Verifier = require("./Verifier/Verifier.spec");
-const Reviewer = require("./Reviewer/Reviewer.spec");
-const VRFv2ConsumerSpec = require("./VRFv2Consumer/VRFv2Consumer.spec");
+} from "../shared/fixtures";
+import {
+  Appraiser,
+  AppraiserOrganization,
+  Verifier,
+  Reviewer,
+  MockVRFCoordinator,
+  VRFv2Consumer as VRFv2ConsumerType,
+} from "../../typechain";
+import { Mocks, Orgs, Users } from "../shared/types";
+import AppraiserSpec from "./Appraiser/Appraiser.spec";
+import AppraiserOrganizationSpec from "./AppraiserOrganization/AppraiserOrganization.spec";
+import VerifierSpec from "./Verifier/Verifier.spec";
+import ReviewerSpec from "./Reviewer/Reviewer.spec";
+import { MockContract } from "ethereum-waffle";
+import VRFv2ConsumerSpec from "./VRFv2Consumer/VRFv2Consumer.spec";
 
 describe("Unit tests", async () => {
   before(async function () {
     const wallets = waffle.provider.getWallets();
     this.loadFixture = waffle.createFixtureLoader(wallets);
 
-    this.signers = await ethers.getSigners();
+    this.signers = wallets;
     this.mocks = {};
-
     this.users = {};
     this.orgs = {};
 
@@ -42,6 +50,11 @@ describe("Unit tests", async () => {
         mockAppraiserOrganization,
         mockAppraiserOrganization2,
         mockVRFv2Consumer,
+      }: {
+        reviewer: Reviewer;
+        mockAppraiserOrganization: MockContract;
+        mockAppraiserOrganization2: MockContract;
+        mockVRFv2Consumer: MockContract;
       } = await this.loadFixture(unitReviewerFixture);
       this.reviewer = reviewer;
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
@@ -54,23 +67,30 @@ describe("Unit tests", async () => {
         mintReviewNFT2: 5,
       };
 
-      await this.mocks.mockAppraiserOrganization.mock.mintReviewNFT.returns(
+      await this.mocks.mockAppraiserOrganization?.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT
       );
-      await this.mocks.mockAppraiserOrganization.mock.voteOnReview.returns();
-      await this.mocks.mockAppraiserOrganization2.mock.mintReviewNFT.returns(
+      await this.mocks.mockAppraiserOrganization?.mock.voteOnReview.returns();
+      await this.mocks.mockAppraiserOrganization2?.mock.mintReviewNFT.returns(
         this.mockedResponses.mintReviewNFT2
       );
-      await this.mocks.mockAppraiserOrganization2.mock.voteOnReview.returns();
+      await this.mocks.mockAppraiserOrganization2?.mock.voteOnReview.returns();
     });
-    Reviewer.shouldDeploy();
-    Reviewer.shouldManageReviews();
-    Reviewer.shouldManageReviewsRatings();
+    ReviewerSpec.shouldDeploy();
+    ReviewerSpec.shouldManageReviews();
+    ReviewerSpec.shouldManageReviewsRatings();
   });
   describe(`Appraiser`, async () => {
     beforeEach(async function () {
-      const { appraiser, mockAppraiserOrganization, mockVerifier } =
-        await this.loadFixture(unitAppraiserFixture);
+      const {
+        appraiser,
+        mockAppraiserOrganization,
+        mockVerifier,
+      }: {
+        appraiser: Appraiser;
+        mockAppraiserOrganization: MockContract;
+        mockVerifier: MockContract;
+      } = await this.loadFixture(unitAppraiserFixture);
 
       this.appraiser = appraiser;
       this.mocks.mockAppraiserOrganization = mockAppraiserOrganization;
@@ -84,8 +104,8 @@ describe("Unit tests", async () => {
       this.orgs.studio54.addr = this.orgs.WacArnolds.address;
       this.orgs.studio54.URI = "ipfs://studio54/";
     });
-    Appraiser.shouldDeploy();
-    Appraiser.shouldManageOrgs();
+    AppraiserSpec.shouldDeploy();
+    AppraiserSpec.shouldManageOrgs();
   });
   describe(`AppraiserOrganization`, async () => {
     beforeEach(async function () {
@@ -94,33 +114,52 @@ describe("Unit tests", async () => {
         constructorParams,
         mockVerifier,
         verifier,
+      }: {
+        appraiserOrganization: AppraiserOrganization;
+        constructorParams: Object;
+        mockVerifier: MockContract;
+        verifier: Verifier;
       } = await this.loadFixture(unitAppraiserOrganizationFixture);
       this.appraiserOrganization = appraiserOrganization;
       this.constructorParams = constructorParams;
       this.mocks.mockVerifier = mockVerifier;
       this.verifier = verifier;
     });
-    AppraiserOrganization.shouldDeploy();
-    AppraiserOrganization.shouldMintReviewNFT();
-    AppraiserOrganization.shouldVoteOnReviewNFT();
+    AppraiserOrganizationSpec.shouldDeploy();
+    AppraiserOrganizationSpec.shouldMintReviewNFT();
+    AppraiserOrganizationSpec.shouldVoteOnReviewNFT();
   });
   describe(`Verifier`, async () => {
     beforeEach(async function () {
-      const { verifier, constructorParams, mockAppraiser } =
-        await this.loadFixture(unitVerifierFixture);
+      const {
+        verifier,
+        constructorParams,
+        mockAppraiser,
+      }: {
+        verifier: Verifier;
+        constructorParams: Object;
+        mockAppraiser: MockContract;
+      } = await this.loadFixture(unitVerifierFixture);
       this.verifier = verifier;
       this.constructorParams = constructorParams;
       this.mocks.mockAppraiser = mockAppraiser;
     });
-    Verifier.shouldDeploy();
-    Verifier.shouldSetContractAddress();
-    Verifier.shouldMintAndTransferAndBurnNFT();
-    Verifier.shouldSupportInterface();
+    VerifierSpec.shouldDeploy();
+    VerifierSpec.shouldSetContractAddress();
+    VerifierSpec.shouldMintAndTransferAndBurnNFT();
+    VerifierSpec.shouldSupportInterface();
   });
   describe(`VRFv2Consumer`, async () => {
     beforeEach(async function () {
-      const { VRFv2Consumer, mockReviewer, mockVRFCoordinator } =
-        await this.loadFixture(unitVRFv2ConsumerFixture);
+      const {
+        VRFv2Consumer,
+        mockReviewer,
+        mockVRFCoordinator,
+      }: {
+        VRFv2Consumer: VRFv2ConsumerType;
+        mockReviewer: MockContract;
+        mockVRFCoordinator: MockVRFCoordinator;
+      } = await this.loadFixture(unitVRFv2ConsumerFixture);
       this.VRFv2Consumer = VRFv2Consumer;
       this.mocks.mockReviewer = mockReviewer;
       this.mocks.mockVRFCoordinator = mockVRFCoordinator;
