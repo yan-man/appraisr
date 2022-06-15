@@ -161,7 +161,7 @@ const shouldMintReviewNFT = (): void => {
   });
 };
 
-const shouldVoteOnReviewNFT = () => {
+const shouldVoteOnReviewNFT = (): void => {
   context(`# voteOnReviewNFT`, async function () {
     describe(`...After AppraiserOrganization contract is deployed`, async function () {
       describe(`...After ashy larry leaves a non-verified review1 for WacArnolds`, async function () {
@@ -357,7 +357,7 @@ const shouldVoteOnReviewNFT = () => {
 
 // test certain functions called
 
-module.exports = {
+export default {
   shouldDeploy,
   shouldMintReviewNFT,
   shouldVoteOnReviewNFT,

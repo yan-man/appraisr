@@ -17,11 +17,11 @@ import {
 } from "../../typechain";
 import { Mocks, Orgs, Users } from "../shared/types";
 import AppraiserSpec from "./Appraiser/Appraiser.spec";
-// import AppraiserOrganizationSpec from "./AppraiserOrganization/AppraiserOrganization.spec");
-// import VerifierSpec from "./Verifier/Verifier.spec");
+import AppraiserOrganizationSpec from "./AppraiserOrganization/AppraiserOrganization.spec";
+// import VerifierSpec from "./Verifier/Verifier.spec";
 import ReviewerSpec from "./Reviewer/Reviewer.spec";
 import { MockContract } from "ethereum-waffle";
-// import VRFv2ConsumerSpec from "./VRFv2Consumer/VRFv2Consumer.spec");
+// import VRFv2ConsumerSpec from "./VRFv2Consumer/VRFv2Consumer.spec";
 
 describe("Unit tests", async () => {
   before(async function () {
@@ -107,23 +107,28 @@ describe("Unit tests", async () => {
     AppraiserSpec.shouldDeploy();
     AppraiserSpec.shouldManageOrgs();
   });
-  // describe(`AppraiserOrganization`, async () => {
-  //   beforeEach(async function () {
-  //     const {
-  //       appraiserOrganization,
-  //       constructorParams,
-  //       mockVerifier,
-  //       verifier,
-  //     } = await this.loadFixture(unitAppraiserOrganizationFixture);
-  //     this.appraiserOrganization = appraiserOrganization;
-  //     this.constructorParams = constructorParams;
-  //     this.mocks.mockVerifier = mockVerifier;
-  //     this.verifier = verifier;
-  //   });
-  //   AppraiserOrganization.shouldDeploy();
-  //   AppraiserOrganization.shouldMintReviewNFT();
-  //   AppraiserOrganization.shouldVoteOnReviewNFT();
-  // });
+  describe(`AppraiserOrganization`, async () => {
+    beforeEach(async function () {
+      const {
+        appraiserOrganization,
+        constructorParams,
+        mockVerifier,
+        verifier,
+      }: {
+        appraiserOrganization: AppraiserOrganization;
+        constructorParams: any;
+        mockVerifier: MockContract;
+        verifier: Verifier;
+      } = await this.loadFixture(unitAppraiserOrganizationFixture);
+      this.appraiserOrganization = appraiserOrganization;
+      this.constructorParams = constructorParams;
+      this.mocks.mockVerifier = mockVerifier;
+      this.verifier = verifier;
+    });
+    AppraiserOrganizationSpec.shouldDeploy();
+    AppraiserOrganizationSpec.shouldMintReviewNFT();
+    AppraiserOrganizationSpec.shouldVoteOnReviewNFT();
+  });
   // describe(`Verifier`, async () => {
   //   beforeEach(async function () {
   //     const { verifier, constructorParams, mockAppraiser } =
