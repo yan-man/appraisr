@@ -1,7 +1,7 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import { ethers } from "hardhat";
 
-const shouldDeploy = () => {
+const shouldDeploy = (): void => {
   context(`# deploy contract`, async function () {
     it("*Happy Path: Should set the right owner", async function () {
       expect(await this.VRFv2Consumer.owner()).to.equal(
@@ -38,7 +38,6 @@ const shouldDeploy = () => {
     });
   });
 };
-
-module.exports = {
+export default {
   shouldDeploy,
 };

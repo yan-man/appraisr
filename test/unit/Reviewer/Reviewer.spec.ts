@@ -1,7 +1,8 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 
-const shouldDeploy = () => {
+const shouldDeploy = (): void => {
   context(`# deploy contract`, async function () {
     it("*Happy Path: Should set the right owner", async function () {
       expect(await this.reviewer.owner()).to.equal(this.users.deployer.address);
@@ -9,10 +10,10 @@ const shouldDeploy = () => {
     it("should set Approval Organization address", async function () {
       await this.reviewer.setAppraiserOrganizationContractAddress(
         0,
-        this.mocks.mockAppraiserOrganization.address
+        this.mocks.mockAppraiserOrganization?.address
       );
       expect(await this.reviewer.s_aoContracts(0)).to.equal(
-        this.mocks.mockAppraiserOrganization.address
+        this.mocks.mockAppraiserOrganization?.address
       );
     });
     it("should not allow set Approval Organization address for non owner", async function () {
@@ -21,14 +22,14 @@ const shouldDeploy = () => {
           .connect(this.users.ashylarry)
           .setAppraiserOrganizationContractAddress(
             0,
-            this.mocks.mockAppraiserOrganization.address
+            this.mocks.mockAppraiserOrganization?.address
           )
       ).to.be.reverted;
     });
     it("should setVRFv2ConsumerContractAddress", async function () {
       await expect(
         this.reviewer.setVRFv2ConsumerContractAddress(
-          this.mocks.mockVRFv2Consumer.address
+          this.mocks.mockVRFv2Consumer?.address
         )
       ).to.not.be.reverted;
     });
@@ -36,23 +37,25 @@ const shouldDeploy = () => {
       await expect(
         this.reviewer
           .connect(this.users.ashylarry)
-          .setVRFv2ConsumerContractAddress(this.mocks.mockVRFv2Consumer.address)
+          .setVRFv2ConsumerContractAddress(
+            this.mocks.mockVRFv2Consumer?.address
+          )
       ).to.be.reverted;
     });
   });
 };
 
-const shouldManageReviews = () => {
+const shouldManageReviews = (): void => {
   context(`# manage reviews`, async function () {
     describe("...After mock contract addresses set", async () => {
       beforeEach(async function () {
         this.WacArnolds = { orgId: 0 };
         await this.reviewer.setAppraiserOrganizationContractAddress(
           this.WacArnolds.orgId,
-          this.mocks.mockAppraiserOrganization.address
+          this.mocks.mockAppraiserOrganization?.address
         );
         await this.reviewer.setVRFv2ConsumerContractAddress(
-          this.mocks.mockVRFv2Consumer.address
+          this.mocks.mockVRFv2Consumer?.address
         );
       });
       it(`should revert to mint review for non-valid org`, async function () {
@@ -84,7 +87,11 @@ const shouldManageReviews = () => {
             const eventId = [...receipt.events.keys()].filter(
               (id) => receipt.events[id].event === "LogMintReview"
             );
-            const { reviewId } = {
+            const {
+              reviewId,
+            }: {
+              reviewId: BigNumber;
+            } = {
               ...receipt.events[eventId[0]].args,
             };
             this.reviewId = reviewId;
@@ -100,8 +107,15 @@ const shouldManageReviews = () => {
           });
 
           it(`should create new user when ashylarry's first review is minted at WacArnolds`, async function () {
-            const { upvotes, downvotes, isRegistered } =
-              await this.reviewer.s_users(this.users.ashylarry.address);
+            const {
+              upvotes,
+              downvotes,
+              isRegistered,
+            }: {
+              upvotes: BigNumber;
+              downvotes: BigNumber;
+              isRegistered: Boolean;
+            } = await this.reviewer.s_users(this.users.ashylarry.address);
             expect(upvotes).to.equal(ethers.BigNumber.from(0));
             expect(downvotes).to.equal(ethers.BigNumber.from(0));
             expect(isRegistered).to.equal(true);
@@ -153,7 +167,7 @@ const shouldManageReviews = () => {
               this.studio54 = { orgId: 1 };
               await this.reviewer.setAppraiserOrganizationContractAddress(
                 this.studio54.orgId,
-                this.mocks.mockAppraiserOrganization2.address
+                this.mocks.mockAppraiserOrganization2?.address
               );
             });
             it(`should save new review if existing user ashy larry adds review to org2 studio54`, async function () {
@@ -161,10 +175,10 @@ const shouldManageReviews = () => {
                 .connect(this.users.ashylarry)
                 .mintReview(this.studio54.orgId, 54, "test review2");
               const receipt = await tx.wait();
-              const eventId = [...receipt.events.keys()].filter(
+              const eventId: Array<3> = [...receipt.events.keys()].filter(
                 (id) => receipt.events[id].event === "LogMintReview"
               );
-              const { reviewId } = {
+              const { reviewId }: { reviewId: BigNumber } = {
                 ...receipt.events[eventId[0]].args,
               };
               expect(
@@ -196,10 +210,10 @@ const shouldManageReviewsRatings = () => {
         this.WacArnolds = { orgId: 0 };
         await this.reviewer.setAppraiserOrganizationContractAddress(
           this.WacArnolds.orgId,
-          this.mocks.mockAppraiserOrganization.address
+          this.mocks.mockAppraiserOrganization?.address
         );
         await this.reviewer.setVRFv2ConsumerContractAddress(
-          this.mocks.mockVRFv2Consumer.address
+          this.mocks.mockVRFv2Consumer?.address
         );
 
         const mintReviewTx = await this.reviewer
@@ -320,7 +334,7 @@ const shouldManageReviewsRatings = () => {
   });
 };
 
-module.exports = {
+export default {
   shouldDeploy,
   shouldManageReviews,
   shouldManageReviewsRatings,

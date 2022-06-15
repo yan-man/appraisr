@@ -1,11 +1,15 @@
-const { waffle } = require("hardhat");
-const AppraiserOrganization_ABI = require("../../artifacts/contracts/AppraiserOrganization.sol/AppraiserOrganization.json");
-const Verifier_ABI = require("../../artifacts/contracts/Verifier.sol/Verifier.json");
-const Reviewer_ABI = require("../../artifacts/contracts/Reviewer.sol/Reviewer.json");
-const Appraiser_ABI = require("../../artifacts/contracts/Appraiser.sol/Appraiser.json");
-const VRFv2Consumer_ABI = require("../../artifacts/contracts/VRFv2Consumer.sol/VRFv2Consumer.json");
+import { waffle } from "hardhat";
+import { MockContract } from "ethereum-waffle";
+import { Signer } from "ethers";
+import AppraiserOrganization_ABI from "../../artifacts/contracts/AppraiserOrganization.sol/AppraiserOrganization.json";
+import Verifier_ABI from "../../artifacts/contracts/Verifier.sol/Verifier.json";
+import Reviewer_ABI from "../../artifacts/contracts/Reviewer.sol/Reviewer.json";
+import Appraiser_ABI from "../../artifacts/contracts/Appraiser.sol/Appraiser.json";
+import VRFv2Consumer_ABI from "../../artifacts/contracts/VRFv2Consumer.sol/VRFv2Consumer.json";
 
-async function deployMockVRFv2Consumer(deployer) {
+const deployMockVRFv2Consumer = async (
+  deployer: Signer
+): Promise<MockContract> => {
   const VRFv2Consumer = await waffle.deployMockContract(
     deployer,
     VRFv2Consumer_ABI.abi
@@ -13,9 +17,11 @@ async function deployMockVRFv2Consumer(deployer) {
   await VRFv2Consumer.mock.requestRandomWords.returns();
 
   return VRFv2Consumer;
-}
+};
 
-async function deployMockAppraiserOrganization(deployer) {
+const deployMockAppraiserOrganization = async (
+  deployer: Signer
+): Promise<MockContract> => {
   const appraiserOrganization = await waffle.deployMockContract(
     deployer,
     AppraiserOrganization_ABI.abi
@@ -23,18 +29,18 @@ async function deployMockAppraiserOrganization(deployer) {
   await appraiserOrganization.mock.updateReviewGroupId.returns();
 
   return appraiserOrganization;
-}
+};
 
-async function deployMockVerifier(deployer) {
+const deployMockVerifier = async (deployer: Signer): Promise<MockContract> => {
   const verifier = await waffle.deployMockContract(deployer, Verifier_ABI.abi);
   await verifier.mock.balanceOf.returns(0);
   await verifier.mock.VERIFIER.returns(0);
   await verifier.mock.burnVerifierForAddress.returns();
 
   return verifier;
-}
+};
 
-async function deployMockReviewer(deployer) {
+async function deployMockReviewer(deployer: Signer): Promise<MockContract> {
   const reviewer = await waffle.deployMockContract(deployer, Reviewer_ABI.abi);
   await reviewer.mock.setAppraiserOrganizationContractAddress.returns();
   await reviewer.mock.updateReviewGroupId.returns();
@@ -42,13 +48,13 @@ async function deployMockReviewer(deployer) {
   return reviewer;
 }
 
-async function deployMockAppraiser(deployer) {
+const deployMockAppraiser = async (deployer: Signer): Promise<MockContract> => {
   const appraiser = await waffle.deployMockContract(
     deployer,
     Appraiser_ABI.abi
   );
   return appraiser;
-}
+};
 
 // async function deployMockVRFCoordinatorV2Interface(deployer) {
 //   const VRFCoordinatorV2Interface = await waffle.deployMockContract(
@@ -59,7 +65,7 @@ async function deployMockAppraiser(deployer) {
 //   return VRFCoordinatorV2Interface;
 // }
 
-module.exports = {
+export {
   deployMockReviewer,
   deployMockAppraiserOrganization,
   deployMockVerifier,
