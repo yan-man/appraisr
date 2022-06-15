@@ -59,7 +59,12 @@ const config: HardhatUserConfig = {
       tasks: [
         "clean",
         { command: "compile", params: { quiet: true } },
-        { command: "test", params: { testFiles: ["./test/unit/index.ts"] } },
+        {
+          command: "test",
+          params: {
+            testFiles: ["./test/unit/index.ts", "./test/integration/index.ts"],
+          },
+        },
       ],
       files: ["./test/**/*"],
       verbose: true,

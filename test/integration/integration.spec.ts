@@ -1,7 +1,8 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 
-const shouldManageOrgs = () => {
+const shouldManageOrgs = (): void => {
   context(`# manage organizations`, async function () {
     describe("...After Appraiser and Reviewer contracts deployed", async () => {
       beforeEach(`Transfer ownership`, async function () {
@@ -44,17 +45,17 @@ const shouldManageOrgs = () => {
           );
 
         const receipt = await tx.wait();
-        const eventId = [...receipt.events.keys()].filter(
-          (id) => receipt.events[id].event === "LogAddOrganization"
+        const eventId = [...receipt.events!.keys()].filter(
+          (id) => receipt.events![id].event === "LogAddOrganization"
         );
-        const { orgId: emittedOrgId } = {
-          ...receipt.events[eventId[0]].args,
+        const emittedOrgId = {
+          ...receipt.events![eventId[0]].args,
         };
 
         expect(
           await this.appraiser
             .connect(this.users.deployer)
-            .s_organizations(emittedOrgId)
+            .s_organizations(emittedOrgId.orgId)
         ).to.equal(1);
       });
 
@@ -72,7 +73,7 @@ const shouldManageOrgs = () => {
           this.eventId = [...this.receipt.events.keys()].filter(
             (id) => this.receipt.events[id].event === "LogAddOrganization"
           );
-          const { orgId: emittedOrgId } = {
+          const { orgId: emittedOrgId }: { orgId: BigNumber } = {
             ...this.receipt.events[this.eventId[0]].args,
           };
 
@@ -110,7 +111,7 @@ const shouldManageOrgs = () => {
   });
 };
 
-const shouldManageReviews = () => {
+const shouldManageReviews = (): void => {
   // context(`# manage reviews`, async function () {
   //   describe("...After org2 studio54 exists", async () => {
   //     beforeEach(async function () {
@@ -266,7 +267,7 @@ const shouldManageReviews = () => {
   // });
 };
 
-const shouldManageReviewsRatings = () => {
+const shouldManageReviewsRatings = (): void => {
   // context(`# manage reviews`, async function () {
   //   describe("...After org1 WacArnolds saved & ashylarry's review1 is minted", async () => {
   //     beforeEach(async function () {
@@ -399,8 +400,7 @@ const shouldManageReviewsRatings = () => {
   //   });
   // });
 };
-
-module.exports = {
+export default {
   shouldManageOrgs,
   shouldManageReviews,
   shouldManageReviewsRatings,
