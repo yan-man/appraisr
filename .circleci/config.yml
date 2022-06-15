@@ -20,7 +20,7 @@ commands:
   test:
     steps:
       - run: npm i
-      - run: npx hardhat clean
+      - run: npx hardhat compile
       - run: npx hardhat coverage
       - codecov/upload
 executors:
