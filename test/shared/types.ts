@@ -17,7 +17,8 @@ declare module "mocha" {
     appraiser: Appraiser;
     appraiserOrganization: AppraiserOrganization;
     verifier: Verifier;
-    mockVRFv2Consumer: MockVRFCoordinator;
+    VRFv2Consumer: VRFv2ConsumerType;
+    mockVRFCoordinator: MockVRFCoordinator;
   }
 }
 
@@ -42,4 +43,5 @@ export interface Mocks {
   mockAppraiserOrganization2?: MockContract;
   mockReviewer?: MockContract;
   mockVRFv2Consumer?: MockContract;
+  mockVRFCoordinator?: MockVRFCoordinator;
 }

@@ -21,7 +21,7 @@ import AppraiserOrganizationSpec from "./AppraiserOrganization/AppraiserOrganiza
 import VerifierSpec from "./Verifier/Verifier.spec";
 import ReviewerSpec from "./Reviewer/Reviewer.spec";
 import { MockContract } from "ethereum-waffle";
-// import VRFv2ConsumerSpec from "./VRFv2Consumer/VRFv2Consumer.spec";
+import VRFv2ConsumerSpec from "./VRFv2Consumer/VRFv2Consumer.spec";
 
 describe("Unit tests", async () => {
   before(async function () {
@@ -149,17 +149,24 @@ describe("Unit tests", async () => {
     VerifierSpec.shouldMintAndTransferAndBurnNFT();
     VerifierSpec.shouldSupportInterface();
   });
-  // describe(`VRFv2Consumer`, async () => {
-  //   beforeEach(async function () {
-  //     const { VRFv2Consumer, mockReviewer, mockVRFCoordinator } =
-  //       await this.loadFixture(unitVRFv2ConsumerFixture);
-  //     this.VRFv2Consumer = VRFv2Consumer;
-  //     this.mocks.mockReviewer = mockReviewer;
-  //     this.mocks.mockVRFCoordinator = mockVRFCoordinator;
-  //   });
-  //   VRFv2ConsumerSpec.shouldDeploy();
-  //   // Verifier.shouldSetContractAddress();
-  //   // Verifier.shouldMintAndTransferAndBurnNFT();
-  //   // Verifier.shouldSupportInterface();
-  // });
+  describe(`VRFv2Consumer`, async () => {
+    beforeEach(async function () {
+      const {
+        VRFv2Consumer,
+        mockReviewer,
+        mockVRFCoordinator,
+      }: {
+        VRFv2Consumer: VRFv2ConsumerType;
+        mockReviewer: MockContract;
+        mockVRFCoordinator: MockVRFCoordinator;
+      } = await this.loadFixture(unitVRFv2ConsumerFixture);
+      this.VRFv2Consumer = VRFv2Consumer;
+      this.mocks.mockReviewer = mockReviewer;
+      this.mocks.mockVRFCoordinator = mockVRFCoordinator;
+    });
+    VRFv2ConsumerSpec.shouldDeploy();
+    // Verifier.shouldSetContractAddress();
+    // Verifier.shouldMintAndTransferAndBurnNFT();
+    // Verifier.shouldSupportInterface();
+  });
 });
