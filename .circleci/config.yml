@@ -19,7 +19,9 @@ commands:
       - run: node --version
   test:
     steps:
-      - run: npm i && npx hardhat coverage
+      - run: npm i
+      - run: npx hardhat clean
+      - run: npx hardhat coverage
       - codecov/upload
 executors:
   docker-executor:
