@@ -18,7 +18,7 @@ import {
 import { Mocks, Orgs, Users } from "../shared/types";
 import AppraiserSpec from "./Appraiser/Appraiser.spec";
 import AppraiserOrganizationSpec from "./AppraiserOrganization/AppraiserOrganization.spec";
-// import VerifierSpec from "./Verifier/Verifier.spec";
+import VerifierSpec from "./Verifier/Verifier.spec";
 import ReviewerSpec from "./Reviewer/Reviewer.spec";
 import { MockContract } from "ethereum-waffle";
 // import VRFv2ConsumerSpec from "./VRFv2Consumer/VRFv2Consumer.spec";
@@ -116,7 +116,7 @@ describe("Unit tests", async () => {
         verifier,
       }: {
         appraiserOrganization: AppraiserOrganization;
-        constructorParams: any;
+        constructorParams: Object;
         mockVerifier: MockContract;
         verifier: Verifier;
       } = await this.loadFixture(unitAppraiserOrganizationFixture);
@@ -129,19 +129,26 @@ describe("Unit tests", async () => {
     AppraiserOrganizationSpec.shouldMintReviewNFT();
     AppraiserOrganizationSpec.shouldVoteOnReviewNFT();
   });
-  // describe(`Verifier`, async () => {
-  //   beforeEach(async function () {
-  //     const { verifier, constructorParams, mockAppraiser } =
-  //       await this.loadFixture(unitVerifierFixture);
-  //     this.verifier = verifier;
-  //     this.constructorParams = constructorParams;
-  //     this.mocks.mockAppraiser = mockAppraiser;
-  //   });
-  //   Verifier.shouldDeploy();
-  //   Verifier.shouldSetContractAddress();
-  //   Verifier.shouldMintAndTransferAndBurnNFT();
-  //   Verifier.shouldSupportInterface();
-  // });
+  describe(`Verifier`, async () => {
+    beforeEach(async function () {
+      const {
+        verifier,
+        constructorParams,
+        mockAppraiser,
+      }: {
+        verifier: Verifier;
+        constructorParams: Object;
+        mockAppraiser: MockContract;
+      } = await this.loadFixture(unitVerifierFixture);
+      this.verifier = verifier;
+      this.constructorParams = constructorParams;
+      this.mocks.mockAppraiser = mockAppraiser;
+    });
+    VerifierSpec.shouldDeploy();
+    VerifierSpec.shouldSetContractAddress();
+    VerifierSpec.shouldMintAndTransferAndBurnNFT();
+    VerifierSpec.shouldSupportInterface();
+  });
   // describe(`VRFv2Consumer`, async () => {
   //   beforeEach(async function () {
   //     const { VRFv2Consumer, mockReviewer, mockVRFCoordinator } =

@@ -1,7 +1,7 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import { ethers } from "hardhat";
 
-const shouldDeploy = () => {
+const shouldDeploy = (): void => {
   context(`# deploy contract`, async function () {
     it("*Happy Path: Should set the right owner", async function () {
       expect(await this.verifier.owner()).to.equal(this.users.deployer.address);
@@ -33,7 +33,7 @@ const shouldDeploy = () => {
   });
 };
 
-const shouldSetContractAddress = () => {
+const shouldSetContractAddress = (): void => {
   context(`# setAppraiserContractAddress`, async function () {
     it("should allow owner to set AppraiserContractAddress", async function () {
       const tx = await this.verifier.setAppraiserContractAddress(
@@ -55,7 +55,7 @@ const shouldSetContractAddress = () => {
   });
 };
 
-const shouldMintAndTransferAndBurnNFT = () => {
+const shouldMintAndTransferAndBurnNFT = (): void => {
   context(`# transfer NFTs`, async function () {
     describe("...Set up", async function () {
       beforeEach(async function () {
@@ -264,9 +264,9 @@ const shouldMintAndTransferAndBurnNFT = () => {
         describe("...After Appraiser contract address has been set", async function () {
           beforeEach(async function () {
             await this.verifier.setAppraiserContractAddress(
-              this.mocks.mockAppraiser.address
+              this.mocks!.mockAppraiser!.address
             );
-            await this.mocks.mockAppraiser.mock.s_deployedContracts.returns(
+            await this.mocks.mockAppraiser?.mock.s_deployedContracts.returns(
               this.users.prince.address,
               this.users.prince.address
             );
@@ -306,7 +306,7 @@ const shouldMintAndTransferAndBurnNFT = () => {
   });
 };
 
-const shouldSupportInterface = () => {
+const shouldSupportInterface = (): void => {
   context(`# transfer NFTs`, async function () {
     it(`...should supportsInterface`, async function () {
       expect(await this.verifier.supportsInterface(`0x12340000`)).to.equal(
@@ -315,7 +315,7 @@ const shouldSupportInterface = () => {
     });
   });
 };
-module.exports = {
+export default {
   shouldDeploy,
   shouldSetContractAddress,
   shouldMintAndTransferAndBurnNFT,
