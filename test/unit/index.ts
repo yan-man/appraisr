@@ -15,7 +15,6 @@ import {
   MockVRFCoordinator,
   VRFv2Consumer as VRFv2ConsumerType,
 } from "../../typechain";
-import { Mocks, Orgs, Users } from "../shared/types";
 import AppraiserSpec from "./Appraiser/Appraiser.spec";
 import AppraiserOrganizationSpec from "./AppraiserOrganization/AppraiserOrganization.spec";
 import VerifierSpec from "./Verifier/Verifier.spec";

@@ -6,6 +6,7 @@ import "hardhat-contract-sizer";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
+import "hardhat-watcher";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -52,6 +53,22 @@ const config: HardhatUserConfig = {
   contractSizer: {
     alphaSort: true,
     runOnCompile: false,
+  },
+  watcher: {
+    test: {
+      tasks: [
+        "clean",
+        { command: "compile", params: { quiet: true } },
+        {
+          command: "test",
+          params: {
+            testFiles: ["./test/unit/index.ts", "./test/integration/index.ts"],
+          },
+        },
+      ],
+      files: ["./test/**/*"],
+      verbose: true,
+    },
   },
 };
 

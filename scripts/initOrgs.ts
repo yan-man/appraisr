@@ -1,11 +1,41 @@
-const { ethers } = require("hardhat");
-const math = require("mathjs");
-const helpersDir = __dirname + "/../frontend/src/helpers";
-const orgs = require(`${helpersDir}/library.json`);
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { ethers } from "hardhat";
+import { divide } from "mathjs";
+const helpersDir = `${__dirname}/../frontend/src/helpers/`;
+const orgs: Organization[] = require(`${helpersDir}/library.json`);
+import { Appraiser, Reviewer, VRFv2Consumer } from "../typechain";
+import { BigNumber } from "ethers";
 
-const deployInitialOrganizations = async (appraiser, reviewer) => {
+interface Organization {
+  URI: string;
+  Name: string;
+  Description: string;
+  Category: string;
+  Admin: string;
+  Reviews: Review[];
+  orgId: number;
+  AppraiserOrganization: string;
+  Verifier: string;
+  AvgRating: number;
+}
+
+interface Review {
+  Author: string;
+  Rating: number;
+  Review: string;
+  Upvotes: number;
+  Downvotes: number;
+  reviewId: number;
+  Timestamp: number;
+  IsVerified: boolean;
+}
+
+const deployInitialOrganizations = async (
+  appraiser: Appraiser,
+  reviewer: Reviewer
+): Promise<void> => {
   const signers = await ethers.getSigners();
-  const users = signers.slice(1, -2);
+  const users: SignerWithAddress[] = signers.slice(1, -2);
 
   // 20 hardhat accounts: [index]
   // 0) - deployer
@@ -18,26 +48,31 @@ const deployInitialOrganizations = async (appraiser, reviewer) => {
   deployedOrgs = await deployReviews(appraiser, reviewer, deployedOrgs, users);
 };
 
-const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
-  const users = [..._users];
+const deployReviews = async (
+  appraiser: Appraiser,
+  reviewer: Reviewer,
+  deployedOrgs: Organization[],
+  _users: SignerWithAddress[]
+): Promise<Organization[]> => {
+  const users: SignerWithAddress[] = [..._users];
   await Promise.all(
-    orgs.map(async (o, orgInd) => {
-      const reviews = [];
+    orgs.map(async (o: Organization, orgInd: number) => {
+      const reviews: Review[] = [];
       await Promise.all(
         o.Reviews.map(async (review) => {
           const user = users.pop();
 
           const tx = await reviewer
-            .connect(user)
+            .connect(user!)
             .mintReview(o.orgId, review.Rating, review.Review);
           const receipt = await tx.wait();
-          const eventId = [...receipt.events.keys()].filter(
-            (id) => receipt.events[id].event === "LogMintReview"
+          const eventId = [...receipt.events!.keys()].filter(
+            (id) => receipt.events![id].event === "LogMintReview"
           );
-          const { reviewId: emittedId } = {
-            ...receipt.events[eventId[0]].args,
+          const emittedId = {
+            ...receipt.events![eventId[0]].args,
           };
-          const reviewId = emittedId.toNumber();
+          const reviewId = emittedId.reviewId.toNumber();
 
           const ao = await ethers.getContractAt(
             `AppraiserOrganization`,
@@ -45,7 +80,7 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
           );
           const savedReview = await ao.s_reviews(reviewId);
 
-          review.Author = user.address;
+          review.Author = user!.address;
           review.reviewId = reviewId;
           review.Timestamp = savedReview.unixtime.toNumber();
           review.IsVerified = savedReview.isVerified;
@@ -59,10 +94,10 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
         })
       );
       o.Reviews = reviews;
-      const sum = reviews.reduce((total, next) => {
+      const sum: number = reviews.reduce((total, next) => {
         return total + Number(next.Rating);
       }, 0);
-      o.AvgRating = math.divide(sum, reviews.length);
+      o.AvgRating = divide(sum, reviews.length);
       return o;
     })
   );
@@ -70,12 +105,16 @@ const deployReviews = async (appraiser, reviewer, deployedOrgs, _users) => {
   return orgs;
 };
 
-const deployOrgs = async (appraiser, reviewer, users) => {
+const deployOrgs = async (
+  appraiser: Appraiser,
+  reviewer: Reviewer,
+  users: SignerWithAddress[]
+) => {
   const signers = await ethers.getSigners();
-  const admins = signers.slice("-" + orgs.length);
-  const updatedOrgs = [];
+  const admins = signers.slice(Number(`-${orgs.length.toString()}`));
+  const updatedOrgs: Organization[] = [];
   await Promise.all(
-    orgs.map(async (o, index) => {
+    orgs.map(async (o: Organization, index) => {
       o.Admin = admins[index].address;
       const tx = await appraiser
         .connect(signers[0])
@@ -83,16 +122,16 @@ const deployOrgs = async (appraiser, reviewer, users) => {
           gasLimit: 30000000,
         });
       const receipt = await tx.wait();
-      const eventId = [...receipt.events.keys()].filter(
-        (id) => receipt.events[id].event === "LogAddOrganization"
+      const eventId = [...receipt.events!.keys()].filter(
+        (id) => receipt.events![id].event === "LogAddOrganization"
       );
-      const { orgId: emittedId } = {
-        ...receipt.events[eventId[0]].args,
+      const emittedId = {
+        ...receipt.events![eventId[0]].args,
       };
-      const orgId = emittedId.toNumber();
+      const orgId: BigNumber = emittedId.orgId;
       const org = await appraiser.s_deployedContracts(orgId);
 
-      o.orgId = orgId;
+      o.orgId = orgId.toNumber();
       o.AppraiserOrganization = org.AppraiserOrganization;
       o.Verifier = org.Verifier;
       updatedOrgs.push(o);
@@ -130,7 +169,7 @@ const deployOrgs = async (appraiser, reviewer, users) => {
   return updatedOrgs;
 };
 
-function saveOrgsFrontendFiles(deployedOrgs) {
+function saveOrgsFrontendFiles(deployedOrgs: Organization[]) {
   const fs = require("fs");
 
   fs.writeFileSync(
@@ -139,7 +178,7 @@ function saveOrgsFrontendFiles(deployedOrgs) {
   );
 }
 
-function saveReviewsFrontendFiles(deployedOrgs) {
+function saveReviewsFrontendFiles(deployedOrgs: Organization[]) {
   const fs = require("fs");
 
   fs.writeFileSync(
@@ -148,4 +187,4 @@ function saveReviewsFrontendFiles(deployedOrgs) {
   );
 }
 
-module.exports = { deployInitialOrganizations };
+export { deployInitialOrganizations };

@@ -1,13 +1,13 @@
-const { expect } = require("chai");
-const { ethers, waffle } = require("hardhat");
-const Integration = require("./integration.spec");
+import { expect } from "chai";
+import { ethers, waffle } from "hardhat";
+import Integration from "./integration.spec";
 
 describe("Integration tests", async () => {
   before(async function () {
     const wallets = waffle.provider.getWallets();
     this.loadFixture = waffle.createFixtureLoader(wallets);
 
-    this.signers = await ethers.getSigners();
+    this.signers = wallets;
 
     this.users = {};
     this.orgs = {};
