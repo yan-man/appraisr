@@ -12,6 +12,10 @@ However, users are unable to transfer or trade Verifier tokens, which prevents t
 
 Reviews are also randomly divided into 5 separate groups. With multiple randomized groups, it further inhibits gaming the system from an organization's point of view. It requires 5x the amount of "faked" reviews to maliciously influence an organization's average rating across the multiple samples.
 
+## Submission
+
+This [project](https://devpost.com/software/appraisr?ref_content=my-projects-tab&ref_feature=my_projects) is winner of the Moralis Pooled Prize at the [Chainlink Spring 2022 Hackathon](https://chain.link/hackathon).
+
 ## Table of Contents
 
 - [System Requirements](#system-requirements)
