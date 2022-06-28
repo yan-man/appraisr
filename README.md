@@ -48,6 +48,8 @@ This [project](https://devpost.com/software/appraisr?ref_content=my-projects-tab
 
 - [Node](https://nodejs.org/en/download/) v16.14.0
 
+- Create [Moralis](https://moralis.io/) account, create a new local dapp, and get `Application ID` and `Dapp URL`
+
 - Download MacOS-compatible [FRP](https://github.com/fatedier/frp/releases) - required to connect from [Moralis to local Ganache instance](https://docs.moralis.io/guides/deploy-and-track-erc20-events#connecting-moralis-to-your-local-ganache-instance).
 
   Follow Moralis how-to [guide](https://docs.moralis.io/guides/deploy-and-track-erc20-events#connecting-moralis-to-your-local-ganache-instance). Use Hardhat setting with Linux command.
@@ -77,6 +79,10 @@ On the same terminal (Terminal 1), start Hardhat's network node:
 ```sh
 $ npx hardhat node
 ```
+
+### Update Moralis settings in dapp
+
+In `./frontend/src/index.js` file, update the MoralisProvider `appId` and `serverUrl` variables with values from earlier.
 
 ### Connect Moralis to Ganache Proxy Server
 
